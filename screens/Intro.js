@@ -1,6 +1,6 @@
 import React from "react";
 import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
-import { flexCenter, kiwiButton } from "../utils/styleComponents";
+import { flexCenter, TonicButton } from "../utils/styleComponents";
 import styled from "styled-components/native";
 import { windowWidth } from "../utils/utils";
 import theme from "../utils/theme";
@@ -12,6 +12,9 @@ export default function Intro({navigation}) {
 
   return (
     <Container>
+      <Image
+        source={require("../assets/TonicStartImage.png")}
+      />
       <Text style={styles.head}>토닉 토닉</Text>
       <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
       <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
@@ -47,14 +50,14 @@ const styles = StyleSheet.create({
 });
 
 const StartButton = styled.Pressable`
-  ${kiwiButton}
+  ${TonicButton};
   width: ${windowWidth * 0.9}px;
   height: 56px;
   border-radius: 8px;
 `;
 
 const Container = styled.View`
-  ${flexCenter}
+  ${flexCenter};
   background-color: #fff;
   align-items: center;
   justify-content: center;

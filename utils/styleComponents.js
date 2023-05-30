@@ -8,7 +8,7 @@ export const flexCenter = css`
   align-items: center;
 `;
 
-export const kiwiButton = css`
+export const TonicButton = css`
   display: flex;
   justify-content: center;
   align-items: center;
