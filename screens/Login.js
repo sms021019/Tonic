@@ -1,25 +1,64 @@
-import React, {useState} from 'react'
-import {View, Text, TextInput} from 'react-native'
+import React, {useState, useEffect} from 'react'
+import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
 
-export default function Login(navigation) {
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
+import errorHandler from '../errors/index';
+
+
+
+
+
+export default function Login({navigation}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleLogin() {
-    // TODO: authentication.
-    console.log("Login Button Clicked.")
-  }
+  
 
+  useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+              navigation.replace("HomeNavigator")
+          }
+      })
+
+      return unsubscribe
+  }, [])
+
+  const handleLogin = () => {
+      signInWithEmailAndPassword(auth, email, password)
+      .then(userCredentials => {
+          const user = userCredentials.user;
+          console.log('Logged in with: ', user.email);
+      })
+      .catch(error => alert(errorHandler(error)))
+  }
 
   return (
     <Container>
       <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-      <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword}/>
-      <OptionText>이메일 찾기 | 비밀번호 찾기 | 회원가입</OptionText>
+      <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+      <View  style = {styles.buttonContainer}>
+        <TouchableOpacity style = {[styles.buttonBorder, styles.buttonOutline,]}>
+            <Text>
+              이메일 찾기{'  '}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style = {[styles.buttonOutline, styles.buttonBorder]} onPress={() => navigation.push("PasswordReset")}>
+            <Text>
+              비밀번호 찾기 {'\t'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style = {styles.buttonOutline} onPress={() => navigation.push("Signup")}>
+            <Text>
+              회원가입
+            </Text>
+          </TouchableOpacity>
+      </View>
       <StartButton onPress={handleLogin}>
         <StartText>로그인</StartText>
       </StartButton>
@@ -69,3 +108,19 @@ const Container = styled.View`
   align-items: center;
   justify-content: flex-start;
 `;
+
+const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+    
+  
+  },
+  buttonBorder: {
+    borderRightWidth: 1,
+  },
+  buttonOutline:{
+    marginHorizontal: 4
+  },
+})
