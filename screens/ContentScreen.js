@@ -7,7 +7,7 @@ import {auth, db} from '../firebase';
 import {getDocs, collection} from "firebase/firestore";
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {windowHeight, windowWidth} from "../utils/utils";
+import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 import Post from "../components/Post";
 import {Center, FlatList, Input, Icon, Divider, Button} from "native-base";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -36,16 +36,6 @@ export default function ContentScreen(props) {
     // }
     // getUsername();
 
-
-    const handleSignOut = () => {
-        signOut(auth)
-            .then(() => {
-                navigation.replace("LoginNavigator")
-                console.log(`${username} logged out`)
-            })
-            .catch(error => alert(errorHandler(error)))
-    }
-
     const LoadingView = <View><Text>Loading...</Text></View>
 
     const postList = [
@@ -65,6 +55,10 @@ export default function ContentScreen(props) {
         {id: 14},
         {id: 15},
     ]
+
+/* ------------------
+      Components
+ -------------------*/
     const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2" InputLeftElement={<Icon ml="2" size="5" color="gray.400" as={<Ionicons name="ios-search"/>}/>}/>)
 
     const ContentView = (
@@ -85,13 +79,28 @@ export default function ContentScreen(props) {
 
     const MainView = !currUser ? LoadingView : ContentView
 
+/* ------------------
+       Handlers
+ -------------------*/
+    function handleSignOut() {
+        signOut(auth)
+            .then(() => {
+                navigation.replace("LoginNavigator")
+                console.log(`${username} logged out`)
+            })
+            .catch(error => alert(errorHandler(error)))
+    }
     function handleContentClick() {
-        props.navigation.navigate("ContentDetailNavigator")
+        props.navigation.navigate(NavigatorType.CONTENT_DETAIL)
     }
 
     function handleCreateButtonClick() {
-
+        props.navigation.navigate(NavigatorType.POSTING);
     }
+
+/* ------------------
+      Render
+-------------------*/
     return (
         <Container>
             <SafeAreaView>
@@ -116,6 +125,9 @@ export default function ContentScreen(props) {
     )
 }
 
+/* ------------------
+       Styles
+ -------------------*/
 const Container = styled.View`
   display: flex;
   flex: 1;

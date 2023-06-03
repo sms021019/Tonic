@@ -42,17 +42,3 @@ export default function Post(props) {
         </Box>
     );
 }
-
-const PostBox = styled.View`
-  ${flexCenter};
-  align-items: center;
-  background-color: #ffe;
-  width: ${POST_SIZE.width};
-  height: 200px};
-`;
-
-const PostImage = styled.View`
-  ${flexCenter};
-  background-color: blue;
-`
-

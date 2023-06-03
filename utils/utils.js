@@ -1,4 +1,14 @@
 import { Dimensions } from "react-native";
+import React from "react";
+
+export const NavigatorType = {
+  MAIN: "mainNavigator",
+  LOGIN: "LoginNavigator",
+  HOME: "HomeNavigator",
+  CONTENT_DETAIL: "ContentDetailNavigator",
+  POSTING: "postingNavigator",
+  START: "startNavigator",
+}
 
 const palette = {
   tealGreen: "#128c7e",
