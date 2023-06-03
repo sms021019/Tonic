@@ -1,14 +1,18 @@
 import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
-import {View, Text, SafeAreaView} from "react-native";
-import Home from '../screens/Home';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import Content from '../screens/Content';
+import Chat from "../screens/Chat";
+import MyPage from '../screens/MyPage';
 
-const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function HomeNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
-      <Stack.Screen name="Home" component={Home} />
-    </Stack.Navigator>
-  )
+    return (
+        <Tab.Navigator screenOptions={{headerShown: false}} tabBarOptions={{ showLabel: true }}>
+            <Tab.Screen name="Content" component={Content}/>
+            <Tab.Screen name="Chat" component={Chat}/>
+            <Tab.Screen name="MyPage" component={MyPage}/>
+        </Tab.Navigator>
+    )
 }
+
