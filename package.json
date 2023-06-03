@@ -16,6 +16,7 @@
     "@rneui/base": "^0.0.0-edge.2",
     "@rneui/themed": "^0.0.0-edge.2",
     "expo": "~48.0.15",
+    "expo-image-picker": "^14.1.1",
     "expo-status-bar": "~1.4.4",
     "firebase": "^9.22.1",
     "firebase-admin": "^11.9.0",
