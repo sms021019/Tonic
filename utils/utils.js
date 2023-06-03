@@ -37,3 +37,8 @@ export const IMAGE_SIZE = {
 };
 export const FIXED_FOOTER_HEIGHT = "120px";
 export const FOOTER_BUTTON = windowWidth * 0.4;
+
+export const POST_SIZE = {
+  width: windowWidth * 0.9,
+  height: 200,
+}

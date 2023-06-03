@@ -1,6 +1,6 @@
 import React from 'react'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import Content from '../screens/Content';
+import Content from '../screens/ContentScreen';
 import Chat from "../screens/Chat";
 import MyPage from '../screens/MyPage';
 
