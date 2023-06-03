@@ -2,14 +2,12 @@ import React from 'react'
 import {View, Text} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
+import {GiftedChat} from 'react-native-gifted-chat';
 
 export default function Chat() {
+
     return (
-        <Container>
-            <Text>
-                This is Chat
-            </Text>
-        </Container>
+        <View><Text>This is onChangeText</Text></View>
     )
 }
 

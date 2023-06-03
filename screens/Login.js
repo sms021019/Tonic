@@ -19,15 +19,15 @@ export default function Login({navigation}) {
 
   
 
-  useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-              navigation.replace("HomeNavigator")
-          }
-      })
+  // useEffect(() => {
+  //     const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //         if (user) {
+  //             navigation.replace("HomeNavigator")
+  //         }
+  //     })
 
-      return unsubscribe
-  }, [])
+  //     return unsubscribe
+  // }, [])
 
   const handleLogin = () => {
       signInWithEmailAndPassword(auth, email, password)

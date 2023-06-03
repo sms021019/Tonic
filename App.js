@@ -5,13 +5,19 @@ import ContextWrapper from "./context/ContextWrapper";
 import MainNavigator from "./navigations/MainNavigator";
 import {ThemeProvider} from "styled-components";
 import theme from './utils/theme'
+import { AuthenticatedUserProvider } from './navigations/MainNavigator';
+
+
 
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <NavigationContainer>
-        <MainNavigator/>
-      </NavigationContainer>
-    </ThemeProvider>
+    <AuthenticatedUserProvider>
+      <ThemeProvider theme={theme}>
+        <NavigationContainer>
+          <MainNavigator/>
+        </NavigationContainer>
+      </ThemeProvider>
+    </AuthenticatedUserProvider>
+
   );
 }
