@@ -1,7 +1,7 @@
 const palette = {
-  tealGreen: "#128c7e",
-  tealGreenDark: "#075e54",
-  green: "#25d366",
+  tealBlue: "#0782F9",
+  tealBlueDark: "#0782F9",
+  blue: "#0782F9",
   lime: "#dcf8c6",
   skyblue: "#34b7f1",
   smokeWhite: "#ece5dd",
@@ -14,10 +14,10 @@ const palette = {
 const theme = {
   colors: {
     background: palette.smokeWhite,
-    foreground: palette.tealGreenDark,
-    primary: palette.tealGreen,
+    foreground: palette.tealBlueDark,
+    primary: palette.tealBlue,
     tertiary: palette.lime,
-    secondary: palette.green,
+    secondary: palette.blue,
     white: palette.white,
     text: palette.gray,
     secondaryText: palette.lightGray,
