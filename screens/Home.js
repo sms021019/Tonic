@@ -3,12 +3,26 @@ import React, { useEffect, useState } from 'react'
 import { signOut } from 'firebase/auth'
 import { useNavigation } from '@react-navigation/native';
 import { errorHandler } from '../errors';
-import { auth } from '../firebase';
-
+import { auth, db } from '../firebase';
+import { getDocs, collection } from "firebase/firestore";
+// import { getUsername } from '../firestore';
 
 const HomeScreen = () => {
     const navigation = useNavigation() 
-    const [username] = useState(auth.currentUser?.displayName);
+    const [username, setUsername] = useState(auth.currentUser?.displayName);
+    
+    
+
+    const getUsername = async () => {
+        console.log("finding username...");
+        const userCollection = collection(db, 'users'); 
+        const userSnap = await getDocs(userCollection);
+        userSnap.forEach(doc => {
+            if(doc.data().uid === auth.currentUser.uid){setUsername(doc.data().username);console.log("set username..")}
+        });
+    }
+    getUsername();
+    
 
     const handleSignOut = () => {
         signOut(auth)
@@ -18,10 +32,11 @@ const HomeScreen = () => {
         })
         .catch(error => alert(errorHandler(error)))
     }
+
   return (
     <View style={styles.container}>
       <Text>Email: {auth.currentUser?.email}</Text>
-      <Text>Username: {auth.currentUser?.displayName}</Text>
+      <Text>Username: {username}</Text>
       <TouchableOpacity
         onPress={handleSignOut}
         style={styles.button}

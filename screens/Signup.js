@@ -3,8 +3,9 @@ import { Button, ButtonGroup } from '@rneui/themed';
 import React, { useEffect, useState } from 'react'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import errorHandler from '../errors/index';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 
 
 const LoginScreen = () => {
@@ -15,11 +16,23 @@ const LoginScreen = () => {
     
     const handleSignUp = async () => {
             createUserWithEmailAndPassword(auth, email, passowrd)
-            .then(userCredentials => {
-                updateProfile(auth.currentUser, { displayName: username }).catch(
+            .then(async userCredentials => {
+                const user = userCredentials.user;
+                await updateProfile(user, { displayName: username }).catch(
                   (err) => console.log(err)
                 );
-                console.log('Registered in with: ', userCredentials.user.email);
+                await addDoc(collection(db, "users"), {
+                  username: username,
+                  uid: user.uid,
+                  email: user.email,
+                });
+                
+                const querySnapshot = await getDocs(collection(db, "users"));
+                querySnapshot.forEach((doc) => {
+                  if(doc.data().uid === user.uid){console.log(doc.data().username)}
+                });
+
+                console.log('Registered in with: ', user.email);
             })
             .catch(error => alert(errorHandler(error)))
     }
