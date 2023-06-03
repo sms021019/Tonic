@@ -3,7 +3,7 @@ import {View, Text} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
 
-export default function ContentDetail() {
+export default function ContentDetailScreen() {
     return (
         <Container>
             <Text>

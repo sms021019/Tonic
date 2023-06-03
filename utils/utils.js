@@ -1,4 +1,14 @@
 import { Dimensions } from "react-native";
+import React from "react";
+
+export const NavigatorType = {
+  MAIN: "mainNavigator",
+  LOGIN: "LoginNavigator",
+  HOME: "HomeNavigator",
+  CONTENT_DETAIL: "ContentDetailNavigator",
+  POSTING: "postingNavigator",
+  START: "startNavigator",
+}
 
 const palette = {
   tealGreen: "#128c7e",
@@ -37,3 +47,8 @@ export const IMAGE_SIZE = {
 };
 export const FIXED_FOOTER_HEIGHT = "120px";
 export const FOOTER_BUTTON = windowWidth * 0.4;
+
+export const POST_SIZE = {
+  width: windowWidth * 0.9,
+  height: 200,
+}
