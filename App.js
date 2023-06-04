@@ -6,13 +6,13 @@ import MainNavigator from "./navigations/MainNavigator";
 import {ThemeProvider} from "styled-components";
 import theme from './utils/theme'
 
-import { AuthenticatedUserProvider } from './navigations/MainNavigator';
+// import { AuthenticatedUserProvider } from './navigations/MainNavigator';
 import {NativeBaseProvider} from "native-base";
 import React from "react";
 
 export default function App() {
   return (
-    <AuthenticatedUserProvider>
+    <ContextWrapper>
       <NativeBaseProvider>
           <ThemeProvider theme={theme}>
             <NavigationContainer>
@@ -20,6 +20,6 @@ export default function App() {
             </NavigationContainer>
           </ThemeProvider>
       </NativeBaseProvider>
-    </AuthenticatedUserProvider>
+    </ContextWrapper>
   );
 }

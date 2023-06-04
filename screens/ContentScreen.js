@@ -1,5 +1,5 @@
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useContext} from 'react'
 import {signOut} from 'firebase/auth'
 import {useNavigation} from '@react-navigation/native';
 import {errorHandler} from '../errors';
@@ -13,14 +13,19 @@ import {Center, FlatList, Input, Icon, Divider, Button} from "native-base";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 // import { getUsername } from '../firestore';
 
+import GlobalContext from '../context/Context';
+
+
 
 export default function ContentScreen(props) {
+    const { user } = useContext(GlobalContext);
     const navigation = useNavigation()
-    const [currUser, setCurrUser] = useState(null);
+    // const [currUser, setCurrUser] = useState(null);
 
-    useEffect(() => {
-        setCurrUser(auth.currentUser.displayName);
-    }, [])
+    // useEffect(() => {
+    //     // setCurrUser(auth.currentUser.displayName);
+    //     setCurrUser(user);
+    // }, [])
 
 
     // const getUsername = async () => {
@@ -77,7 +82,7 @@ export default function ContentScreen(props) {
         </Center>
     )
 
-    const MainView = !currUser ? LoadingView : ContentView
+    const MainView = !user ? LoadingView : ContentView
 
 /* ------------------
        Handlers
