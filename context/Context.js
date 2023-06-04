@@ -3,9 +3,10 @@ import { theme } from '../utils/utils.js'
 
 const GlobalContext = React.createContext({
     theme,
+    useFirestoreQuery,
 });
 
-export function useFirestoreQuery(query) {
+export const useFirestoreQuery = (query) => {
     const [docs, setDocs] = useState([]);
 
     // Store current query in ref
@@ -43,5 +44,7 @@ export function useFirestoreQuery(query) {
 
     return docs;
 }
+
+
 
 export default GlobalContext;

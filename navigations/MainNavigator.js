@@ -9,22 +9,12 @@ import {NavigatorType} from '../utils/utils.js'
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
+import GlobalContext from '../context/Context';
 
 const Stack = createStackNavigator();
 
-export const AuthenticatedUserContext = createContext();
-
-export const AuthenticatedUserProvider = ( props ) => {
-  const [user, setUser] = useState(null);
-  return (
-    <AuthenticatedUserContext.Provider value={{user, setUser}}>
-      {props.children}
-    </AuthenticatedUserContext.Provider>
-  )
-}
-
 export default function MainNavigator() {
-    const { user, setUser } = useContext(AuthenticatedUserContext);
+    const { user, setUser } = useContext(GlobalContext);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth,

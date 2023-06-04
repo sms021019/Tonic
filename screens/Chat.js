@@ -27,7 +27,6 @@ import { signOut } from 'firebase/auth';
 
 export default function Chat({navigation}) {
     const [messages, setMessages] = useState([]);
-    // const navigation = useNavigation();
 
     const onSignOut = () => {
         signOut(auth).catch(error => console.log(error)); 
@@ -63,23 +62,6 @@ export default function Chat({navigation}) {
         return () => unsubscribe();
     }, [navigation]);
     
-    // useLayoutEffect(() => {
-    //     const collectionRef = collection(db, 'messages');
-    //     const q = query(collectionRef, orderBy("createdAt", "desc"), limit(100));
-
-    //     const unsubscribe = onSnapshot(q, snapshot => {
-            
-    //         setMessages(
-    //             snapshot.docs.map(doc => ({
-    //                 _id: doc.id,
-    //                 createdAt: doc.data().createdAt.toDate(),
-    //                 text: doc.data().text,
-    //                 user: doc.data().user
-    //             }))
-    //         )
-    //     });
-    //     return () => unsubscribe();
-    // }, []);  
 
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
@@ -107,7 +89,7 @@ export default function Chat({navigation}) {
             messagesContainerStyle={{
                 backgroundColor: '#fff'
             }}
-            inverted={false} 
+            
         />
             
     )

@@ -1,8 +1,12 @@
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { Button, ButtonGroup } from '@rneui/themed';
-import React, { useEffect, useState } from 'react'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react'
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
+import { flexCenter, TonicButton } from "../utils/styleComponents";
+import theme from '../utils/theme'
+import styled from "styled-components/native";
+import { windowWidth } from "../utils/utils";
+
+
 import { auth, db } from '../firebase';
 import errorHandler from '../errors/index';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
@@ -10,131 +14,98 @@ import { addDoc, collection, getDocs } from 'firebase/firestore';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
-    const [passowrd, setPassword] = useState('');
+    const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
 
-    
+
     const handleSignUp = async () => {
-            createUserWithEmailAndPassword(auth, email, passowrd)
+        createUserWithEmailAndPassword(auth, email, password)
             .then(async userCredentials => {
                 const user = userCredentials.user;
                 await updateProfile(user, { displayName: username }).catch(
-                  (err) => console.log(err)
+                    (err) => console.log(err)
                 );
                 await addDoc(collection(db, "users"), {
-                  username: username,
-                  uid: user.uid,
-                  email: user.email,
+                    username: username,
+                    uid: user.uid,
+                    email: user.email,
                 });
-                
+
                 const querySnapshot = await getDocs(collection(db, "users"));
                 querySnapshot.forEach((doc) => {
-                  if(doc.data().uid === user.uid){console.log(doc.data().username)}
+                    if (doc.data().uid === user.uid) { console.log(doc.data().username) }
                 });
-
                 console.log('Registered in with: ', user.email);
+
+                
             })
-            .catch(error => alert(errorHandler(error)))
+            .catch(error => alert(errorHandler(error)));
+        
     }
 
-    // const handleSignUp = async (username, email, password) => {
-    //   try {
-    //     await createUserWithEmailAndPassword(auth, email, password).catch((err) =>
-    //       console.log(err)
-    //     );
-    //     await updateProfile(auth.currentUser, { displayName: username }).catch(
-    //       (err) => console.log(err)
-    //     );
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // };
-
-  return (
-    <KeyboardAvoidingView
-        style={styles.container}
-        behavior='padding'
-    >
-      <View style = {styles.inputContainer}>
-        <TextInput
-            placeholder='Username'
-            value={username}
-            onChangeText={text => setUsername(text)}
-            style = {styles.input}
-        />
-        <TextInput
-            placeholder='Email'
-            value={email}
-            onChangeText={text => setEmail(text)}
-            style = {styles.input}
-        />
-        <TextInput
-            placeholder='Password'
-            value={passowrd}
-            onChangeText={text => setPassword(text)}
-            style = {styles.input}
-            secureTextEntry
-        />
-      </View>
-
-      <View style = {styles.buttonContainer}>
-        <TouchableOpacity
-            onPress={handleSignUp}
-            style={[styles.button, styles.buttonOutline]}
-        >   
-            <Text style={styles.buttonOutlineText}>Register</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
-  )
+    return (
+        <Container>
+            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername} />
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} />
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+            <StartButton onPress={handleSignUp}>
+                <StartText>SIGN UP</StartText>
+            </StartButton>
+        </Container>
+    )
 }
 
-export default LoginScreen
+export default LoginScreen;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    inputContainer: {
-        width: '80%'
-    },
-    input: {
-        backgroundColor: 'white',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 10,
-        marginTop: 5,
-    },
-    buttonContainer: {
-        width: '60%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 40,
 
-    },
-    button: {
-        backgroundColor: '#0782F9',
-        width: '100%',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center'
-    },
-    buttonOutline: {
-        backgroundColor: 'white',
-        marginTop: 5,
-        borderColor: '#0782F9',
-        borderWidth: 2,
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: 700,
-        fontSize: 16,
-    },
-    buttonOutlineText: {
-        color: '#0782F9',
-        fontWeight: 700,
-        fontSize: 16,
-    },
-})
+
+const UsernameInputField = styled.TextInput`
+  border-bottom-color: ${theme.colors.primary};
+  border-bottom-width: 2px;
+  width: ${windowWidth * 0.9}px;
+  height: 50px;
+  margin-top: 20px;
+`
+
+const EmailInputField = styled.TextInput`
+  border-bottom-color: ${theme.colors.primary};
+  border-bottom-width: 2px;
+  width: ${windowWidth * 0.9}px;
+  height: 50px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+`
+
+const PasswordInputField = styled.TextInput`
+  border-bottom-color: ${theme.colors.primary};
+  border-bottom-width: 2px;
+  width: ${windowWidth * 0.9}px;
+  height: 50px;
+  margin-bottom: 20px;
+`
+const StartButton = styled.Pressable`
+  ${TonicButton};
+  width: ${windowWidth * 0.9}px;
+  height: 56px;
+  border-radius: 8px;
+`;
+
+const StartText = styled.Text`
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+`;
+
+const OptionText = styled.Text`
+  color: black;
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: ${theme.colors.foreground};
+`
+
+const Container = styled.View`
+  ${flexCenter};
+  background-color: #fff;
+  align-items: center;
+  justify-content: flex-start;
+`;

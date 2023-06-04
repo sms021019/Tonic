@@ -111,11 +111,11 @@ const Container = styled.View`
 
 const styles = StyleSheet.create({
   buttonContainer: {
+    flex: 0,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 10,
-    
-  
+    marginBottom: 20,
+    alignSelf: 'flex-end',
+    marginRight: 20,
   },
   buttonBorder: {
     borderRightWidth: 1,
