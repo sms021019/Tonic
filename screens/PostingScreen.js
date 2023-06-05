@@ -77,10 +77,18 @@ export default function PostingScreen({navigation, label}) {
 
     async function asyncHandlePostClick() {
         let storageRef = ref(storage, `/postImages/${imageUrls[0].fileName}`);
-        let file = imageUrls[0].bytes;
-        uploadBytes(storageRef, file).then((snapshot) => {
-            console.log('Uploaded a blob or file!');
-        });
+        let file = imageUrls[0].uri;
+
+        let xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+            let blob = xhr.response;
+            uploadBytes(storageRef, blob).then((snapshot) => {
+                console.log('Uploaded a blob or file!');
+            });
+        };
+        xhr.open('GET', file);
+        xhr.responseType = 'blob';
+        xhr.send();
 
 
         // await reference.put(imageUrls[0].uri);
