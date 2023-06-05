@@ -4,7 +4,7 @@ import React, {
     useLayoutEffect,
     useCallback
 } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native'
 import { GiftedChat } from 'react-native-gifted-chat'
 import {
     collection,
@@ -25,7 +25,7 @@ import { signOut } from 'firebase/auth';
 
 
 
-export default function Chat({navigation}) {
+export default function Chat({navigation: {navigate}, route}) {
     const [messages, setMessages] = useState([]);
 
     const onSignOut = () => {
@@ -75,22 +75,24 @@ export default function Chat({navigation}) {
         });
     }, []);
 
+    
    
-
     return (
-        <GiftedChat
-            messages={messages}
-            onSend={messages => onSend(messages)}
-            user={{
-                _id: auth?.currentUser?.email,
-                name: auth?.currentUser?.displayName,
-                avatar: 'https://i.pravatar.cc/300'
-            }}
-            messagesContainerStyle={{
-                backgroundColor: '#fff'
-            }}
-            
-        />
+        <SafeAreaView style={{flex: 1,}}>
+            <GiftedChat
+                messages={messages}
+                onSend={messages => onSend(messages)}
+                user={{
+                    _id: auth?.currentUser?.email,
+                    name: auth?.currentUser?.displayName,
+                    avatar: 'https://i.pravatar.cc/300'
+                }}
+                messagesContainerStyle={{
+                    backgroundColor: '#fff'
+                }}
+                
+            />
+        </SafeAreaView>
             
     )
 }

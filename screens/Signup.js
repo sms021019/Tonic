@@ -31,8 +31,8 @@ const LoginScreen = () => {
                     email: user.email,
                 });
 
-                const querySnapshot = await getDocs(collection(db, "users"));
-                querySnapshot.forEach((doc) => {
+                const userCollection = await getDocs(collection(db, "users"));
+                userCollection.forEach((doc) => {
                     if (doc.data().uid === user.uid) { console.log(doc.data().username) }
                 });
                 console.log('Registered in with: ', user.email);

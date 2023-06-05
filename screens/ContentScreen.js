@@ -20,26 +20,7 @@ import GlobalContext from '../context/Context';
 export default function ContentScreen(props) {
     const { user } = useContext(GlobalContext);
     const navigation = useNavigation()
-    // const [currUser, setCurrUser] = useState(null);
-
-    // useEffect(() => {
-    //     // setCurrUser(auth.currentUser.displayName);
-    //     setCurrUser(user);
-    // }, [])
-
-
-    // const getUsername = async () => {
-    //     console.log("finding username...");
-    //     const userCollection = collection(db, 'users');
-    //     const userSnap = await getDocs(userCollection);
-    //     userSnap.forEach(doc => {
-    //         if(doc.data().uid === auth.currentUser.uid) {
-    //             setUsername(doc.data().username);
-    //             console.log("set username..")
-    //         }
-    //     });
-    // }
-    // getUsername();
+    
 
     const LoadingView = <View><Text>Loading...</Text></View>
 

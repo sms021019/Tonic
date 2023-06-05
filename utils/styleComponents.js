@@ -1,6 +1,12 @@
 import { css } from "styled-components/native";
 import { theme } from "./utils";
 
+export const Center = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 export const flexCenter = css`
   display: flex;
   flex: 1;
