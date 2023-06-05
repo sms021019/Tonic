@@ -25,7 +25,7 @@ export default function Post(props) {
                                 </Center>
                                 <Flex flex="1" marginLeft="2">
                                     <Text color="coolGray.800" fontWeight="medium" fontSize="lg">
-                                        SWISS WINGER 텀블러
+                                        SWISS WINGER 텀블러 SWISS
                                     </Text>
                                     <Text flex="1" mt="2" fontSize="xl" fontWeight="bold"  color="coolGray.700">
                                         $15
