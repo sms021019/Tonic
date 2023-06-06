@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import theme from '../utils/theme'
 import {DBCollectionType, NavigatorType, windowWidth} from "../utils/utils"
 import {addDoc, collection, getDocs} from 'firebase/firestore';
-import {db, storage, ref, uploadBytes, getDownloadURL} from "../firebase";
+import {db, storage, ref, uploadBytes, getDownloadURL, uploadBytesResumable} from "../firebase";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -78,26 +78,45 @@ export default function PostingScreen({navigation, label}) {
 
     async function asyncHandlePostClick() {
         let downloadUrls = [];
+
         for (let i = 0; i < imageUrls.length; i++) {
             console.log("forloop:", i)
+            const blob = await CreateBlobByImageUri(imageUrls[i].uri);
             let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
-            let file = imageUrls[i].uri;
-            let xhr = new XMLHttpRequest();
-            console.log("debug 1")
-            xhr.onload = function () {
-                console.log("debug 6")
-                let blob = xhr.response;
-                console.log("debug 7")
-                uploadBytes(storageRef, blob).then((snapshot) => {
-                    console.log("debug 8")
-                    console.log('Uploaded a blob or file!');
-                });
-            };
 
-            xhr.open('GET', file);
-            xhr.responseType = 'blob';
-            await xhr.send();
+            console.log("a");
+            uploadBytesResumable(storageRef, blob).then((snapshot) => { // causes crash
+                console.log('Uploaded a blob or file!');
+                getDownloadURL(storageRef).then((url) => {
+                    downloadUrls.push(url);
+                    if (downloadUrls.length === imageUrls.length) {
+                        addDoc(collection(db, DBCollectionType.POSTS), {
+                            title: title,
+                            price: Number(price),
+                            info: info,
+                            imageDownloadUrls: downloadUrls,
+                        }).then(() => {
+                            navigation.navigate(NavigatorType.HOME);
+                        });
+                    }
+                });
+            });
         }
+    }
+
+    async function CreateBlobByImageUri(imageUri) {
+        return await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function() {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function() {
+                reject(new TypeError('Network request failed'));
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', imageUri, true);
+            xhr.send(null);
+        });
     }
 
     async function asyncHandleUploadImageButtonClick() {
@@ -158,33 +177,6 @@ export default function PostingScreen({navigation, label}) {
             </Flex>
         </Container>
     )
-
-    async function asyncHandlePostClick2() {
-        let storageRef = ref(storage, `/postImages/${imageUrls[0].fileName}`);
-        let file = imageUrls[0].uri;
-        let xhr = new XMLHttpRequest();
-        xhr.onload = function () {
-            let blob = xhr.response;
-            uploadBytes(storageRef, blob).then((snapshot) => {
-                console.log('Uploaded a blob or file!');
-            });
-            getDownloadURL(storageRef).then((url) => {
-                console.log(url);
-            });
-        };
-        xhr.open('GET', file);
-        xhr.responseType = 'blob';
-        xhr.send();
-
-
-        await addDoc(collection(db, DBCollectionType.POSTS), {
-            title: title,
-            price: Number(price),
-            info: info,
-            imageUrl: downloadUrl,
-        });
-        navigation.navigate(NavigatorType.HOME);
-    }
 }
 const styles = StyleSheet.create({
     button: {
@@ -253,67 +245,3 @@ const InfoInputField = styled.TextInput`
   margin-top: 20px;
   font-size: 18px;
 `
-//
-//
-// async function asyncHandlePostClick() {
-//     let downloadUrls = [];
-//     for (let i = 0; i < imageUrls.length; i++) {
-//         console.log("forloop:", i)
-//         let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
-//         let file = imageUrls[i].uri;
-//         let xhr = new XMLHttpRequest();
-//         console.log("debug 1")
-//         xhr.onload = function () {
-//             console.log("debug 6")
-//             let blob = xhr.response;
-//             console.log("debug 7")
-//             uploadBytes(storageRef, blob).then((snapshot) => {
-//                 console.log("debug 8")
-//                 console.log('Uploaded a blob or file!');
-//                 // getDownloadURL(storageRef).then((url) => {
-//                 //     console.log("debug 9")
-//                 //     console.log(url);
-//                 //     downloadUrls.push(url);
-//                 //     console.log(downloadUrls);
-//                 //     if (downloadUrls.length === imageUrls.length && false) {
-//                 //         console.log(downloadUrls);
-//                 //         addDoc(collection(db, DBCollectionType.POSTS), {
-//                 //             title: title,
-//                 //             price: Number(price),
-//                 //             info: info,
-//                 //         }).then(() => {
-//                 //             navigation.navigate(NavigatorType.HOME);
-//                 //         });
-//                 //     }
-//                 // });
-//             });
-//         };
-//
-//         console.log("debug 2")
-//         xhr.open('GET', file);
-//         console.log("debug 3")
-//         xhr.responseType = 'blob';
-//         console.log("debug 4")
-//         await xhr.send();
-//         console.log("debug 5")
-//     }
-// }
-
-
-// const storageRef = ref(storage, '/postImages');
-// const promises = [];
-//
-// selectedImages.forEach((image) => {
-//     const fileName = image.filename || `filename${i}.jpg`;
-//     const storageChildRef = child(storageRef, fileName);
-//     const task = uploadString(storageChildRef, image.uri, 'data_url');
-//     promises.push(task);
-// });
-//
-// Promise.all(promises)
-//     .then(() => {
-//         console.log('All images uploaded successfully!');
-//     })
-//     .catch((error) => {
-//         console.error('Error:', error);
-//     });
