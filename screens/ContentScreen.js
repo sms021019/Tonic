@@ -68,14 +68,14 @@ export default function ContentScreen(props) {
 /* ------------------
        Handlers
  -------------------*/
-    function handleSignOut() {
-        signOut(auth)
-            .then(() => {
-                navigation.replace("LoginNavigator")
-                console.log(`${username} logged out`)
-            })
-            .catch(error => alert(errorHandler(error)))
-    }
+    // function handleSignOut() {
+    //     signOut(auth)
+    //         .then(() => {
+    //             navigation.replace("LoginNavigator")
+    //             console.log(`${username} logged out`)
+    //         })
+    //         .catch(error => alert(errorHandler(error)))
+    // }
     function handleContentClick() {
         props.navigation.navigate(NavigatorType.CONTENT_DETAIL)
     }
@@ -122,8 +122,8 @@ const Container = styled.View`
 
 const CreateButtonArea = styled.View`
   position: absolute;
-  top: ${windowHeight - 150};
-  left: ${windowWidth - 80};
+  top: ${windowHeight - 150}px;
+  left: ${windowWidth - 80}px;
 `
 const CreateButton = styled.View`
   ${TonicButton};

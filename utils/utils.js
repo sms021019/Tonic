@@ -10,6 +10,12 @@ export const NavigatorType = {
   START: "startNavigator",
 }
 
+export const DBCollectionType = {
+  USERS: "users",
+  POSTS: "posts",
+  MESSAGES: "messages",
+}
+
 const palette = {
   tealGreen: "#128c7e",
   tealGreenDark: "#075e54",

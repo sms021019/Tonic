@@ -1,34 +1,125 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useLayoutEffect, useState} from 'react'
 import {View, Text, TouchableOpacity, Image, StyleSheet, Button} from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {MaterialCommunityIcons} from '@expo/vector-icons'
 import {Box, Center, Divider, Flex, Input, Pressable} from "native-base";
 import * as ImagePicker from 'expo-image-picker';
 import theme from '../utils/theme'
-import {NavigatorType, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, windowWidth} from "../utils/utils"
+import {addDoc, collection, getDocs} from 'firebase/firestore';
+import {db, storage, ref, uploadBytes, getDownloadURL, uploadBytesResumable} from "../firebase";
 
-export default function PostingScreen({navigation}) {
+const MAX_IMAGE_UPLOAD_COUNT = 4;
 
+export default function PostingScreen({navigation, label}) {
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
     const [info, setInfo] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
+    const [imageUrls, setImageUrls] = useState([]);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+    const [posting, setPosting] = useState(false);
 
-    useEffect(() => {
+    const PostButton = <Button onPress={() => setPosting(true)} title="Post"/>;
+    useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Button onPress={() => handlePostClick()} title="Post" />
+                PostButton
             ),
         });
     }, [navigation]);
 
-    function handlePostClick() {
-        navigation.navigate(NavigatorType.HOME);
+    useEffect(() => {
+        // Check if saving to avoid calling submit on screen unmounting
+        if (posting) {
+            asyncHandlePostClick()
+        }
+    }, [posting]);
+
+    /* ------------------
+          Components
+     -------------------*/
+
+    const UploadedImages = getUploadedImagesComp();
+
+    function getUploadedImagesComp() {
+        let component = [];
+
+        for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
+            if (imageUrls[i]) {
+                component.push(
+                    <Box key={i}>
+                        <UploadImageBox>
+                            <UploadImage source={{uri: imageUrls[i].uri}}/>
+                        </UploadImageBox>
+                        <TouchableOpacity style={{position: 'absolute', left: 40, top: -5}}
+                                          onPress={() => handleDeleteImageButtonClick(i)}>
+                            <Icon name="close-circle" size={20} color="#242424"/>
+                        </TouchableOpacity>
+                    </Box>
+                )
+            } else {
+                component.push(<UploadImageBox key={i}><GrayText>{i + 1}</GrayText></UploadImageBox>);
+            }
+        }
+        return component
     }
 
-    async function uploadImage() {
+
+    /* ------------------
+           Handlers
+     -------------------*/
+    function handleDeleteImageButtonClick(index) {
+        let newImageUrls = imageUrls;
+        newImageUrls.splice(index, 1);
+        setImageUrls(() => ([...newImageUrls]));
+    }
+
+    async function asyncHandlePostClick() {
+        let downloadUrls = [];
+
+        for (let i = 0; i < imageUrls.length; i++) {
+            const blob = await asyncCreateBlobByImageUri(imageUrls[i].uri);
+            let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
+
+            uploadBytesResumable(storageRef, blob).then((snapshot) => { // causes crash
+                console.log();
+                getDownloadURL(storageRef).then((url) => {
+                    downloadUrls.push(url);
+                    if (downloadUrls.length === imageUrls.length) {
+                        addDoc(collection(db, DBCollectionType.POSTS), {
+                            title: title,
+                            price: Number(price),
+                            info: info,
+                            imageDownloadUrls: downloadUrls,
+                        }).then(() => {
+                            navigation.navigate(NavigatorType.HOME);
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+    async function asyncCreateBlobByImageUri(imageUri) {
+        return await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function() {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function() {
+                reject(new TypeError('Network request failed'));
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', imageUri, true);
+            xhr.send(null);
+        });
+    }
+
+    async function asyncHandleUploadImageButtonClick() {
+        if (imageUrls.length >= MAX_IMAGE_UPLOAD_COUNT) return;
+
         if (!status?.granted) {
             const permission = await requestPermission();
             if (!permission.granted) {
@@ -42,39 +133,42 @@ export default function PostingScreen({navigation}) {
             aspect: [1, 1]
         });
 
-        setImageUrl(result.assets[0].uri);
+        if (result?.assets[0]) {
+            setImageUrls((prev) => ([...prev, result.assets[0]]));
+        }
     }
 
+    function handleSetPrice(value) {
+        if (typeof value == 'string')
+            value = value.replace(/,/g, '');
 
-    function handleProfilePicture()
-    {
-
+        value = Number(value);
+        setPrice(value);
     }
 
     return (
         <Container>
-            <Flex direction="column" style={{height: "100%", width:"100%"}}>
-                <Flex direction="row" w="100%" h="100px" style={{justifyContent:'center', alignItems:'center'}}>
-                    <Box style={{marginLeft: windowWidth*0.05}}>
+            <Flex direction="column" style={{height: "100%", width: "100%"}}>
+                <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
+                    <Box style={{margin: windowWidth * 0.05}}>
                         <TouchableOpacity
-                            onPress={uploadImage}
+                            onPress={asyncHandleUploadImageButtonClick}
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
                             <GrayText>Add</GrayText>
                         </TouchableOpacity>
                     </Box>
-                    <Flex flex="2" direction="row">
-                        <UploadArea><GrayText>1</GrayText></UploadArea>
-                        <UploadArea><GrayText>2</GrayText></UploadArea>
-                        <UploadArea><GrayText>3</GrayText></UploadArea>
-                        <UploadArea><GrayText>4</GrayText></UploadArea>
-                    </Flex>
+                    <Divider orientation="vertical" height="80%"/>
+                    <ContentGroupBox>
+                        {UploadedImages}
+                    </ContentGroupBox>
                 </Flex>
                 <Divider/>
-                <TitleInputField placeholder="제목을 입력하세요" value={title} onChangeText={setTitle} />
+                <TitleInputField placeholder="제목을 입력하세요" value={title} onChangeText={setTitle}/>
                 <Divider/>
-                <PriceInputField placeholder="$" value={price} onChangeText={setPrice} keyboardType="numeric"/>
+                <PriceInputField placeholder="$" value={price ? Number(price).toLocaleString() : ''}
+                                 onChangeText={(value) => handleSetPrice(value)} keyboardType="numeric"/>
                 <Divider/>
                 <InfoInputField flex="1" multiline={true} value={info} onChangeText={setInfo}>
                 </InfoInputField>
@@ -99,19 +193,33 @@ const Container = styled.View`
   background-color: #fff;
 `;
 
-const UploadArea = styled.View`
-    width: ${windowWidth * 0.14};
-    height: ${windowWidth * 0.14};
-    border-width: 1px;
-    border-color: ${theme.colors.iconGray};
-    border-radius: 10px;
-    margin-left: 10px;
-    align-items: center;
-    justify-content: center;
+const ContentGroupBox = styled.View`
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-content: space-evenly;
+`
+
+const UploadImageBox = styled.View`
+  overflow: hidden;
+  width: ${windowWidth * 0.14}px;
+  height: ${windowWidth * 0.14}px;
+  border-width: 1px;
+  border-color: ${theme.colors.iconGray};
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
 `;
 
+const UploadImage = styled.Image`
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+`
+
 const GrayText = styled.Text`
-    color: ${theme.colors.text};
+  color: ${theme.colors.text};
 `
 
 const TitleInputField = styled.TextInput`
