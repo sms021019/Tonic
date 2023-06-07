@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 export default function ContentDetailNavigator() {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name="ContentDetail" component={ContentDetailScreen} />
+            <Stack.Screen name="ContentDetail" component={ContentDetailScreen}/>
         </Stack.Navigator>
     )
 }

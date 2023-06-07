@@ -37,10 +37,9 @@ export default function PostingScreen({navigation, label}) {
         }
     }, [posting]);
 
-    /* ------------------
-          Components
-     -------------------*/
-
+/* ------------------
+      Components
+ -------------------*/
     const UploadedImages = getUploadedImagesComp();
 
     function getUploadedImagesComp() {
@@ -67,9 +66,9 @@ export default function PostingScreen({navigation, label}) {
     }
 
 
-    /* ------------------
-           Handlers
-     -------------------*/
+/* ------------------
+       Handlers
+ -------------------*/
     function handleDeleteImageButtonClick(index) {
         let newImageUrls = imageUrls;
         newImageUrls.splice(index, 1);
@@ -105,10 +104,10 @@ export default function PostingScreen({navigation, label}) {
     async function asyncCreateBlobByImageUri(imageUri) {
         return await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.onload = function() {
+            xhr.onload = function () {
                 resolve(xhr.response);
             };
-            xhr.onerror = function() {
+            xhr.onerror = function () {
                 reject(new TypeError('Network request failed'));
             };
             xhr.responseType = 'blob';

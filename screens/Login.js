@@ -5,65 +5,62 @@ import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
 
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged} from 'firebase/auth';
+import {auth} from '../firebase';
 import errorHandler from '../errors/index';
 
 
-
-
-
 export default function Login({navigation}) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-  
 
-  // useEffect(() => {
-  //     const unsubscribe = onAuthStateChanged(auth, (user) => {
-  //         if (user) {
-  //             navigation.replace("HomeNavigator")
-  //         }
-  //     })
+    // useEffect(() => {
+    //     const unsubscribe = onAuthStateChanged(auth, (user) => {
+    //         if (user) {
+    //             navigation.replace("HomeNavigator")
+    //         }
+    //     })
 
-  //     return unsubscribe
-  // }, [])
+    //     return unsubscribe
+    // }, [])
 
-  const handleLogin = () => {
-      signInWithEmailAndPassword(auth, email, password)
-      .then(userCredentials => {
-          const user = userCredentials.user;
-          console.log('Logged in with: ', user.email);
-      })
-      .catch(error => alert(errorHandler(error)))
-  }
+    const handleLogin = () => {
+        signInWithEmailAndPassword(auth, email, password)
+            .then(userCredentials => {
+                const user = userCredentials.user;
+                console.log('Logged in with: ', user.email);
+            })
+            .catch(error => alert(errorHandler(error)))
+    }
 
-  return (
-    <Container>
-      <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-      <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
-      <View  style = {styles.buttonContainer}>
-        <TouchableOpacity style = {[styles.buttonBorder, styles.buttonOutline,]}>
-            <Text>
-              이메일 찾기{'  '}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style = {[styles.buttonOutline, styles.buttonBorder]} onPress={() => navigation.push("PasswordReset")}>
-            <Text>
-              비밀번호 찾기 {'\t'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style = {styles.buttonOutline} onPress={() => navigation.push("Signup")}>
-            <Text>
-              회원가입
-            </Text>
-          </TouchableOpacity>
-      </View>
-      <StartButton onPress={handleLogin}>
-        <StartText>로그인</StartText>
-      </StartButton>
-    </Container>
-  )
+    return (
+        <Container>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={[styles.buttonBorder, styles.buttonOutline,]}>
+                    <Text>
+                        이메일 찾기{'  '}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.buttonOutline, styles.buttonBorder]}
+                                  onPress={() => navigation.push("PasswordReset")}>
+                    <Text>
+                        비밀번호 찾기 {'\t'}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push("Signup")}>
+                    <Text>
+                        회원가입
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            <StartButton onPress={handleLogin}>
+                <StartText>로그인</StartText>
+            </StartButton>
+        </Container>
+    )
 }
 
 const EmailInputField = styled.TextInput`
@@ -110,17 +107,17 @@ const Container = styled.View`
 `;
 
 const styles = StyleSheet.create({
-  buttonContainer: {
-    flex: 0,
-    flexDirection: 'row',
-    marginBottom: 20,
-    alignSelf: 'flex-end',
-    marginRight: 20,
-  },
-  buttonBorder: {
-    borderRightWidth: 1,
-  },
-  buttonOutline:{
-    marginHorizontal: 4
-  },
+    buttonContainer: {
+        flex: 0,
+        flexDirection: 'row',
+        marginBottom: 20,
+        alignSelf: 'flex-end',
+        marginRight: 20,
+    },
+    buttonBorder: {
+        borderRightWidth: 1,
+    },
+    buttonOutline: {
+        marginHorizontal: 4
+    },
 })

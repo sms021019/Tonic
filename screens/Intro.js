@@ -1,52 +1,52 @@
 import React from "react";
 import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
-import { flexCenter, TonicButton } from "../utils/styleComponents";
+import {flexCenter, TonicButton} from "../utils/styleComponents";
 import styled from "styled-components/native";
-import { windowWidth } from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 
 export default function Intro({navigation}) {
-  const goLogin = () => {
-    navigation.push("Login");
-  };
+    const goLogin = () => {
+        navigation.push("Login");
+    };
 
-  return (
-    <Container>
-      <Image
-        source={require("../assets/TonicStartImage.png")}
-      />
-      <Text style={styles.head}>토닉 토닉</Text>
-      <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
-      <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
-      <StartButton onPress={goLogin}>
-        <StartText>시작하기</StartText>
-      </StartButton>
-      <TouchableOpacity>
-        <Text style={styles.tip}>이미 계정이 있나요? 로그인</Text>
-      </TouchableOpacity>
-    </Container>
-  );
+    return (
+        <Container>
+            <Image
+                source={require("../assets/TonicStartImage.png")}
+            />
+            <Text style={styles.head}>토닉 토닉</Text>
+            <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
+            <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
+            <StartButton onPress={goLogin}>
+                <StartText>시작하기</StartText>
+            </StartButton>
+            <TouchableOpacity>
+                <Text style={styles.tip}>이미 계정이 있나요? 로그인</Text>
+            </TouchableOpacity>
+        </Container>
+    );
 }
 
 const styles = StyleSheet.create({
-  head: {
-    fontSize: 24,
-    fontWeight: "700",
-  },
-  content: {
-    fontSize: 18,
-    paddingTop: 4,
-    paddingBottom: 4,
-  },
-  contentBottom: {
-    fontSize: 18,
-    marginBottom: 32,
-  },
-  tip: {
-    fontSize: 12,
-    marginTop: 10,
-    color: theme.colors.foreground,
-  }
+    head: {
+        fontSize: 24,
+        fontWeight: "700",
+    },
+    content: {
+        fontSize: 18,
+        paddingTop: 4,
+        paddingBottom: 4,
+    },
+    contentBottom: {
+        fontSize: 18,
+        marginBottom: 32,
+    },
+    tip: {
+        fontSize: 12,
+        marginTop: 10,
+        color: theme.colors.foreground,
+    }
 });
 
 const StartButton = styled.Pressable`

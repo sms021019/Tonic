@@ -1,15 +1,20 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import React, { useState, useEffect } from 'react'
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import { flexCenter, TonicButton } from "../utils/styleComponents";
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    updateProfile
+} from 'firebase/auth';
+import React, {useState, useEffect} from 'react'
+import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
+import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import { windowWidth } from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 
 
-import { auth, db } from '../firebase';
+import {auth, db} from '../firebase';
 import errorHandler from '../errors/index';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import {addDoc, collection, getDocs} from 'firebase/firestore';
 
 
 const LoginScreen = () => {
@@ -22,7 +27,7 @@ const LoginScreen = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(async userCredentials => {
                 const user = userCredentials.user;
-                await updateProfile(user, { displayName: username }).catch(
+                await updateProfile(user, {displayName: username}).catch(
                     (err) => console.log(err)
                 );
                 await addDoc(collection(db, "users"), {
@@ -33,21 +38,23 @@ const LoginScreen = () => {
 
                 const userCollection = await getDocs(collection(db, "users"));
                 userCollection.forEach((doc) => {
-                    if (doc.data().uid === user.uid) { console.log(doc.data().username) }
+                    if (doc.data().uid === user.uid) {
+                        console.log(doc.data().username)
+                    }
                 });
                 console.log('Registered in with: ', user.email);
 
-                
+
             })
             .catch(error => alert(errorHandler(error)));
-        
+
     }
 
     return (
         <Container>
-            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername} />
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} />
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername}/>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
             <StartButton onPress={handleSignUp}>
                 <StartText>SIGN UP</StartText>
             </StartButton>
@@ -56,7 +63,6 @@ const LoginScreen = () => {
 }
 
 export default LoginScreen;
-
 
 
 const UsernameInputField = styled.TextInput`

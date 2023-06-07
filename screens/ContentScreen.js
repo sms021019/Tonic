@@ -10,17 +10,16 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 import Post from "../components/Post";
 import {Center, FlatList, Input, Icon, Divider, Button} from "native-base";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 // import { getUsername } from '../firestore';
 
 import GlobalContext from '../context/Context';
 
 
-
 export default function ContentScreen(props) {
-    const { user } = useContext(GlobalContext);
+    const {user} = useContext(GlobalContext);
     const navigation = useNavigation()
-    
+
 
     const LoadingView = <View><Text>Loading...</Text></View>
 
@@ -42,10 +41,12 @@ export default function ContentScreen(props) {
         {id: 15},
     ]
 
-/* ------------------
-      Components
- -------------------*/
-    const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2" InputLeftElement={<Icon ml="2" size="5" color="gray.400" as={<Ionicons name="ios-search"/>}/>}/>)
+    /* ------------------
+          Components
+     -------------------*/
+    const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2"
+                              InputLeftElement={<Icon ml="2" size="5" color="gray.400"
+                                                      as={<Ionicons name="ios-search"/>}/>}/>)
 
     const ContentView = (
         <Center flex={1} px="0">
@@ -65,9 +66,9 @@ export default function ContentScreen(props) {
 
     const MainView = !user ? LoadingView : ContentView
 
-/* ------------------
-       Handlers
- -------------------*/
+    /* ------------------
+           Handlers
+     -------------------*/
     // function handleSignOut() {
     //     signOut(auth)
     //         .then(() => {
@@ -84,16 +85,16 @@ export default function ContentScreen(props) {
         props.navigation.navigate(NavigatorType.POSTING);
     }
 
-/* ------------------
-      Render
--------------------*/
+    /* ------------------
+          Render
+    -------------------*/
     return (
         <Container>
             <SafeAreaView>
                 <Center>
                     {SearchBar}
                 </Center>
-                <Divider style={{marginTop: 20}}/>
+              ß  <Divider style={{marginTop: 20}}/>
             </SafeAreaView>
             <ContentArea>
                 {MainView}
