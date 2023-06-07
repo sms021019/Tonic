@@ -80,13 +80,11 @@ export default function PostingScreen({navigation, label}) {
         let downloadUrls = [];
 
         for (let i = 0; i < imageUrls.length; i++) {
-            console.log("forloop:", i)
-            const blob = await CreateBlobByImageUri(imageUrls[i].uri);
+            const blob = await asyncCreateBlobByImageUri(imageUrls[i].uri);
             let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
 
-            console.log("a");
             uploadBytesResumable(storageRef, blob).then((snapshot) => { // causes crash
-                console.log('Uploaded a blob or file!');
+                console.log();
                 getDownloadURL(storageRef).then((url) => {
                     downloadUrls.push(url);
                     if (downloadUrls.length === imageUrls.length) {
@@ -104,7 +102,7 @@ export default function PostingScreen({navigation, label}) {
         }
     }
 
-    async function CreateBlobByImageUri(imageUri) {
+    async function asyncCreateBlobByImageUri(imageUri) {
         return await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onload = function() {
