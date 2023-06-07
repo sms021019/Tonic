@@ -41,9 +41,9 @@ export default function ContentScreen(props) {
         {id: 15},
     ]
 
-    /* ------------------
-          Components
-     -------------------*/
+/* ------------------
+      Components
+ -------------------*/
     const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2"
                               InputLeftElement={<Icon ml="2" size="5" color="gray.400"
                                                       as={<Ionicons name="ios-search"/>}/>}/>)
@@ -66,9 +66,9 @@ export default function ContentScreen(props) {
 
     const MainView = !user ? LoadingView : ContentView
 
-    /* ------------------
-           Handlers
-     -------------------*/
+/* ------------------
+       Handlers
+ -------------------*/
     // function handleSignOut() {
     //     signOut(auth)
     //         .then(() => {
@@ -85,16 +85,16 @@ export default function ContentScreen(props) {
         props.navigation.navigate(NavigatorType.POSTING);
     }
 
-    /* ------------------
-          Render
-    -------------------*/
+/* ------------------
+      Render
+-------------------*/
     return (
         <Container>
             <SafeAreaView>
                 <Center>
                     {SearchBar}
                 </Center>
-              ß  <Divider style={{marginTop: 20}}/>
+                <Divider style={{marginTop: 20}}/>
             </SafeAreaView>
             <ContentArea>
                 {MainView}

@@ -50,21 +50,21 @@ const styles = StyleSheet.create({
 });
 
 const StartButton = styled.Pressable`
-  ${TonicButton};
-  width: ${windowWidth * 0.9}px;
-  height: 56px;
-  border-radius: 8px;
+    ${TonicButton};
+    width: ${windowWidth * 0.9}px;
+    height: 56px;
+    border-radius: 8px;
 `;
 
 const Container = styled.View`
-  ${flexCenter};
-  background-color: #fff;
-  align-items: center;
-  justify-content: center;
+    ${flexCenter};
+    background-color: #fff;
+    align-items: center;
+    justify-content: center;
 `;
 
 const StartText = styled.Text`
-  color: white;
-  font-size: 18px;
-  font-weight: 600;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
 `;

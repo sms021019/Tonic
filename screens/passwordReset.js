@@ -59,31 +59,31 @@ const PasswordResetText = styled.Text`
 `;
 
 const EmailInputField = styled.TextInput`
-  border-bottom-color: ${theme.colors.primary};
-  border-bottom-width: 2px;
-  width: ${windowWidth * 0.9}px;
-  height: 50px;
-  margin-bottom: 20px;
-  margin-top: 20px;
+    border-bottom-color: ${theme.colors.primary};
+    border-bottom-width: 2px;
+    width: ${windowWidth * 0.9}px;
+    height: 50px;
+    margin-bottom: 20px;
+    margin-top: 20px;
 `;
 
 const StartButton = styled.Pressable`
-  ${TonicButton};
-  width: ${windowWidth * 0.9}px;
-  height: 56px;
-  border-radius: 8px;
+    ${TonicButton};
+    width: ${windowWidth * 0.9}px;
+    height: 56px;
+    border-radius: 8px;
 `;
 
 const StartText = styled.Text`
-  color: white;
-  font-size: 18px;
-  font-weight: 600;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
 `;
 
 const Container = styled.View`
-  ${flexCenter};
-  background-color: #fff;
-  align-items: center;
-  justify-content: flex-start;
+    ${flexCenter};
+    background-color: #fff;
+    align-items: center;
+    justify-content: flex-start;
 `;
 

@@ -31,10 +31,10 @@ export default function MyPage({navigation}) {
 }
 
 const Container = styled.View`
-  ${flexCenter};
-  background-color: #fff;
-  align-items: center;
-  justify-content: center;
+    ${flexCenter};
+    background-color: #fff;
+    align-items: center;
+    justify-content: center;
 `;
 
 const SignOutButton = styled.TouchableOpacity`

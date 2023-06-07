@@ -188,57 +188,57 @@ const styles = StyleSheet.create({
 })
 
 const Container = styled.View`
-  ${flexCenter};
-  background-color: #fff;
+    ${flexCenter};
+    background-color: #fff;
 `;
 
 const ContentGroupBox = styled.View`
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-  justify-content: space-evenly;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    align-items: center;
+    justify-content: space-evenly;
 `
 
 const UploadImageBox = styled.View`
-  overflow: hidden;
-  width: ${windowWidth * 0.14}px;
-  height: ${windowWidth * 0.14}px;
-  border-width: 1px;
-  border-color: ${theme.colors.iconGray};
-  border-radius: 10px;
-  align-items: center;
-  justify-content: center;
+    overflow: hidden;
+    width: ${windowWidth * 0.14}px;
+    height: ${windowWidth * 0.14}px;
+    border-width: 1px;
+    border-color: ${theme.colors.iconGray};
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
 `;
 
 const UploadImage = styled.Image`
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
 `
 
 const GrayText = styled.Text`
-  color: ${theme.colors.text};
+    color: ${theme.colors.text};
 `
 
 const TitleInputField = styled.TextInput`
-  width: ${windowWidth * 0.9}px;
-  height: 60px;
-  margin-left: 20px;
-  font-size: 18px;
+    width: ${windowWidth * 0.9}px;
+    height: 60px;
+    margin-left: 20px;
+    font-size: 18px;
 `
 
 const PriceInputField = styled.TextInput`
-  width: ${windowWidth * 0.9}px;
-  height: 60px;
-  margin-left: 20px;
-  font-size: 18px;
+    width: ${windowWidth * 0.9}px;
+    height: 60px;
+    margin-left: 20px;
+    font-size: 18px;
 `
 
 const InfoInputField = styled.TextInput`
-  width: ${windowWidth * 0.9}px;
-  height: 60px;
-  margin-left: 20px;
-  margin-top: 20px;
-  font-size: 18px;
+    width: ${windowWidth * 0.9}px;
+    height: 60px;
+    margin-left: 20px;
+    margin-top: 20px;
+    font-size: 18px;
 `
