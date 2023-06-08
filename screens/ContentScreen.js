@@ -1,26 +1,28 @@
-import {SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import React, {useEffect, useState, useContext} from 'react'
-import {signOut} from 'firebase/auth'
-import {useNavigation} from '@react-navigation/native';
-import {errorHandler} from '../errors';
-import {auth, db} from '../firebase';
-import {getDocs, collection} from "firebase/firestore";
+import React, {useContext, useLayoutEffect} from 'react'
+import {Text, TouchableOpacity, View, Button} from 'react-native'
+import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
+import {Ionicons} from "@expo/vector-icons";
+
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
-import Post from "../components/Post";
-import {Center, FlatList, Input, Icon, Divider, Button} from "native-base";
-import {Ionicons, MaterialIcons} from "@expo/vector-icons";
-// import { getUsername } from '../firestore';
 
+import Post from "../components/Post";
+import HeaderLeftLogo from '../components/HeaderLeftLogo'
+import SearchIcon from "../components/SearchIcon";
+
+import {errorHandler} from '../errors';
 import GlobalContext from '../context/Context';
 
-
-export default function ContentScreen(props) {
+export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
-    const navigation = useNavigation()
-
-
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTitle:'',
+            headerLeft: () => <HeaderLeftLogo/>,
+            headerRight: () => <SearchIcon callback={() => {navigation.navigate(NavigatorType.SEARCH)}}/>,
+        });
+    }, [navigation]);
     const LoadingView = <View><Text>Loading...</Text></View>
 
     const postList = [
@@ -44,18 +46,17 @@ export default function ContentScreen(props) {
 /* ------------------
       Components
  -------------------*/
-    const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2"
-                              InputLeftElement={<Icon ml="2" size="5" color="gray.400"
-                                                      as={<Ionicons name="ios-search"/>}/>}/>)
-
     const ContentView = (
         <Center flex={1} px="0">
             <FlatList
                 data={postList}
                 renderItem={(post) => {
                     return (
-                        <View style={{padding: 10}}>
-                            <Post onClickHandler={handleContentClick} key={post.id}/>
+                        <View>
+                            <View style={{margin: 20}}>
+                                <Post onClickHandler={handleContentClick} key={post.id}/>
+                            </View>
+                            <Divider/>
                         </View>
                     );
                 }}
@@ -78,11 +79,11 @@ export default function ContentScreen(props) {
     //         .catch(error => alert(errorHandler(error)))
     // }
     function handleContentClick() {
-        props.navigation.navigate(NavigatorType.CONTENT_DETAIL)
+        navigation.navigate(NavigatorType.CONTENT_DETAIL)
     }
 
     function handleCreateButtonClick() {
-        props.navigation.navigate(NavigatorType.POSTING);
+        navigation.navigate(NavigatorType.POSTING);
     }
 
 /* ------------------
@@ -90,12 +91,6 @@ export default function ContentScreen(props) {
 -------------------*/
     return (
         <Container>
-            <SafeAreaView>
-                <Center>
-                    {SearchBar}
-                </Center>
-                <Divider style={{marginTop: 20}}/>
-            </SafeAreaView>
             <ContentArea>
                 {MainView}
             </ContentArea>
@@ -123,7 +118,7 @@ const Container = styled.View`
 
 const CreateButtonArea = styled.View`
   position: absolute;
-  top: ${windowHeight - 150}px;
+  top: ${windowHeight - 250}px;
   left: ${windowWidth - 80}px;
 `
 const CreateButton = styled.View`

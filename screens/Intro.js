@@ -1,6 +1,6 @@
 import React from "react";
 import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
-import {flexCenter, TonicButton} from "../utils/styleComponents";
+import {flexCenter, TonicButton, TonicButtonWhite} from "../utils/styleComponents";
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
@@ -12,10 +12,8 @@ export default function Intro({navigation}) {
 
     return (
         <Container>
-            <Image
-                source={require("../assets/TonicStartImage.png")}
-            />
-            <Text style={styles.head}>토닉 토닉</Text>
+            <Image source={require("../assets/AppStartLogo.png")} style={{width:windowWidth*0.6, height:windowWidth*0.6}} />
+            <Text style={styles.head}>TONIC</Text>
             <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
             <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
             <StartButton onPress={goLogin}>
@@ -31,16 +29,19 @@ export default function Intro({navigation}) {
 const styles = StyleSheet.create({
     head: {
         fontSize: 24,
-        fontWeight: "700",
+        fontWeight: "800",
+        color: 'white',
     },
     content: {
         fontSize: 18,
         paddingTop: 4,
         paddingBottom: 4,
+        color: 'white',
     },
     contentBottom: {
         fontSize: 18,
         marginBottom: 32,
+        color: 'white',
     },
     tip: {
         fontSize: 12,
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
 });
 
 const StartButton = styled.Pressable`
-    ${TonicButton};
+    ${TonicButtonWhite};
     width: ${windowWidth * 0.9}px;
     height: 56px;
     border-radius: 8px;
@@ -58,13 +59,13 @@ const StartButton = styled.Pressable`
 
 const Container = styled.View`
     ${flexCenter};
-    background-color: #fff;
+    background-color: ${theme.colors.primary};
     align-items: center;
     justify-content: center;
 `;
 
 const StartText = styled.Text`
-    color: white;
+    color: ${theme.colors.primary};
     font-size: 18px;
     font-weight: 600;
 `;

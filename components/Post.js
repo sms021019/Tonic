@@ -10,7 +10,8 @@ import {
     Center,
     NativeBaseProvider,
     VStack,
-    Image
+    Image,
+    Divider,
 } from "native-base";
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
@@ -26,19 +27,19 @@ export default function Post(props) {
             <Pressable onPress={handlePostClick}>
                 {({isHovered, isPressed}) => {
                     return (
-                        <Box h="100px" w={windowWidth - 20}
+                        <Box h="100px" w={windowWidth - 40}
                              bg={isPressed ? "coolGray.100" : isHovered ? "coolGray.100" : "white"} rounded="md">
                             <Flex direction="row">
-                                <Center w="100px" h="100px">
+                                <Center w={windowWidth*0.25} h={windowWidth*0.25}>
                                     <Image
                                         source={{uri: "https://wallpaperaccess.com/full/317501.jpg"}}
                                         alt="Alternate Text"
                                         borderRadius={5}
                                         size="100%"/>
                                 </Center>
-                                <Flex flex="1" marginLeft="2">
+                                <Flex flex="1" marginLeft="5">
                                     <Text color="coolGray.800" fontWeight="medium" fontSize="lg">
-                                        SWISS WINGER 텀블러 SWISS
+                                        SWISS WINGER 텀블러
                                     </Text>
                                     <Text flex="1" mt="2" fontSize="xl" fontWeight="bold" color="coolGray.700">
                                         $15

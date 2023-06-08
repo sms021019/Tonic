@@ -8,6 +8,7 @@ export const NavigatorType = {
     CONTENT_DETAIL: "ContentDetailNavigator",
     POSTING: "postingNavigator",
     START: "startNavigator",
+    SEARCH: "searchNavigator",
 }
 
 export const DBCollectionType = {

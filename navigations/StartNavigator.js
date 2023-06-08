@@ -13,9 +13,9 @@ export default function StartNavigator() {
     return (
         <Stack.Navigator>
             <Stack.Screen name="Intro" component={Intro} options={{headerShown: false}}/>
-            <Stack.Screen name="Login" component={Login} options={{headerShown: true, headerLeft: null}}/>
-            <Stack.Screen name="Signup" component={Signup}/>
-            <Stack.Screen name="PasswordReset" component={PasswordReset}/>
+            <Stack.Screen name="Login" component={Login} options={{title: "로그인", headerShown: true, headerLeft: null}}/>
+            <Stack.Screen name="Signup" component={Signup} options={{title: "회원가입"}}/>
+            <Stack.Screen name="PasswordReset" component={PasswordReset} options={{title: "비밀번호 찾기"}}/>
         </Stack.Navigator>
     )
 }
