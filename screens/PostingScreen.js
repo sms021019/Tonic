@@ -9,7 +9,8 @@ import * as ImagePicker from 'expo-image-picker';
 import theme from '../utils/theme'
 import {DBCollectionType, NavigatorType, windowWidth} from "../utils/utils"
 import {addDoc, collection, getDocs} from 'firebase/firestore';
-import {db, storage, ref, uploadBytes, getDownloadURL, uploadBytesResumable} from "../firebase";
+import {db, storage, ref, getDownloadURL, uploadBytesResumable} from "../firebase";
+
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
