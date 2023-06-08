@@ -59,3 +59,7 @@ export const POST_SIZE = {
     width: windowWidth * 0.9,
     height: 200,
 }
+
+export function LOG(caller, message) {
+    console.log(message);
+}

@@ -1,5 +1,5 @@
 import React, {useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, Image, StyleSheet, Button} from 'react-native'
+import {View, Text, TouchableOpacity, StyleSheet, Button, TextInput} from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
@@ -7,10 +7,9 @@ import {MaterialCommunityIcons} from '@expo/vector-icons'
 import {Box, Center, Divider, Flex, Input, Pressable} from "native-base";
 import * as ImagePicker from 'expo-image-picker';
 import theme from '../utils/theme'
-import {DBCollectionType, NavigatorType, windowWidth} from "../utils/utils"
+import {DBCollectionType, LOG, NavigatorType, windowWidth} from "../utils/utils"
 import {addDoc, collection, getDocs} from 'firebase/firestore';
 import {db, storage, ref, getDownloadURL, uploadBytesResumable} from "../firebase";
-
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -21,6 +20,7 @@ export default function PostingScreen({navigation, label}) {
     const [imageUrls, setImageUrls] = useState([]);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [posting, setPosting] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const PostButton = <Button onPress={() => setPosting(true)} title="Post"/>;
     useLayoutEffect(() => {
@@ -34,7 +34,8 @@ export default function PostingScreen({navigation, label}) {
     useEffect(() => {
         // Check if saving to avoid calling submit on screen unmounting
         if (posting) {
-            asyncHandlePostClick()
+            setPosting(false);
+            handlePostClick();
         }
     }, [posting]);
 
@@ -71,9 +72,22 @@ export default function PostingScreen({navigation, label}) {
        Handlers
  -------------------*/
     function handleDeleteImageButtonClick(index) {
+        if (index < 0 || index >= imageUrls.length) {
+            LOG(this, "ERR::Invalid index"); return;
+        }
+
         let newImageUrls = imageUrls;
         newImageUrls.splice(index, 1);
         setImageUrls(() => ([...newImageUrls]));
+    }
+
+    function handlePostClick() {
+        console.log("post clicked");
+        if (title === null || title === '')                            { alert('제목을 입력해주세요.'); return; }
+        if (price == null || price === '' || Number(price) === null)   { alert('가격을 입력해주세요.'); return; }
+
+        setLoading(true);
+        asyncHandlePostClick().then(() => setLoading(false));
     }
 
     async function asyncHandlePostClick() {
@@ -83,23 +97,26 @@ export default function PostingScreen({navigation, label}) {
             const blob = await asyncCreateBlobByImageUri(imageUrls[i].uri);
             let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
 
-            uploadBytesResumable(storageRef, blob).then((snapshot) => { // causes crash
-                console.log();
-                getDownloadURL(storageRef).then((url) => {
-                    downloadUrls.push(url);
-                    if (downloadUrls.length === imageUrls.length) {
-                        addDoc(collection(db, DBCollectionType.POSTS), {
-                            title: title,
-                            price: Number(price),
-                            info: info,
-                            imageDownloadUrls: downloadUrls,
-                        }).then(() => {
-                            navigation.navigate(NavigatorType.HOME);
-                        });
-                    }
-                });
-            });
+            if (blob == null || storageRef == null) {
+                LOG(this, "ERR::Invalid blob or storageRef"); return;
+            }
+
+            await uploadBytesResumable(storageRef, blob);
+            downloadUrls.push( await getDownloadURL(storageRef) );
         }
+
+        if (imageUrls.length !== downloadUrls.length) {
+            LOG(this, "ERR::selected image and uploaded image counts are not matching."); return;
+        }
+
+        addDoc(collection(db, DBCollectionType.POSTS), {
+            title: title,
+            price: Number(price),
+            info: info,
+            imageDownloadUrls: downloadUrls,
+        }).then(() => {
+            navigation.navigate(NavigatorType.HOME);
+        });
     }
 
     async function asyncCreateBlobByImageUri(imageUri) {
@@ -156,7 +173,7 @@ export default function PostingScreen({navigation, label}) {
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
-                            <GrayText>Add</GrayText>
+                            <GrayText>0/10</GrayText>
                         </TouchableOpacity>
                     </Box>
                     <Divider orientation="vertical" height="80%"/>
@@ -165,13 +182,15 @@ export default function PostingScreen({navigation, label}) {
                     </ContentGroupBox>
                 </Flex>
                 <Divider/>
-                <TitleInputField placeholder="제목을 입력하세요" value={title} onChangeText={setTitle}/>
+                <TitleInputField placeholder="상품명" value={title} onChangeText={setTitle}/>
                 <Divider/>
-                <PriceInputField placeholder="$" value={price ? Number(price).toLocaleString() : ''}
-                                 onChangeText={(value) => handleSetPrice(value)} keyboardType="numeric"/>
+                <Flex direction="row" alignItems="center" justifyContent="left">
+                    <SignText style={{color: (!price)? "#bbbbbb" : "black"}}>$</SignText>
+                    <PriceInputField placeholder="가격" value={price ? Number(price).toLocaleString() : ''}
+                                     onChangeText={(value) => handleSetPrice(value)} keyboardType="numeric"/>
+                </Flex>
                 <Divider/>
-                <InfoInputField flex="1" multiline={true} value={info} onChangeText={setInfo}>
-                </InfoInputField>
+                <InfoInputField placeholder="내용을 입력하세요" flex="1" multiline={true} value={info} onChangeText={setInfo} />
             </Flex>
         </Container>
     )
@@ -223,21 +242,28 @@ const GrayText = styled.Text`
 `
 
 const TitleInputField = styled.TextInput`
-    width: ${windowWidth * 0.9}px;
+    width: ${windowWidth};
     height: 60px;
     margin-left: 20px;
     font-size: 18px;
 `
 
 const PriceInputField = styled.TextInput`
-    width: ${windowWidth * 0.9}px;
+    width: ${windowWidth};
     height: 60px;
-    margin-left: 20px;
+    margin-left: 5px;
     font-size: 18px;
 `
 
+const SignText = styled.Text`
+  color: #bbbbbb;
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 20px;
+`
+
 const InfoInputField = styled.TextInput`
-    width: ${windowWidth * 0.9}px;
+    width: ${windowWidth};
     height: 60px;
     margin-left: 20px;
     margin-top: 20px;
