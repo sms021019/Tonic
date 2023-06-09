@@ -5,6 +5,7 @@ const palette = {
     smokeWhite: "#ece5dd",
     white: "white",
     gray: "#3C3C3C",
+    lightGray: '#b7b7b7',
     iconGray: "#717171",
 };
 
@@ -18,6 +19,7 @@ const theme = {
         white: palette.white,
         text: palette.gray,
         iconGray: palette.iconGray,
+        lightGray: palette.lightGray,
     },
 };
 

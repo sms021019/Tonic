@@ -1,21 +1,28 @@
-import React, {useContext, useLayoutEffect} from 'react'
+import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, TouchableOpacity, View, Button} from 'react-native'
 import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
 import {Ionicons} from "@expo/vector-icons";
-
+// util
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
-
+import {DBCollectionType, NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+// components
 import Post from "../components/Post";
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
 import SearchIcon from "../components/SearchIcon";
 
 import {errorHandler} from '../errors';
 import GlobalContext from '../context/Context';
+// firebase
+import {getDocs, collection} from 'firebase/firestore';
+import {db} from "../firebase";
+
+const LoadingView = <View><Text>Loading...</Text></View>
 
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
+    const [postDataList, setPostDataList] = useState([]);
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTitle:'',
@@ -23,25 +30,15 @@ export default function ContentScreen({navigation}) {
             headerRight: () => <SearchIcon callback={() => {navigation.navigate(NavigatorType.SEARCH)}}/>,
         });
     }, [navigation]);
-    const LoadingView = <View><Text>Loading...</Text></View>
 
-    const postList = [
-        {id: 1},
-        {id: 2},
-        {id: 3},
-        {id: 4},
-        {id: 5},
-        {id: 6},
-        {id: 7},
-        {id: 8},
-        {id: 9},
-        {id: 10},
-        {id: 11},
-        {id: 12},
-        {id: 13},
-        {id: 14},
-        {id: 15},
-    ]
+    useEffect(async () => {
+        const querySnapshot = await getDocs(collection(db, DBCollectionType.POSTS));
+        let dataList = [];
+        querySnapshot.forEach((doc) => {
+            dataList.push(doc.data());
+        });
+        setPostDataList(dataList);
+    }, []);
 
 /* ------------------
       Components
@@ -49,12 +46,12 @@ export default function ContentScreen({navigation}) {
     const ContentView = (
         <Center flex={1} px="0">
             <FlatList
-                data={postList}
-                renderItem={(post) => {
+                data={postDataList}
+                renderItem={(data) => {
                     return (
                         <View>
                             <View style={{margin: 20}}>
-                                <Post onClickHandler={handleContentClick} key={post.id}/>
+                                <Post onClickHandler={handleContentClick} key={data.id} data={data.item}/>
                             </View>
                             <Divider/>
                         </View>
