@@ -17,6 +17,10 @@ export const DBCollectionType = {
     MESSAGES: "messages",
 }
 
+export const StorageDirectoryType = {
+    POST_IMAGES: "postImages",
+}
+
 const palette = {
     tealGreen: "#128c7e",
     tealGreenDark: "#075e54",
@@ -60,6 +64,14 @@ export const POST_SIZE = {
     height: 200,
 }
 
-export function LOG(caller, message) {
+export function LOG(message) {
     console.log(message);
+}
+
+export function LOG_ERROR(...message) {
+    console.log("ERROR: " + message.join(' | '));
+}
+
+export function createURL(...params) {
+    return params.join('/');
 }

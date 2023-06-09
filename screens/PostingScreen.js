@@ -1,15 +1,27 @@
+// React
 import React, {useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, StyleSheet, Button, TextInput} from 'react-native'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {TouchableOpacity, StyleSheet, Button, TextInput} from 'react-native'
 import styled from "styled-components/native";
-import {flexCenter, TonicButton} from "../utils/styleComponents";
+import {Box, Divider, Flex, Input, Pressable} from "native-base";
 import {MaterialCommunityIcons} from '@expo/vector-icons'
-import {Box, Center, Divider, Flex, Input, Pressable} from "native-base";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
+// Firebase
+import {addDoc, collection} from 'firebase/firestore';
+import {db, auth, storage, ref, getDownloadURL, uploadBytesResumable} from "../firebase";
+// Utils
+import {
+    DBCollectionType,
+    LOG,
+    NavigatorType,
+    windowWidth,
+    createURL,
+    LOG_ERROR,
+    StorageDirectoryType
+} from "../utils/utils"
+import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
-import {DBCollectionType, LOG, NavigatorType, windowWidth} from "../utils/utils"
-import {addDoc, collection, getDocs} from 'firebase/firestore';
-import {db, storage, ref, getDownloadURL, uploadBytesResumable} from "../firebase";
+import ErrorScreen from "./ErrorScreen";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -21,23 +33,32 @@ export default function PostingScreen({navigation, label}) {
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [posting, setPosting] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [hasError, setHasError] = useState(false);
+    const [user, setUser] = useState(null);
 
-    const PostButton = <Button onPress={() => setPosting(true)} title="Post"/>;
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerRight: () => (
-                PostButton
-            ),
+            headerRight: () => ( <Button onPress={() => setPosting(true)} title="Post"/> ),
         });
     }, [navigation]);
 
     useEffect(() => {
-        // Check if saving to avoid calling submit on screen unmounting
         if (posting) {
             setPosting(false);
             handlePostClick();
         }
     }, [posting]);
+
+    useEffect(() => {
+        if (!user) {
+            setUser(auth.currentUser);
+        }
+    }, [])
+
+/* ------------------
+      Error Screen
+ -------------------*/
+    if (hasError) return <ErrorScreen/>
 
 /* ------------------
       Components
@@ -54,8 +75,10 @@ export default function PostingScreen({navigation, label}) {
                         <UploadImageBox>
                             <UploadImage source={{uri: imageUrls[i].uri}}/>
                         </UploadImageBox>
-                        <TouchableOpacity style={{position: 'absolute', left: 40, top: -5}}
-                                          onPress={() => handleDeleteImageButtonClick(i)}>
+                        <TouchableOpacity
+                            style={{position: 'absolute', left: 40, top: -5}}
+                            onPress={() => handleDeleteImageButtonClick(i)}
+                        >
                             <Icon name="close-circle" size={20} color="#242424"/>
                         </TouchableOpacity>
                     </Box>
@@ -67,9 +90,18 @@ export default function PostingScreen({navigation, label}) {
         return component
     }
 
+/* ------------------
+    Helper Functions
+ -------------------*/
+    function SetErrorAndSendLog(...messages) {
+        setHasError(true);
+        LOG_ERROR(messages);
+        return -1;
+    }
+
 
 /* ------------------
-       Handlers
+     Event Handlers
  -------------------*/
     function handleDeleteImageButtonClick(index) {
         if (index < 0 || index >= imageUrls.length) {
@@ -82,7 +114,6 @@ export default function PostingScreen({navigation, label}) {
     }
 
     function handlePostClick() {
-        console.log("post clicked");
         if (title === null || title === '')                            { alert('제목을 입력해주세요.'); return; }
         if (price == null || price === '' || Number(price) === null)   { alert('가격을 입력해주세요.'); return; }
 
@@ -93,30 +124,42 @@ export default function PostingScreen({navigation, label}) {
     async function asyncHandlePostClick() {
         let downloadUrls = [];
 
-        for (let i = 0; i < imageUrls.length; i++) {
-            const blob = await asyncCreateBlobByImageUri(imageUrls[i].uri);
-            let storageRef = ref(storage, `/postImages/${imageUrls[i].fileName}`);
+        try {
+            // Convert ImageURL into Blob, upload Blob into Storage, get downloadImageURLs.
+            for (const imageUrl of imageUrls) {
+                if (imageUrl.uri === null || imageUrl.fileName === null) return SetErrorAndSendLog("Invalid imageUrl (no uri or no filename)");
 
-            if (blob == null || storageRef == null) {
-                LOG(this, "ERR::Invalid blob or storageRef"); return;
+                let storageURL = createURL(StorageDirectoryType.POST_IMAGES, user.displayName, new Date().getTime())
+
+                if (storageURL === null) return SetErrorAndSendLog("Invalid storageURL")
+
+                let storageRef = ref(storage, storageURL);
+                const blob = await asyncCreateBlobByImageUri(imageUrl.uri);
+
+                if (storageRef === null || blob === null) return SetErrorAndSendLog("Invalid storageRef or blob");
+
+                await uploadBytesResumable(storageRef, blob);
+                downloadUrls.push( await getDownloadURL(storageRef) );
             }
 
-            await uploadBytesResumable(storageRef, blob);
-            downloadUrls.push( await getDownloadURL(storageRef) );
-        }
+            if (imageUrls.length !== downloadUrls.length) return SetErrorAndSendLog("Number of selected images and uploaded images are not matching.");
 
-        if (imageUrls.length !== downloadUrls.length) {
-            LOG(this, "ERR::selected image and uploaded image counts are not matching."); return;
+            // Create new post.
+            addDoc(collection(db, DBCollectionType.POSTS), {
+                title: title,
+                price: Number(price),
+                info: info,
+                imageDownloadUrls: downloadUrls,
+            }).then(() => {
+                navigation.navigate(NavigatorType.HOME);
+            }).catch(() => {
+                return SetErrorAndSendLog("Error occurs while creating new post(document) into firestore.");
+            });
         }
-
-        addDoc(collection(db, DBCollectionType.POSTS), {
-            title: title,
-            price: Number(price),
-            info: info,
-            imageDownloadUrls: downloadUrls,
-        }).then(() => {
-            navigation.navigate(NavigatorType.HOME);
-        });
+        catch (err) {
+            setHasError(true);
+            return LOG_ERROR("Unknown error occur while posting the images.", err);
+        }
     }
 
     async function asyncCreateBlobByImageUri(imageUri) {
@@ -131,10 +174,13 @@ export default function PostingScreen({navigation, label}) {
             xhr.responseType = 'blob';
             xhr.open('GET', imageUri, true);
             xhr.send(null);
+        }).catch((e) => {
+            setHasError(true);
+            LOG_ERROR(e, "Fail to convert imageURI into Blob.");
         });
     }
 
-    async function asyncHandleUploadImageButtonClick() {
+    async function asyncHandleUploadImage() {
         if (imageUrls.length >= MAX_IMAGE_UPLOAD_COUNT) return;
 
         if (!status?.granted) {
@@ -145,8 +191,9 @@ export default function PostingScreen({navigation, label}) {
         }
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: false,
-            quality: 1,
+            allowsEditing: true,
+            maxWidth: 512,
+            maxHeight: 512,
             aspect: [1, 1]
         });
 
@@ -169,7 +216,7 @@ export default function PostingScreen({navigation, label}) {
                 <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <Box style={{margin: windowWidth * 0.05}}>
                         <TouchableOpacity
-                            onPress={asyncHandleUploadImageButtonClick}
+                            onPress={asyncHandleUploadImage}
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
