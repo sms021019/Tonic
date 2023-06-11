@@ -24,7 +24,7 @@ class MyModal extends React.Component {
     };
 
     render() {
-        const {Îprops} = this;
+        const {props} = this;
         return (
             <View>
                 <Modal

@@ -10,10 +10,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Modal from '../utils/modal';
 import { Input } from 'native-base';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
-
-
-
+import { 
+    addDoc, 
+    collection, 
+    getDoc, 
+    getDocs, 
+    runTransaction, 
+    where, 
+    writeBatch, 
+    updateDoc, 
+    arrayUnion, 
+    setDoc, 
+    query,
+    doc,
+    limit,
+    onSnapshot,
+    orderBy,
+} from 'firebase/firestore';
 
 
 export default function Channel({ navigation: {navigate}}) {
@@ -26,24 +39,94 @@ export default function Channel({ navigation: {navigate}}) {
     hideModal = () => setModalVisible(false);
 
     const [email, setEmail] = useState("");
+    const [chatroomIds, setChatroomIds] = useState([]);
+
+    const chatroomsColloection = collection(db, 'chatrooms');
+    const usersCollectionRef = collection(db, 'users');
+
+
+
+    useEffect(() => {
+        const q = query(collection(db, 'chatrooms'), where("participants", "array-contains", user.uid));
+        const unsubscribe = onSnapshot(q, snapshot => {
+            setChatroomIds(
+                snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    emails: doc.data().participants
+                    
+                }))
+            )
+        });
+        return () => unsubscribe();
+    }, []);
 
     const handleCreateChat = async () => {
         try{
-            var foundUserDocument;      // 임시 변수
-            const userCollection = await getDocs(collection(db, "users"));
-            userCollection?.forEach((doc) => {
-                if (doc.data().email === email.toLowerCase()) {
-                    foundUserDocument = doc;
-                    console.log(`Found user:${'\nEmail: ' + doc.data().email + '\n'}username: ${doc.data().username + '\n'}uid: ${doc.data().uid}`)
-                    setEmail('');
-                    return;             // 여기서 채팅방으로 이동 id는 router.query로 보내면 되나..?
+                const inputSnap = email.toLowerCase();
+                
+
+                const currentUserRef = doc(usersCollectionRef, user.email);
+                const oppUserRef = doc(usersCollectionRef, inputSnap);
+
+                const currentUserDoc = await getDoc(currentUserRef);
+                const oppUserDoc = await getDoc(oppUserRef);
+                
+                if(currentUserDoc.empty || oppUserDoc.empty){
+                    throw "Document does not exist!";
                 }
-            });
-            foundUserDocument ? {} : alert("존재하지 않는 이메일입니다.");
+
+                console.log(oppUserDoc.data());
+                
+                
+                const newChatroomRef = await addDoc(chatroomsColloection,  {
+                    participants: [user.email, oppUserDoc.data().email],
+                });
+                
+
+                console.log("checkpoint");
+                console.log(newChatroomRef.id);
+                
+                await updateDoc(currentUserRef, {
+                    chatrooms: arrayUnion(newChatroomRef.id)
+                })
+                await updateDoc(oppUserRef, {
+                    chatrooms: arrayUnion(newChatroomRef.id)
+                })
+
         }catch(error){
-            console.log(error)
+            console.log("Create Chatroom failed: ", error)
+        }finally {
+            setEmail('');
         }
     }
+
+    
+
+    
+    const ChatList = () => {
+        
+        // const chatroomsColloection = collection(db, 'chatrooms');
+
+        return(chatroomIds.map(chatroom => {
+                // const chatroomRef = doc(chatroomsColloection, chatroom);
+                // const chatroomMessagesRef = collection(chatroomRef, "messages");
+                // const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"), limit(1));
+                
+                
+                return(
+                    <View key={chatroom.id}>
+                        <Text>{chatroom.id}</Text>
+                        <TouchableOpacity onPress={() => navigate('Chatroom', {id: chatroom.id})}>
+                            <Text>Click me!</Text>
+                        </TouchableOpacity>
+                    </View>
+                )
+
+            })
+        )
+    }
+
+
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
@@ -85,7 +168,7 @@ export default function Channel({ navigation: {navigate}}) {
             </Modal>
             <TopContainer>
                 <UsernameContainer>
-                    <UsernameText>{user.displayName}</UsernameText>
+                    <UsernameText>{user?.displayName}</UsernameText>
                 </UsernameContainer>
                 <FormButtonContainer>
                     <Button type="clear" onPress={this.showModal}>
@@ -102,9 +185,9 @@ export default function Channel({ navigation: {navigate}}) {
             <TopContainer>
                 <MessageText>메시지</MessageText>
             </TopContainer>
-            <ListItem>
-
-            </ListItem>
+            <View>
+                <ChatList/>
+            </View>
         </SafeAreaView>
     );
 };
@@ -135,7 +218,7 @@ const FormButtonContainer = styled.View`
 
 const MessageText = styled.Text`
     padding: 20px;
-    font-size: 20x;
+    font-size: 20px;
     font-weight: 700;
 `
 

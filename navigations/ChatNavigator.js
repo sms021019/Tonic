@@ -8,11 +8,11 @@ import Chat from '../screens/Chat';
 const Stack = createStackNavigator();
 
 
-export default function StartNavigator() {
+export default function ChatNavigator() {
     return (
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name="Channel" component={Channel}/>
-            <Stack.Screen name="Chat" component={Chat}/>
+        <Stack.Navigator>
+            <Stack.Screen name="Channel" component={Channel} options={{headerShown: false}}/>
+            <Stack.Screen name="Chatroom" component={Chat}/>
         </Stack.Navigator>
     )
 }

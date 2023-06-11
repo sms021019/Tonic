@@ -14,7 +14,13 @@ import {windowWidth} from "../utils/utils";
 
 import {auth, db} from '../firebase';
 import errorHandler from '../errors/index';
-import {addDoc, collection, getDocs} from 'firebase/firestore';
+import {
+  addDoc, 
+  collection, 
+  getDocs,
+  setDoc,
+  doc,
+} from 'firebase/firestore';
 
 
 const LoginScreen = () => {
@@ -27,10 +33,16 @@ const LoginScreen = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(async userCredentials => {
                 const user = userCredentials.user;
+                const usersCollectionRef = collection(db, 'users');
                 await updateProfile(user, {displayName: username}).catch(
                     (err) => console.log(err)
                 );
-                await addDoc(collection(db, "users"), {
+                // await addDoc(collection(db, "users"), {
+                //     username: username,
+                //     uid: user.uid,
+                //     email: user.email,
+                // });
+                await setDoc(doc(usersCollectionRef, user.email), {
                     username: username,
                     uid: user.uid,
                     email: user.email,
