@@ -46,7 +46,7 @@ export default function MainNavigator() {
             <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>
             }
             <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />
-            <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator} />
+            <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator}/>
             <Stack.Screen name={NavigatorType.POSTING} component={PostingNavigator}/>
         </Stack.Navigator>
     )

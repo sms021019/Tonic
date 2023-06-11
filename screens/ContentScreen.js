@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, TouchableOpacity, View, Button} from 'react-native'
 import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
-import {Ionicons} from "@expo/vector-icons";
 // util
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {DBCollectionType, NavigatorType, windowHeight, windowWidth} from "../utils/utils";
@@ -31,13 +30,18 @@ export default function ContentScreen({navigation}) {
         });
     }, [navigation]);
 
-    useEffect(async () => {
-        const querySnapshot = await getDocs(collection(db, DBCollectionType.POSTS));
-        let dataList = [];
-        querySnapshot.forEach((doc) => {
-            dataList.push(doc.data());
-        });
-        setPostDataList(dataList);
+    useEffect(() => {
+        if (postDataList.length === 0) {
+            getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
+                let dataList = [];
+                querySnapshot.forEach((doc) => {
+                    dataList.push(doc.data());
+                });
+                setPostDataList(dataList);
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
     }, []);
 
 /* ------------------
@@ -67,14 +71,6 @@ export default function ContentScreen({navigation}) {
 /* ------------------
        Handlers
  -------------------*/
-    // function handleSignOut() {
-    //     signOut(auth)
-    //         .then(() => {
-    //             navigation.replace("LoginNavigator")
-    //             console.log(`${username} logged out`)
-    //         })
-    //         .catch(error => alert(errorHandler(error)))
-    // }
     function handleContentClick() {
         navigation.navigate(NavigatorType.CONTENT_DETAIL)
     }
