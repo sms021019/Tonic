@@ -8,7 +8,7 @@ import theme from '../utils/theme';
 import {Box, Center, Divider, Flex, ScrollView, SectionList, TextArea} from "native-base";
 import Swiper from "react-native-swiper";
 
-export default function ContentDetailScreen({navigation}) {
+export default function ContentDetailScreen({navigation, contentData}) {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTransparent: true,
@@ -21,6 +21,10 @@ export default function ContentDetailScreen({navigation}) {
         });
     }, [navigation]);
 
+    const imageDownloadUrls = contentData.imageDownloadUrls;
+    const title = contentData.title;
+    const price = contentData.price;
+    const info = contentData.info;
 
     return (
         <Container>
@@ -31,32 +35,29 @@ export default function ContentDetailScreen({navigation}) {
                     activeDot={<View style={styles.activeDot} />}
                     loop={false}
                 >
-                    <View>
-                        <Image style={{width: windowWidth, height: windowWidth}}
-                            source={require("../assets/AppStartLogo.png")}
-                        />
-                    </View>
-                    <View>
-                        <Image style={{width: windowWidth, height: windowWidth}}
-                            source={require("../assets/TonicStartImage.png")}
-                        />
-                    </View>
+                    {imageDownloadUrls.map((url, index) => (
+                        <View key={url + index}>
+                            <Image style={{width: windowWidth, height: windowWidth}}
+                                   source={{uri: url}}
+                            />
+                        </View>
+                    ))}
                 </Swiper>
                 <View style={styles.contentArea}>
                     <Box w="100%" h="60px" alignItems="left" justifyContent="center">
-                        <Text style={styles.titleText}>ABCDEFGHIJKLMNOPQRST</Text>
+                        <Text style={styles.titleText}>{title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
                         <Text style={styles.userNameText}>@Username</Text>
                         <Text style={{color:'gray'}}>1 day ago</Text>
                     </Flex>
-                    <Text style={styles.contentText}>If you're looking for random paragraphs, you've come to the right place. When a random word or a random sentence isn't quite enough, the next logical step is to find a random paragraph. We created the Random Paragraph Generator with you in mind. The process is quite simple. Choose the number of random paragraphs you'd like to see and click the button. Your chosen number of paragraphs will instantly appear. </Text>
+                    <Text style={styles.contentText}>{info}</Text>
                 </View>
             </ScrollView>
             <View style={styles.footerArea}>
                 <Flex direction="row" alignItems='center'>
                     <Text flex="1" style={styles.priceText}>
-                        $25,000
+                        ${price.toLocaleString()}
                     </Text>
                     <ChatButton style={{marginRight:10}}>
                         <TonicText>Chat</TonicText>
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
 
-    contentArea: {display:'flex',  alignItems:'left', justifyContent:'center', width:"100%", padding:16, shadowOpacity:0.15, shadowRadius:10, backgroundColor:'white' },
+    contentArea: {display:'flex',  alignItems:'left', justifyContent:'center', width:"100%", padding:16, shadowOpacity:0.07, shadowRadius:10, shadowOffset: {height: -15}, backgroundColor:'white' },
 
     priceText: {fontSize: 24, fontWeight:'800', paddingLeft:10},
     titleText: {fontSize: 24, fontWeight: 800},

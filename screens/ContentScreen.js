@@ -55,7 +55,7 @@ export default function ContentScreen({navigation}) {
                     return (
                         <View>
                             <View style={{margin: 20}}>
-                                <Post onClickHandler={handleContentClick} key={data.id} data={data.item}/>
+                                <Post onClickHandler={() => handleContentClick(data.item)} key={data.id} data={data.item}/>
                             </View>
                             <Divider/>
                         </View>
@@ -71,8 +71,8 @@ export default function ContentScreen({navigation}) {
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick() {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL)
+    function handleContentClick(data) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
     }
 
     function handleCreateButtonClick() {

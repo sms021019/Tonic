@@ -11,6 +11,11 @@ export const NavigatorType = {
     SEARCH: "searchNavigator",
 }
 
+export const ScreenType = {
+    CONTENT: "contentScreen",
+    CONTENT_DETAIL: "contentDetailScreen"
+}
+
 export const DBCollectionType = {
     USERS: "users",
     POSTS: "posts",
