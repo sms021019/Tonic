@@ -1,61 +1,63 @@
-import {SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import React, {useEffect, useState, useContext} from 'react'
-import {signOut} from 'firebase/auth'
-import {useNavigation} from '@react-navigation/native';
-import {errorHandler} from '../errors';
-import {auth, db} from '../firebase';
-import {getDocs, collection} from "firebase/firestore";
+import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import {Text, TouchableOpacity, View, Button} from 'react-native'
+import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
+// util
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+// components
 import Post from "../components/Post";
-import {Center, FlatList, Input, Icon, Divider, Button} from "native-base";
-import {Ionicons, MaterialIcons} from "@expo/vector-icons";
-// import { getUsername } from '../firestore';
+import HeaderLeftLogo from '../components/HeaderLeftLogo'
+import SearchIcon from "../components/SearchIcon";
 
+import {errorHandler} from '../errors';
 import GlobalContext from '../context/Context';
+// firebase
+import {getDocs, collection} from 'firebase/firestore';
+import {db} from "../firebase";
 
+const LoadingView = <View><Text>Loading...</Text></View>
 
-export default function ContentScreen(props) {
+export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
-    const navigation = useNavigation()
+    const [postDataList, setPostDataList] = useState([]);
 
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTitle:'',
+            headerLeft: () => <HeaderLeftLogo/>,
+            headerRight: () => <SearchIcon callback={() => {navigation.navigate(NavigatorType.SEARCH)}}/>,
+        });
+    }, [navigation]);
 
-    const LoadingView = <View><Text>Loading...</Text></View>
-
-    const postList = [
-        {id: 1},
-        {id: 2},
-        {id: 3},
-        {id: 4},
-        {id: 5},
-        {id: 6},
-        {id: 7},
-        {id: 8},
-        {id: 9},
-        {id: 10},
-        {id: 11},
-        {id: 12},
-        {id: 13},
-        {id: 14},
-        {id: 15},
-    ]
+    useEffect(() => {
+        if (postDataList.length === 0) {
+            getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
+                let dataList = [];
+                querySnapshot.forEach((doc) => {
+                    dataList.push(doc.data());
+                });
+                setPostDataList(dataList);
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
+    }, []);
 
 /* ------------------
       Components
  -------------------*/
-    const SearchBar = (<Input placeholder="Search" variant="filled" width="90%" borderRadius="50" py="3" px="2"
-                              InputLeftElement={<Icon ml="2" size="5" color="gray.400"
-                                                      as={<Ionicons name="ios-search"/>}/>}/>)
-
     const ContentView = (
         <Center flex={1} px="0">
             <FlatList
-                data={postList}
-                renderItem={(post) => {
+                data={postDataList}
+                renderItem={(data) => {
                     return (
-                        <View style={{padding: 10}}>
-                            <Post onClickHandler={handleContentClick} key={post.id}/>
+                        <View>
+                            <View style={{margin: 20}}>
+                                <Post onClickHandler={() => handleContentClick(data.item)} key={data.id} data={data.item}/>
+                            </View>
+                            <Divider/>
                         </View>
                     );
                 }}
@@ -69,20 +71,12 @@ export default function ContentScreen(props) {
 /* ------------------
        Handlers
  -------------------*/
-    // function handleSignOut() {
-    //     signOut(auth)
-    //         .then(() => {
-    //             navigation.replace("LoginNavigator")
-    //             console.log(`${username} logged out`)
-    //         })
-    //         .catch(error => alert(errorHandler(error)))
-    // }
-    function handleContentClick() {
-        props.navigation.navigate(NavigatorType.CONTENT_DETAIL)
+    function handleContentClick(data) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
     }
 
     function handleCreateButtonClick() {
-        props.navigation.navigate(NavigatorType.POSTING);
+        navigation.navigate(NavigatorType.POSTING);
     }
 
 /* ------------------
@@ -90,12 +84,6 @@ export default function ContentScreen(props) {
 -------------------*/
     return (
         <Container>
-            <SafeAreaView>
-                <Center>
-                    {SearchBar}
-                </Center>
-                <Divider style={{marginTop: 20}}/>
-            </SafeAreaView>
             <ContentArea>
                 {MainView}
             </ContentArea>
@@ -123,7 +111,7 @@ const Container = styled.View`
 
 const CreateButtonArea = styled.View`
   position: absolute;
-  top: ${windowHeight - 150}px;
+  top: ${windowHeight - 250}px;
   left: ${windowWidth - 80}px;
 `
 const CreateButton = styled.View`

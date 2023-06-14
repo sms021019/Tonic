@@ -13,7 +13,7 @@ export default function PostingNavigator() {
                 name="ContentDetail"
                 component={PostingScreen}
                 options={({navigation, route}) => ({
-                    title: "포스팅",
+                    title: "판매하기",
                     headerRight: () => (
                         <Button title="Add"/>
                     ),

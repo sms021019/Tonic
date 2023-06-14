@@ -8,12 +8,22 @@ export const NavigatorType = {
     CONTENT_DETAIL: "ContentDetailNavigator",
     POSTING: "postingNavigator",
     START: "startNavigator",
+    SEARCH: "searchNavigator",
+}
+
+export const ScreenType = {
+    CONTENT: "contentScreen",
+    CONTENT_DETAIL: "contentDetailScreen"
 }
 
 export const DBCollectionType = {
     USERS: "users",
     POSTS: "posts",
     MESSAGES: "messages",
+}
+
+export const StorageDirectoryType = {
+    POST_IMAGES: "postImages",
 }
 
 const palette = {
@@ -57,6 +67,18 @@ export const FOOTER_BUTTON = windowWidth * 0.4;
 export const POST_SIZE = {
     width: windowWidth * 0.9,
     height: 200,
+}
+
+export function LOG(message) {
+    console.log(message);
+}
+
+export function LOG_ERROR(...message) {
+    console.log("ERROR: " + message.join(' | '));
+}
+
+export function createURL(...params) {
+    return params.join('/');
 }
 
 export const EMAIL_DOMAIN = "@stonybrook.edu";

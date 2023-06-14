@@ -70,7 +70,7 @@ const LoginScreen = () => {
             <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
             <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
             <StartButton onPress={handleSignUp}>
-                <StartText>SIGN UP</StartText>
+                <StartText>가입하기</StartText>
             </StartButton>
         </Container>
     )

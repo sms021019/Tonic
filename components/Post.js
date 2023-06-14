@@ -10,13 +10,26 @@ import {
     Center,
     NativeBaseProvider,
     VStack,
-    Image
+    Image,
+    Divider,
 } from "native-base";
-import styled from "styled-components/native";
-import {flexCenter} from "../utils/styleComponents";
-import {POST_SIZE, windowWidth} from "../utils/utils";
+import {windowWidth} from "../utils/utils";
+import theme from '../utils/theme'
 
 export default function Post(props) {
+
+    if (props.data === null) {
+        return (
+            <Box></Box>
+        )
+    }
+
+    const data = props.data;
+    const title = data.title;
+    const price = data.price;
+    const imageUrls = data.imageDownloadUrls;
+    const bannerImageUrl = imageUrls[0];
+
     function handlePostClick() {
         props.onClickHandler();
     }
@@ -26,22 +39,22 @@ export default function Post(props) {
             <Pressable onPress={handlePostClick}>
                 {({isHovered, isPressed}) => {
                     return (
-                        <Box h="100px" w={windowWidth - 20}
+                        <Box h="100px" w={windowWidth - 40}
                              bg={isPressed ? "coolGray.100" : isHovered ? "coolGray.100" : "white"} rounded="md">
                             <Flex direction="row">
-                                <Center w="100px" h="100px">
+                                <Center w={windowWidth*0.25} h={windowWidth*0.25} borderWidth={1} borderRadius={5} borderColor={theme.colors.lightGray}>
                                     <Image
-                                        source={{uri: "https://wallpaperaccess.com/full/317501.jpg"}}
+                                        source={{uri: bannerImageUrl}}
                                         alt="Alternate Text"
                                         borderRadius={5}
                                         size="100%"/>
                                 </Center>
-                                <Flex flex="1" marginLeft="2">
+                                <Flex flex="1" marginLeft="5">
                                     <Text color="coolGray.800" fontWeight="medium" fontSize="lg">
-                                        SWISS WINGER 텀블러 SWISS
+                                        {title}
                                     </Text>
                                     <Text flex="1" mt="2" fontSize="xl" fontWeight="bold" color="coolGray.700">
-                                        $15
+                                        ${price}
                                     </Text>
                                     <Text flex="0.5" fontSize="sm" color="coolGray.800">
                                         1d

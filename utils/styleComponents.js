@@ -1,4 +1,4 @@
-import {css} from "styled-components/native";
+import styled, {css} from "styled-components/native";
 import {theme} from "./utils";
 
 export const Center = css`
@@ -21,3 +21,9 @@ export const TonicButton = css`
   background-color: ${({theme}) => theme.colors.foreground};
 `;
 
+export const TonicButtonWhite = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: ${({theme}) => theme.colors.white};
+`;
