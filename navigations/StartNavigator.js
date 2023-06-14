@@ -4,6 +4,7 @@ import Intro from '../screens/Intro';
 import Login from '../screens/Login';
 import Signup from '../screens/Signup';
 import PasswordReset from '../screens/passwordReset';
+import EmailVerification from '../screens/EmailVerification';
 
 
 const Stack = createStackNavigator();
@@ -15,6 +16,7 @@ export default function StartNavigator() {
             <Stack.Screen name="Intro" component={Intro} options={{headerShown: false}}/>
             <Stack.Screen name="Login" component={Login} options={{headerShown: true, headerLeft: null}}/>
             <Stack.Screen name="Signup" component={Signup}/>
+            <Stack.Screen name="EmailVerification" component={EmailVerification}/>
             <Stack.Screen name="PasswordReset" component={PasswordReset}/>
         </Stack.Navigator>
     )

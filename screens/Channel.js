@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { db, auth } from '../firebase';
-import { Text, View, StyleSheet, Pressable, Alert } from "react-native";
+import { View, StyleSheet, Pressable, Alert } from "react-native";
 import { ListItem, Icon, Button, Divider } from '@rneui/base';
 import styled from "styled-components/native";
 import { flexCenter, Center } from "../utils/styleComponents";
@@ -8,7 +8,18 @@ import { flexCenter, Center } from "../utils/styleComponents";
 import GlobalContext from '../context/Context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Modal from '../utils/modal';
-import { Input } from 'native-base';
+import { 
+    Input,
+    Box,
+    Heading,
+    HStack,
+    FlatList,
+    VStack,
+    Text,
+    Avatar,
+    Spacer
+
+ } from 'native-base';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { 
     addDoc, 
@@ -47,18 +58,28 @@ export default function Channel({ navigation: {navigate}}) {
 
 
     useEffect(() => {
-        const q = query(collection(db, 'chatrooms'), where("participants", "array-contains", user.uid));
+        const q = query(collection(db, 'chatrooms'), where("participants", "array-contains", user.email));
+        const docs = getDocs(collection(db, 'chatrooms'), q);
+        // docs.forEach(doc => {
+        //     const oppEmail = doc?.data()?.participants.find(email => {email !== user.email});
+        //     const oppUserRef = doc(usersCollectionRef, oppEmail);
+        //     const oppUserDoc = getDoc(oppUserRef);            
+        // });
+
+
         const unsubscribe = onSnapshot(q, snapshot => {
             setChatroomIds(
-                snapshot.docs.map(doc => ({
+                snapshot.docs.map(doc => (
+                    {
                     id: doc.id,
-                    emails: doc.data().participants
-                    
+                    emails: doc.data().participants,
+                    lastMessage: doc.data().lastMessage,
+                    profilePicture: doc.data().profilePicture,
                 }))
             )
         });
         return () => unsubscribe();
-    }, []);
+    }, [navigate]);
 
     const handleCreateChat = async () => {
         try{
@@ -97,10 +118,9 @@ export default function Channel({ navigation: {navigate}}) {
             console.log("Create Chatroom failed: ", error)
         }finally {
             setEmail('');
+            setModalVisible(prev => !prev);
         }
     }
-
-    
 
     
     const ChatList = () => {
@@ -108,19 +128,46 @@ export default function Channel({ navigation: {navigate}}) {
         // const chatroomsColloection = collection(db, 'chatrooms');
 
         return(chatroomIds.map(chatroom => {
-                // const chatroomRef = doc(chatroomsColloection, chatroom);
-                // const chatroomMessagesRef = collection(chatroomRef, "messages");
-                // const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"), limit(1));
-                
+            const oppEmail = chatroom?.emails?.map(email => {
+                if(email !== user?.email){
+                    return email;
+                }
+            })
                 
                 return(
                     <View key={chatroom.id}>
-                        <Text>{chatroom.id}</Text>
                         <TouchableOpacity onPress={() => navigate('Chatroom', {id: chatroom.id})}>
-                            <Text>Click me!</Text>
-                        </TouchableOpacity>
+                        <Box borderBottomWidth="1" _dark={{
+                            borderColor: "muted.50"
+                            }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m="2">
+                                    <HStack space={[2, 3]} justifyContent="space-between">
+                                    <Avatar size="48px" source={{
+                                uri: chatroom.profilePicture
+                                }} />
+                                    <VStack>
+                                        <Text _dark={{
+                                    color: "warmGray.50"
+                                }} color="coolGray.800" bold>
+                                        {oppEmail}
+                                        </Text>
+                                        <Text color="coolGray.600" _dark={{
+                                    color: "warmGray.200"
+                                }}>
+                                        {chatroom.recentText}
+                                        </Text>
+                                    </VStack>
+                                    <Spacer />
+                                    <Text fontSize="xs" _dark={{
+                                color: "warmGray.50"
+                                }} color="coolGray.800" alignSelf="flex-start">
+                                        {chatroom.timeStamp}
+                                    </Text>
+                                    </HStack>
+                                </Box>
+                                </TouchableOpacity>
+
                     </View>
-                )
+                    )
 
             })
         )
