@@ -80,3 +80,5 @@ export function LOG_ERROR(...message) {
 export function createURL(...params) {
     return params.join('/');
 }
+
+export const EMAIL_DOMAIN = "@stonybrook.edu";

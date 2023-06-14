@@ -2,7 +2,9 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     onAuthStateChanged,
-    updateProfile
+    updateProfile,
+    sendSignInLinkToEmail,
+    sendEmailVerification
 } from 'firebase/auth';
 import React, {useState, useEffect} from 'react'
 import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
@@ -25,40 +27,17 @@ import {
 import { EMAIL_DOMAIN } from '../utils/utils';
 
 
-const LoginScreen = () => {
+const EmailVerification = () => {
     const [email, setEmail] = useState(EMAIL_DOMAIN);
-    const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
+    // const [password, setPassword] = useState('');
+    // const [username, setUsername] = useState('');
 
 
-    const handleSignUp = async () => {
-        createUserWithEmailAndPassword(auth, email, password)
+    const handleVerify = async () => {
+        sendEmailVerification(auth, email, password)
             .then(async userCredentials => {
-                const user = userCredentials.user;
-                const usersCollectionRef = collection(db, 'users');
-                await updateProfile(user, {displayName: username}).catch(
-                    (err) => console.log(err)
-                );
-                // await addDoc(collection(db, "users"), {
-                //     username: username,
-                //     uid: user.uid,
-                //     email: user.email,
-                // });
-                await setDoc(doc(usersCollectionRef, user.email), {
-                    username: username,
-                    uid: user.uid,
-                    email: user.email,
-                });
-
-                const userCollection = await getDocs(collection(db, "users"));
-                userCollection.forEach((doc) => {
-                    if (doc.data().uid === user.uid) {
-                        console.log(doc.data().username)
-                    }
-                });
-                console.log('Registered in with: ', user.email);
-
-
+                
+                console.log('Email verified');
             })
             .catch(error => alert(errorHandler(error)));
 
@@ -66,17 +45,16 @@ const LoginScreen = () => {
 
     return (
         <Container>
-            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername}/>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
-            <StartButton onPress={handleSignUp}>
-                <StartText>가입하기</StartText>
+            <UsernameInputField placeholder="Email" value={email} onChangeText={setEmail}/>
+            <Text>{`Email verified: ${auth.currentUser.emailVerified}`}</Text>
+            <StartButton onPress={handleVerify}>
+                <StartText>VERIFY EMAIL</StartText>
             </StartButton>
         </Container>
     )
 }
 
-export default LoginScreen;
+export default EmailVerification;
 
 
 const UsernameInputField = styled.TextInput`

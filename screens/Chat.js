@@ -12,7 +12,8 @@ import {
     orderBy,
     query,
     limit,
-    onSnapshot
+    onSnapshot,
+    doc
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -27,26 +28,17 @@ import { signOut } from 'firebase/auth';
 
 export default function Chat({navigation: {navigate}, route}) {
     const [messages, setMessages] = useState([]);
-
-    const onSignOut = () => {
-        signOut(auth).catch(error => console.log(error)); 
-    };
+    const collectionRef = collection(db, 'chatrooms');
+    const chatroomRef = doc(collectionRef, route.params.id);
+    const chatroomMessagesRef = collection(chatroomRef, "messages");
+    
 
     useLayoutEffect(() => {
-        navigation.setOptions({
-            headerRight: () => {
-                <TouchableOpacity
-                    style={{
-                        marginRight: 10
-                    }}
-                    onPress={onSignOut}
-                >
-                    <AntDesign name='logout' size={24} color={colors.gray} style={{marginRight: 10}}/>
-                </TouchableOpacity>
-            }
-        });
-        const collectionRef = collection(db, 'messages');
-        const q = query(collectionRef, orderBy("createdAt", "desc"));
+        
+        
+
+
+        const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, snapshot => {
             
@@ -60,14 +52,14 @@ export default function Chat({navigation: {navigate}, route}) {
             )
         });
         return () => unsubscribe();
-    }, [navigation]);
+    }, []);
     
 
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
 
         const { _id, createdAt, text, user} = messages[0];
-        addDoc(collection(db, 'messages'), {
+        addDoc(chatroomMessagesRef, {
             _id,
             createdAt,
             text,

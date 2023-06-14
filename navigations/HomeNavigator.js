@@ -7,13 +7,14 @@ import MyPage from '../screens/MyPage';
 import Channel from '../screens/Channel';
 import SearchScreen from "../screens/SearchScreen";
 import {Flex} from "native-base";
+import ChatNavigator from './ChatNavigator';
 
 const Tab = createBottomTabNavigator();
 export default function HomeNavigator() {
     return (
         <Tab.Navigator screenOptions={{headerShown: true}}>
             <Tab.Screen name="Content" component={Content} />
-            <Tab.Screen name="Chat" component={Channel} />
+            <Tab.Screen name="Chat" component={ChatNavigator} />
             <Tab.Screen name="MyPage" component={MyPage} />
         </Tab.Navigator>
     )
