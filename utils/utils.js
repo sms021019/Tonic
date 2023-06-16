@@ -26,6 +26,11 @@ export const StorageDirectoryType = {
     POST_IMAGES: "postImages",
 }
 
+export const PageMode = {
+    EDIT: "edit",
+    CREATE: "create",
+}
+
 const palette = {
     tealGreen: "#128c7e",
     tealGreenDark: "#075e54",

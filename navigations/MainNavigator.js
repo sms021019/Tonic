@@ -1,5 +1,5 @@
 // React
-import {useState, useEffect, useContext, createContext} from 'react';
+import React, {useState, useEffect, useContext, createContext} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native'
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
 // Navigator
@@ -8,12 +8,13 @@ import HomeNavigator from './HomeNavigator'
 import ContentDetailNavigator from "./ContentDetailNavigator"
 import PostingNavigator from './PostingNavigator'
 import SearchNavigator from './SearchNavigator'
-import {NavigatorType} from '../utils/utils.js'
+import {NavigatorType, ScreenType} from '../utils/utils.js'
 // Firebase
 import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from '../firebase';
 // Global Context
 import GlobalContext from '../context/Context';
+import ContentDetailScreen from "../screens/ContentDetailScreen";
 
 
 const Stack = createStackNavigator();
