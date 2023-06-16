@@ -21,6 +21,7 @@ const LoadingView = <View><Text>Loading...</Text></View>
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
     const [postDataList, setPostDataList] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -32,15 +33,7 @@ export default function ContentScreen({navigation}) {
 
     useEffect(() => {
         if (postDataList.length === 0) {
-            getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
-                let dataList = [];
-                querySnapshot.forEach((doc) => {
-                    dataList.push(doc.data());
-                });
-                setPostDataList(dataList);
-            }).catch((err) => {
-                console.log(err);
-            });
+            LoadAllPostDataFromDBAndSet();
         }
     }, []);
 
@@ -61,7 +54,8 @@ export default function ContentScreen({navigation}) {
                         </View>
                     );
                 }}
-                alwaysBounceVertical={false}
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
             />
         </Center>
     )
@@ -77,6 +71,24 @@ export default function ContentScreen({navigation}) {
 
     function handleCreateButtonClick() {
         navigation.navigate(NavigatorType.POSTING);
+    }
+
+    function handleRefresh() {
+        setRefreshing(true)
+        LoadAllPostDataFromDBAndSet();
+    }
+
+    function LoadAllPostDataFromDBAndSet() {
+        getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
+            let dataList = [];
+            querySnapshot.forEach((doc) => {
+                dataList.push(doc.data());
+            });
+            setPostDataList(dataList);
+            setRefreshing(false);
+        }).catch((err) => {
+            console.log(err);
+        });
     }
 
 /* ------------------
