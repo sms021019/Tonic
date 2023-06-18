@@ -14,17 +14,6 @@ export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, (user) => {
-    //         if (user) {
-    //             navigation.replace("HomeNavigator")
-    //         }
-    //     })
-
-    //     return unsubscribe
-    // }, [])
-
     const handleLogin = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then(userCredentials => {
