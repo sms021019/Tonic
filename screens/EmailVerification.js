@@ -1,86 +1,96 @@
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    updateProfile,
-    sendSignInLinkToEmail,
-    sendEmailVerification
+    sendEmailVerification,
+    signOut
 } from 'firebase/auth';
-import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
-import {flexCenter, TonicButton} from "../utils/styleComponents";
+import React, {useState, useContext, useLayoutEffect} from 'react'
+import { Text } from 'react-native'
+import { flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
+import GoBackButton from "../components/GoBackButton";
+
+import {auth} from '../firebase';
+import GlobalContext from '../context/Context';
 
 
-import {auth, db} from '../firebase';
-import errorHandler from '../errors/index';
-import {
-  addDoc, 
-  collection, 
-  getDocs,
-  setDoc,
-  doc,
-} from 'firebase/firestore';
 
-import { EMAIL_DOMAIN } from '../utils/utils';
+const EmailVerification = ({navigation}) => {
+    const {user} = useContext(GlobalContext);
+    const [emailSent, setEmailSent] = useState('none');
 
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTransparent: true,
+            headerTitle: "",
+            headerLeft: () => <GoBackButton
+                color={theme.colors.lightGray}
+                ml={10}
+                callback={handleSignOut}
+            />
+        });
+    }, [navigation]);
 
-const EmailVerification = () => {
-    const [email, setEmail] = useState(EMAIL_DOMAIN);
-    // const [password, setPassword] = useState('');
-    // const [username, setUsername] = useState('');
+    const handleSignOut = () => {
+        signOut(auth)
+        .then(() => {
+            console.log(`${user?.email} logged out`);
+            navigation.navigate("Login");
+        })
+        .catch(error => console.log(error))
+    }
 
 
     const handleVerify = async () => {
-        sendEmailVerification(auth, email, password)
-            .then(async userCredentials => {
-                
-                console.log('Email verified');
+        sendEmailVerification(user)
+            .then( userCredentials => {
+                console.log('Email verification sent');
+                setEmailSent('block');
             })
-            .catch(error => alert(errorHandler(error)));
-
+            .catch(error => console.log(error));
     }
 
     return (
         <Container>
-            <UsernameInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <Text>{`Email verified: ${auth.currentUser.emailVerified}`}</Text>
+            <PasswordResetText>{`Please verify your email\nEmail address: ${user?.email}`}</PasswordResetText>
             <StartButton onPress={handleVerify}>
                 <StartText>VERIFY EMAIL</StartText>
             </StartButton>
+            <ConfirmTextContainer style = {{display: emailSent}}>
+                <ConfirmText>
+                    The verification is sent to current email address.{"\n"}
+                    Please follow the instruction.
+                </ConfirmText>
+                <StartButton onPress={handleSignOut}>
+                    <StartText>FINISH VERIFY</StartText>
+                </StartButton>
+            </ConfirmTextContainer>
         </Container>
     )
 }
 
 export default EmailVerification;
 
+const PasswordResetText = styled.Text`
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+`;
 
-const UsernameInputField = styled.TextInput`
-  border-bottom-color: ${theme.colors.primary};
-  border-bottom-width: 2px;
-  width: ${windowWidth * 0.9}px;
-  height: 50px;
-  margin-top: 20px;
+const ConfirmTextContainer = styled.View`
+    width: 60%;
+    align-self: flex-start;
+    margin-left: 20px;
 `
 
-const EmailInputField = styled.TextInput`
-  border-bottom-color: ${theme.colors.primary};
-  border-bottom-width: 2px;
-  width: ${windowWidth * 0.9}px;
-  height: 50px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-`
+const ConfirmText = styled.Text`
+    margin-top: 40px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
 
-const PasswordInputField = styled.TextInput`
-  border-bottom-color: ${theme.colors.primary};
-  border-bottom-width: 2px;
-  width: ${windowWidth * 0.9}px;
-  height: 50px;
-  margin-bottom: 20px;
-`
+`;
+
 const StartButton = styled.Pressable`
   ${TonicButton};
   width: ${windowWidth * 0.9}px;
@@ -94,16 +104,10 @@ const StartText = styled.Text`
   font-weight: 600;
 `;
 
-const OptionText = styled.Text`
-  color: black;
-  font-size: 12px;
-  margin-bottom: 10px;
-  color: ${theme.colors.foreground};
-`
 
 const Container = styled.View`
-  ${flexCenter};
-  background-color: #fff;
-  align-items: center;
-  justify-content: flex-start;
+    ${flexCenter};
+    background-color: #fff;
+    align-items: center;
+    justify-content: center;
 `;

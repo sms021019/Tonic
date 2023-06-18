@@ -3,7 +3,10 @@ import {View, Text} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
+import { 
+    signOut,
+} from 'firebase/auth';
+import errorHandler from '../errors';
 import GlobalContext from '../context/Context';
 
 
@@ -22,6 +25,9 @@ export default function MyPage({navigation}) {
         <Container>
             <Text>
                 This is My Page
+            </Text>
+            <Text>
+                {`Email verified: ${user?.emailVerified ? 'true' : 'false'}`}
             </Text>
             <SignOutButton onPress={handleSignOut}>
                 <SignOutText>Sign out</SignOutText>
