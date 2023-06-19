@@ -1,17 +1,29 @@
-import React, { useContext } from 'react'
-import {View, Text} from 'react-native'
+import React, {useContext, useLayoutEffect} from 'react'
+import {View, Text, TouchableOpacity, Button} from 'react-native'
 import styled from "styled-components/native";
+import {Feather} from "@expo/vector-icons";
 import {flexCenter} from "../utils/styleComponents";
 import { auth } from '../firebase';
-import { 
-    signOut,
-} from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import errorHandler from '../errors';
 import GlobalContext from '../context/Context';
+import {NavigatorType, PageMode} from "../utils/utils";
+import GoBackButton from "../components/GoBackButton";
+import theme from "../utils/theme";
+import {HamburgerIcon, Menu, Pressable} from "native-base";
 
 
 export default function MyPage({navigation}) {
     const { user } = useContext(GlobalContext);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () =>
+                <TouchableOpacity onPress={() => navigation.navigate(NavigatorType.SETTING)}>
+                    <Feather name={"settings"} size={24} marginRight={14} />
+                </TouchableOpacity>
+        });
+    }, [navigation]);
 
     const handleSignOut = () => {
         signOut(auth)
