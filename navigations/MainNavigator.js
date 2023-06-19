@@ -8,7 +8,7 @@ import HomeNavigator from './HomeNavigator'
 import ContentDetailNavigator from "./ContentDetailNavigator"
 import PostingNavigator from './PostingNavigator'
 import SearchNavigator from './SearchNavigator'
-import {NavigatorType, ScreenType} from '../utils/utils.js'
+import {NavigatorType} from '../utils/utils.js'
 // Firebase
 import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from '../firebase';
