@@ -1,10 +1,12 @@
 // React
 import React, {useEffect, useLayoutEffect, useState} from 'react'
 import {TouchableOpacity, StyleSheet, Button, TextInput} from 'react-native'
+// Design
 import styled from "styled-components/native";
 import {Box, Divider, Flex, Input, Pressable} from "native-base";
 import {MaterialCommunityIcons} from '@expo/vector-icons'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+// Image
 import * as ImagePicker from 'expo-image-picker';
 // Firebase
 import {addDoc, collection} from 'firebase/firestore';
@@ -26,11 +28,23 @@ import {content} from "../tailwind.config";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
+const URIType = {
+    TEMP: "temp",
+    DOWNLOAD: "download",
+}
+class URI {
+    constructor(type = URIType.TEMP, oUri = "", sUri = "") {
+        this.type = type;
+        this.oUri = oUri;
+        this.sUri = sUri;
+    }
+}
+
 export default function PostingScreen({navigation, mode, contentData}) {
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
     const [info, setInfo] = useState('');
-    const [imageUrls, setImageUrls] = useState([]);
+    const [URIs, setURIs] = useState([]);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [posting, setPosting] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -70,68 +84,51 @@ export default function PostingScreen({navigation, mode, contentData}) {
             setTitle(contentData.title);
             setPrice(contentData.price);
             setInfo(contentData.info);
-            setImageUrls(contentData.imageDownloadUrls);
+            setURIs(contentData.imageDownloadUrls);
         }
     }, [])
 
-/* ------------------
-      Error Screen
- -------------------*/
-    if (hasError) return <ErrorScreen/>
 
-/* ------------------
-      Components
- -------------------*/
-    const UploadedImages = getUploadedImagesComp();
+    /* ----------------------------------
+         Event Handlers (ImagePicker)
+     ------------------------------------*/
+    // Get selected image from user's library (ImagePicker)
+    async function asyncGetImageFromUserLibrary() {
+        if (URIs.length >= MAX_IMAGE_UPLOAD_COUNT) return;
 
-    function getUploadedImagesComp() {
-        let component = [];
-
-        for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
-            if (imageUrls[i]) {
-                component.push(
-                    <Box key={i}>
-                        <UploadImageBox>
-                            <UploadImage source={{uri: imageUrls[i]}}/>
-                        </UploadImageBox>
-                        <TouchableOpacity
-                            style={{position: 'absolute', left: 40, top: -5}}
-                            onPress={() => handleDeleteImageButtonClick(i)}
-                        >
-                            <Icon name="close-circle" size={20} color="#242424"/>
-                        </TouchableOpacity>
-                    </Box>
-                )
-            } else {
-                component.push(<UploadImageBox key={i}><GrayText>{i + 1}</GrayText></UploadImageBox>);
+        if (!status?.granted) {
+            const permission = await requestPermission();
+            if (!permission.granted) {
+                return null;
             }
         }
-        return component
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            maxWidth: 512,
+            maxHeight: 512,
+            aspect: [1, 1]
+        });
+
+        if (result?.assets[0]) {
+            setURIs((prev) => ([...prev, result.assets[0]?.uri]));
+        }
     }
 
-/* ------------------
-    Helper Functions
- -------------------*/
-    function SetErrorAndSendLog(...messages) {
-        setHasError(true);
-        LOG_ERROR(messages);
-        return -1;
-    }
-
-
-/* ------------------
-     Event Handlers
- -------------------*/
+    // Remove user's selected image
     function handleDeleteImageButtonClick(index) {
-        if (index < 0 || index >= imageUrls.length) {
+        if (index < 0 || index >= URIs.length) {
             LOG(this, "ERR::Invalid index"); return;
         }
 
-        let newImageUrls = imageUrls;
+        let newImageUrls = URIs;
         newImageUrls.splice(index, 1);
-        setImageUrls(() => ([...newImageUrls]));
+        setURIs(() => ([...newImageUrls]));
     }
 
+    /* -----------------------------------
+         Event Handlers (Post to DB)
+     ------------------------------------*/
     function handlePostClick() {
         if (title === null || title === '' || price == null || price === '' || Number(price) === null) {
             alert('가격을 입력해주세요.');
@@ -151,7 +148,7 @@ export default function PostingScreen({navigation, mode, contentData}) {
 
         try {
             // Convert ImageURL into Blob, upload Blob into Storage, get downloadImageURLs.
-            for (const imageUrl of imageUrls) {
+            for (const imageUrl of URIs) {
 
                 let storageURL = createURL(StorageDirectoryType.POST_IMAGES, user.displayName, new Date().getTime())
 
@@ -166,7 +163,7 @@ export default function PostingScreen({navigation, mode, contentData}) {
                 downloadUrls.push( await getDownloadURL(storageRef) );
             }
 
-            if (imageUrls.length !== downloadUrls.length) return SetErrorAndSendLog("Number of selected images and uploaded images are not matching.");
+            if (URIs.length !== downloadUrls.length) return SetErrorAndSendLog("Number of selected images and uploaded images are not matching.");
 
             // Create new post.
             addDoc(collection(db, DBCollectionType.POSTS), {
@@ -186,6 +183,9 @@ export default function PostingScreen({navigation, mode, contentData}) {
         }
     }
 
+    /* ---------------------
+         Helper Functions
+     -----------------------*/
     async function asyncCreateBlobByImageUri(imageUri) {
         return await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -204,27 +204,6 @@ export default function PostingScreen({navigation, mode, contentData}) {
         });
     }
 
-    async function asyncHandleUploadImage() {
-        if (imageUrls.length >= MAX_IMAGE_UPLOAD_COUNT) return;
-
-        if (!status?.granted) {
-            const permission = await requestPermission();
-            if (!permission.granted) {
-                return null;
-            }
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            maxWidth: 512,
-            maxHeight: 512,
-            aspect: [1, 1]
-        });
-
-        if (result?.assets[0]) {
-            setImageUrls((prev) => ([...prev, result.assets[0]?.uri]));
-        }
-    }
 
     function handleSetPrice(value) {
         if (typeof value == 'string')
@@ -234,13 +213,58 @@ export default function PostingScreen({navigation, mode, contentData}) {
         setPrice(value);
     }
 
+    function SetErrorAndSendLog(...messages) {
+        setHasError(true);
+        LOG_ERROR(messages);
+        return -1;
+    }
+
+    /* ------------------
+         Error Screen
+     -------------------*/
+    if (hasError) return <ErrorScreen/>
+
+
+    /* ------------------
+          Components
+     -------------------*/
+    const UploadedImages = getUploadedImagesComp();
+
+    function getUploadedImagesComp() {
+        let component = [];
+
+        for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
+            if (URIs[i]) {
+                component.push(
+                    <Box key={i}>
+                        <UploadImageBox>
+                            <UploadImage source={{uri: URIs[i]}}/>
+                        </UploadImageBox>
+                        <TouchableOpacity
+                            style={{position: 'absolute', left: 40, top: -5}}
+                            onPress={() => handleDeleteImageButtonClick(i)}
+                        >
+                            <Icon name="close-circle" size={20} color="#242424"/>
+                        </TouchableOpacity>
+                    </Box>
+                )
+            } else {
+                component.push(<UploadImageBox key={i}><GrayText>{i + 1}</GrayText></UploadImageBox>);
+            }
+        }
+        return component
+    }
+
+    /* -------------
+         Render
+     ---------------*/
     return (
         <Container>
             <Flex direction="column" style={{height: "100%", width: "100%"}}>
                 <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <Box style={{margin: windowWidth * 0.05}}>
                         <TouchableOpacity
-                            onPress={asyncHandleUploadImage}
+                            onPress={asyncGetImageFromUserLibrary}
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
@@ -266,6 +290,10 @@ export default function PostingScreen({navigation, mode, contentData}) {
         </Container>
     )
 }
+
+/* ---------------
+     Styles
+ ----------------*/
 const styles = StyleSheet.create({
     button: {
         width: windowWidth * 0.2,
@@ -279,51 +307,51 @@ const styles = StyleSheet.create({
 })
 
 const Container = styled.View`
-    ${flexCenter};
-    background-color: #fff;
+  ${flexCenter};
+  background-color: #fff;
 `;
 
 const ContentGroupBox = styled.View`
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-    align-items: center;
-    justify-content: space-evenly;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-content: space-evenly;
 `
 
 const UploadImageBox = styled.View`
-    overflow: hidden;
-    width: ${windowWidth * 0.14}px;
-    height: ${windowWidth * 0.14}px;
-    border-width: 1px;
-    border-color: ${theme.colors.iconGray};
-    border-radius: 10px;
-    align-items: center;
-    justify-content: center;
+  overflow: hidden;
+  width: ${windowWidth * 0.14}px;
+  height: ${windowWidth * 0.14}px;
+  border-width: 1px;
+  border-color: ${theme.colors.iconGray};
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
 `;
 
 const UploadImage = styled.Image`
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
 `
 
 const GrayText = styled.Text`
-    color: ${theme.colors.text};
+  color: ${theme.colors.text};
 `
 
 const TitleInputField = styled.TextInput`
-    width: ${windowWidth};
-    height: 60px;
-    margin-left: 20px;
-    font-size: 18px;
+  width: ${windowWidth};
+  height: 60px;
+  margin-left: 20px;
+  font-size: 18px;
 `
 
 const PriceInputField = styled.TextInput`
-    width: ${windowWidth};
-    height: 60px;
-    margin-left: 5px;
-    font-size: 18px;
+  width: ${windowWidth};
+  height: 60px;
+  margin-left: 5px;
+  font-size: 18px;
 `
 
 const SignText = styled.Text`
@@ -334,9 +362,9 @@ const SignText = styled.Text`
 `
 
 const InfoInputField = styled.TextInput`
-    width: ${windowWidth};
-    height: 60px;
-    margin-left: 20px;
-    margin-top: 20px;
-    font-size: 18px;
+  width: ${windowWidth};
+  height: 60px;
+  margin-left: 20px;
+  margin-top: 20px;
+  font-size: 18px;
 `
