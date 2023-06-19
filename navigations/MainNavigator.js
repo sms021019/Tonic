@@ -8,6 +8,7 @@ import HomeNavigator from './HomeNavigator'
 import ContentDetailNavigator from "./ContentDetailNavigator"
 import PostingNavigator from './PostingNavigator'
 import SearchNavigator from './SearchNavigator'
+import EmailVerification from '../screens/EmailVerification';
 import {NavigatorType} from '../utils/utils.js'
 // Firebase
 import {onAuthStateChanged} from 'firebase/auth';
@@ -42,8 +43,9 @@ export default function MainNavigator() {
 
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            { user ?
+            { user ? user.emailVerified ? 
             <Stack.Screen name={NavigatorType.HOME} component={HomeNavigator} options={{title: ""}}/> :
+            <Stack.Screen name={NavigatorType.EMAIL} component={EmailVerification} options={{headerShown: true}}/> :
             <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>
             }
             <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />

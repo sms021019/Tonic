@@ -9,6 +9,7 @@ export const NavigatorType = {
     POSTING: "postingNavigator",
     START: "startNavigator",
     SEARCH: "searchNavigator",
+    EMAIL: "EmailVerification",
 }
 
 export const ScreenType = {

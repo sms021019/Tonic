@@ -14,7 +14,7 @@ export default function HomeNavigator() {
     return (
         <Tab.Navigator screenOptions={{headerShown: true}}>
             <Tab.Screen name="Content" component={Content} />
-            <Tab.Screen name="Chat" component={ChatNavigator} />
+            <Tab.Screen name="Chat" component={ChatNavigator} options={{headerShown: false}}/>
             <Tab.Screen name="MyPage" component={MyPage} />
         </Tab.Navigator>
     )
