@@ -10,7 +10,6 @@ import Swiper from "react-native-swiper";
 import {LinearGradient} from "expo-linear-gradient";
 
 export default function ContentDetailScreen({navigation, postData}) {
-
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTransparent: true,
@@ -29,12 +28,22 @@ export default function ContentDetailScreen({navigation, postData}) {
                         </Pressable>
                     );
                 }}>
-                    <Menu.Item onPress={handleEditPost}>
-                        <Text style={{color: theme.colors.primary}}>Edit</Text>
-                    </Menu.Item>
-                    <Menu.Item onPress={handleDeletePost}>
-                        <Text style={{color: theme.colors.alert}}>Delete</Text>
-                    </Menu.Item>
+                    {(/* is mine? */ true)?
+                        <>
+                            <Menu.Item onPress={handleEditPost}>
+                                <Text style={{color: theme.colors.primary}}>Edit</Text>
+                            </Menu.Item>
+                            <Menu.Item onPress={handleDeletePost}>
+                                <Text style={{color: theme.colors.alert}}>Delete</Text>
+                            </Menu.Item>
+                        </>
+                        :
+                        <>
+                            <Menu.Item onPress={handleReportPost}>
+                            <Text style={{color: theme.colors.alert}}>Report</Text>
+                            </Menu.Item>
+                        </>
+                    }
                 </Menu>
         });
     }, [navigation]);
@@ -50,6 +59,10 @@ export default function ContentDetailScreen({navigation, postData}) {
     }
 
     function handleDeletePost() {
+
+    }
+
+    function handleReportPost() {
 
     }
 

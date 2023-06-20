@@ -13,20 +13,12 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import {addDoc, collection, doc, updateDoc} from 'firebase/firestore';
 import {auth, db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
 // Utils
-import {
-    createURL,
-    DBCollectionType,
-    LOG,
-    LOG_ERROR,
-    NavigatorType,
-    PageMode,
-    StorageDirectoryType,
-    windowWidth
-} from "../utils/utils"
+import {createURL, DBCollectionType, LOG, LOG_ERROR, NavigatorType, PageMode, StorageDirectoryType, windowWidth} from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
 import AnimatedLoader from "react-native-animated-loader";
+
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -43,15 +35,15 @@ class UriWrap {
 }
 
 export default function PostingScreen({navigation, mode, postData}) {
-    const [title, setTitle] = useState('');
-    const [price, setPrice] = useState('');
-    const [info, setInfo] = useState('');
-    const [UriWraps, setUriWraps] = useState([]);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
-    const [posting, setPosting] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [title, setTitle] =       useState('');
+    const [price, setPrice] =       useState('');
+    const [info, setInfo] =         useState('');
+    const [UriWraps, setUriWraps] = useState([]);
+    const [posting, setPosting] =   useState(false);
+    const [loading, setLoading] =   useState(false);
     const [hasError, setHasError] = useState(false);
-    const [user, setUser] = useState(null);
+    const [user, setUser] =         useState(null);
 
     mode = mode? mode : PageMode.CREATE;
 
@@ -132,9 +124,7 @@ export default function PostingScreen({navigation, mode, postData}) {
 
     // Remove user's selected image
     function handleDeleteImageButtonClick(index) {
-        if (index < 0 || index >= UriWraps.length) {
-            LOG(this, "ERR::Invalid index"); return;
-        }
+        if (index < 0 || index >= UriWraps.length) { LOG(this, "ERR::Invalid index"); return; }
 
         let newImageUrls = UriWraps;
         newImageUrls.splice(index, 1);
@@ -146,7 +136,7 @@ export default function PostingScreen({navigation, mode, postData}) {
  ------------------------------------*/
     function submitPost() {
         if (title === null || title === '' || price == null || price === '' || Number(price) === null) {
-            alert('가격을 입력해주세요.');
+            alert('Please enter a price.');
             setPosting(false);
             setLoading(false);
             return;
@@ -250,7 +240,6 @@ export default function PostingScreen({navigation, mode, postData}) {
         });
     }
 
-
     function handleSetPrice(value) {
         if (typeof value == 'string')
             value = value.replace(/,/g, '');
@@ -326,7 +315,7 @@ export default function PostingScreen({navigation, mode, postData}) {
                 source={require("../assets/hand-loading.json")}
                 speed={1}
             >
-                <Text>Uploading...</Text>
+                <Text>{(mode === PageMode.CREATE)? "Uploading..." : "Updating..."}</Text>
             </AnimatedLoader>
             <Flex direction="column" style={{height: "100%", width: "100%"}}>
                 <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
@@ -336,7 +325,7 @@ export default function PostingScreen({navigation, mode, postData}) {
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
-                            <GrayText>0/10</GrayText>
+                            <GrayText>{UriWraps.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
                         </TouchableOpacity>
                     </Box>
                     <Divider orientation="vertical" height="80%"/>
