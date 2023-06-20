@@ -1,6 +1,6 @@
 // React
 import React, {useEffect, useLayoutEffect, useState} from 'react'
-import {Button, StyleSheet, TouchableOpacity} from 'react-native'
+import {Button, StyleSheet, TouchableOpacity, Text} from 'react-native'
 // Design
 import styled from "styled-components/native";
 import {Box, Divider, Flex} from "native-base";
@@ -26,6 +26,7 @@ import {
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
+import AnimatedLoader from "react-native-animated-loader";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -318,6 +319,15 @@ export default function PostingScreen({navigation, mode, postData}) {
  ---------------*/
     return (
         <Container>
+            <AnimatedLoader
+                visible={loading}
+                overlayColor="rgba(255,255,255,0.75)"
+                animationStyle={styles.lottie}
+                source={require("../assets/hand-loading.json")}
+                speed={1}
+            >
+                <Text>Uploading...</Text>
+            </AnimatedLoader>
             <Flex direction="column" style={{height: "100%", width: "100%"}}>
                 <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <Box style={{margin: windowWidth * 0.05}}>
@@ -361,6 +371,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 3,
         borderColor: theme.colors.iconGray,
+    },
+    lottie: {
+        width: 200,
+        height: 200,
     },
 })
 
