@@ -1,30 +1,31 @@
 // React
 import React, {useEffect, useLayoutEffect, useState} from 'react'
-import {TouchableOpacity, StyleSheet, Button, TextInput} from 'react-native'
+import {Button, StyleSheet, TouchableOpacity} from 'react-native'
 // Design
 import styled from "styled-components/native";
-import {Box, Divider, Flex, Input, Pressable} from "native-base";
+import {Box, Divider, Flex} from "native-base";
 import {MaterialCommunityIcons} from '@expo/vector-icons'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 // Image
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 // Firebase
-import {addDoc, collection} from 'firebase/firestore';
-import {db, auth, storage, ref, getDownloadURL, uploadBytesResumable} from "../firebase";
+import {addDoc, collection, doc, updateDoc} from 'firebase/firestore';
+import {auth, db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
 // Utils
 import {
+    createURL,
     DBCollectionType,
     LOG,
-    NavigatorType,
-    windowWidth,
-    createURL,
     LOG_ERROR,
-    StorageDirectoryType, PageMode
+    NavigatorType,
+    PageMode,
+    StorageDirectoryType,
+    windowWidth
 } from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
-import {content} from "../tailwind.config";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
@@ -32,7 +33,7 @@ const URIType = {
     TEMP: "temp",
     DOWNLOAD: "download",
 }
-class URI {
+class UriWrap {
     constructor(type = URIType.TEMP, oUri = "", sUri = "") {
         this.type = type;
         this.oUri = oUri;
@@ -40,11 +41,11 @@ class URI {
     }
 }
 
-export default function PostingScreen({navigation, mode, contentData}) {
+export default function PostingScreen({navigation, mode, postData}) {
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
     const [info, setInfo] = useState('');
-    const [URIs, setURIs] = useState([]);
+    const [UriWraps, setUriWraps] = useState([]);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [posting, setPosting] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -68,7 +69,7 @@ export default function PostingScreen({navigation, mode, contentData}) {
         if (posting) {
             if (!loading) {
                 setLoading(true);
-                handlePostClick();
+                submitPost();
             }
         }
     }, [posting]);
@@ -79,22 +80,22 @@ export default function PostingScreen({navigation, mode, contentData}) {
         }
 
         if (mode === PageMode.EDIT) {
-            if (contentData === null) { setHasError(true); return;}
+            if (postData === null) { setHasError(true); return;}
 
-            setTitle(contentData.title);
-            setPrice(contentData.price);
-            setInfo(contentData.info);
-            setURIs(contentData.imageDownloadUrls);
+            setTitle(postData.title);
+            setPrice(postData.price);
+            setInfo(postData.info);
+            setUriWraps(postData.imageDownloadUrls);
         }
     }, [])
 
 
-    /* ----------------------------------
-         Event Handlers (ImagePicker)
-     ------------------------------------*/
+/* ----------------------------------
+     Event Handlers (ImagePicker)
+ ------------------------------------*/
     // Get selected image from user's library (ImagePicker)
     async function asyncGetImageFromUserLibrary() {
-        if (URIs.length >= MAX_IMAGE_UPLOAD_COUNT) return;
+        if (UriWraps.length >= MAX_IMAGE_UPLOAD_COUNT) return;
 
         if (!status?.granted) {
             const permission = await requestPermission();
@@ -110,26 +111,39 @@ export default function PostingScreen({navigation, mode, contentData}) {
             aspect: [1, 1]
         });
 
-        if (result?.assets[0]) {
-            setURIs((prev) => ([...prev, result.assets[0]?.uri]));
-        }
+        if (result?.assets[0] === null) return;
+
+        const originalImage = result.assets[0];
+
+        console.log("0----------");
+        const resizedImage = await ImageManipulator.manipulateAsync(
+            originalImage.uri,
+            [{ resize: { width: 100, height: 100 } }],
+            {}
+        );
+
+        console.log(resizedImage.uri);
+
+        let uriWrap = new UriWrap(URIType.TEMP, originalImage.uri, resizedImage.uri)
+
+        setUriWraps((prev) => ([...prev, uriWrap]));
     }
 
     // Remove user's selected image
     function handleDeleteImageButtonClick(index) {
-        if (index < 0 || index >= URIs.length) {
+        if (index < 0 || index >= UriWraps.length) {
             LOG(this, "ERR::Invalid index"); return;
         }
 
-        let newImageUrls = URIs;
+        let newImageUrls = UriWraps;
         newImageUrls.splice(index, 1);
-        setURIs(() => ([...newImageUrls]));
+        setUriWraps(() => ([...newImageUrls]));
     }
 
-    /* -----------------------------------
-         Event Handlers (Post to DB)
-     ------------------------------------*/
-    function handlePostClick() {
+/* -----------------------------------
+     Event Handlers (Post to DB)
+ ------------------------------------*/
+    function submitPost() {
         if (title === null || title === '' || price == null || price === '' || Number(price) === null) {
             alert('가격을 입력해주세요.');
             setPosting(false);
@@ -137,45 +151,30 @@ export default function PostingScreen({navigation, mode, contentData}) {
             return;
         }
 
-        asyncHandlePostClick().then(() => {
+        asyncSubmitPost().then(() => {
             setPosting(false)
             setLoading(false)
         });
     }
 
-    async function asyncHandlePostClick() {
-        let downloadUrls = [];
+    async function asyncSubmitPost() {
+        let downloadUriWraps = UriWraps.map((wrap) => wrap.type === URIType.DOWNLOAD);
 
         try {
-            // Convert ImageURL into Blob, upload Blob into Storage, get downloadImageURLs.
-            for (const imageUrl of URIs) {
+            for (const uriWrap of UriWraps) {
+                if (uriWrap.type === URIType.DOWNLOAD) continue; // The image is already in DB.
 
-                let storageURL = createURL(StorageDirectoryType.POST_IMAGES, user.displayName, new Date().getTime())
+                const oDownloadUri = await asyncUploadImageToDB(uriWrap.oUri);
+                const sDownloadUri = await asyncUploadImageToDB(uriWrap.sUri);
 
-                if (storageURL === null) return SetErrorAndSendLog("Invalid storageURL")
-
-                let storageRef = ref(storage, storageURL);
-                const blob = await asyncCreateBlobByImageUri(imageUrl);
-
-                if (storageRef === null || blob === null) return SetErrorAndSendLog("Invalid storageRef or blob");
-
-                await uploadBytesResumable(storageRef, blob);
-                downloadUrls.push( await getDownloadURL(storageRef) );
+                if (oDownloadUri && sDownloadUri)
+                    downloadUriWraps.push( new UriWrap(URIType.DOWNLOAD, oDownloadUri, sDownloadUri) );
             }
 
-            if (URIs.length !== downloadUrls.length) return SetErrorAndSendLog("Number of selected images and uploaded images are not matching.");
-
-            // Create new post.
-            addDoc(collection(db, DBCollectionType.POSTS), {
-                title: title,
-                price: Number(price),
-                info: info,
-                imageDownloadUrls: downloadUrls,
-            }).then(() => {
-                navigation.navigate(NavigatorType.HOME);
-            }).catch(() => {
-                return SetErrorAndSendLog("Error occurs while creating new post(document) into firestore.");
-            });
+            if (mode === PageMode.CREATE)
+                createAndUploadPostToDB(downloadUriWraps);
+            else
+                updatePostToDB(downloadUriWraps);
         }
         catch (err) {
             setHasError(true);
@@ -183,9 +182,54 @@ export default function PostingScreen({navigation, mode, contentData}) {
         }
     }
 
-    /* ---------------------
-         Helper Functions
-     -----------------------*/
+    async function asyncUploadImageToDB(uri, name) {
+        const blob = await asyncCreateBlobByImageUri(uri);
+        if (blob === null) return SetErrorAndSendLog("Invalid blob");
+
+        let storageURL = createURL(StorageDirectoryType.POST_IMAGES, user.displayName, name + "_" + new Date().getTime());
+
+        let storageRef = ref(storage, storageURL);
+        if (storageRef === null) return SetErrorAndSendLog("Invalid storageRef");
+
+        await uploadBytesResumable(storageRef, blob);
+
+        return await getDownloadURL(storageRef);
+    }
+
+    function createAndUploadPostToDB(downloadUriWraps) {
+        let uris = toPostUriListFormat(downloadUriWraps);
+
+        addDoc(collection(db, DBCollectionType.POSTS), {
+            title: title,
+            price: Number(price),
+            info: info,
+            imageDownloadUrls: uris,
+        }).then(() => {
+            navigation.navigate(NavigatorType.HOME);
+        }).catch(() => {
+            return SetErrorAndSendLog("Error occurs while creating new post(document) into Database.");
+        });
+    }
+
+    function updatePostToDB(downloadUriWraps) {
+        let uris = toPostUriListFormat(downloadUriWraps);
+        const postRef = doc(db, DBCollectionType.POSTS, postData.docId);
+
+        updateDoc(postRef, {
+            title: title,
+            price: Number(price),
+            info: info,
+            imageDownloadUrls: uris,
+        }).then(() => {
+            navigation.navigate(NavigatorType.HOME);
+        }).catch(() => {
+            return SetErrorAndSendLog("Error occurs while updating a post(document) into Database.");
+        });
+    }
+
+/* ---------------------
+     Helper Functions
+ -----------------------*/
     async function asyncCreateBlobByImageUri(imageUri) {
         return await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -201,6 +245,7 @@ export default function PostingScreen({navigation, mode, contentData}) {
         }).catch((e) => {
             setHasError(true);
             LOG_ERROR(e, "Fail to convert imageURI into Blob.");
+            return null;
         });
     }
 
@@ -219,26 +264,39 @@ export default function PostingScreen({navigation, mode, contentData}) {
         return -1;
     }
 
-    /* ------------------
-         Error Screen
-     -------------------*/
+    function toPostUriListFormat(uriWraps) {
+        let uris = []
+        uriWraps.forEach((wrap) => {
+            if (wrap.type === URIType.DOWNLOAD) {
+                uris.push({
+                    oUri: wrap.oUri,
+                    sUri: wrap.sUri,
+                })
+            }
+        })
+        return uris;
+    }
+
+/* ------------------
+     Error Screen
+ -------------------*/
     if (hasError) return <ErrorScreen/>
 
 
-    /* ------------------
-          Components
-     -------------------*/
+/* ------------------
+      Components
+ -------------------*/
     const UploadedImages = getUploadedImagesComp();
 
     function getUploadedImagesComp() {
         let component = [];
 
         for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
-            if (URIs[i]) {
+            if (UriWraps[i]) {
                 component.push(
                     <Box key={i}>
                         <UploadImageBox>
-                            <UploadImage source={{uri: URIs[i]}}/>
+                            <UploadImage source={{uri: UriWraps[i].sUri}}/>
                         </UploadImageBox>
                         <TouchableOpacity
                             style={{position: 'absolute', left: 40, top: -5}}
@@ -255,9 +313,9 @@ export default function PostingScreen({navigation, mode, contentData}) {
         return component
     }
 
-    /* -------------
-         Render
-     ---------------*/
+/* -------------
+     Render
+ ---------------*/
     return (
         <Container>
             <Flex direction="column" style={{height: "100%", width: "100%"}}>
@@ -277,15 +335,15 @@ export default function PostingScreen({navigation, mode, contentData}) {
                     </ContentGroupBox>
                 </Flex>
                 <Divider/>
-                <TitleInputField placeholder="상품명" value={title} onChangeText={setTitle}/>
+                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle}/>
                 <Divider/>
                 <Flex direction="row" alignItems="center" justifyContent="left">
                     <SignText style={{color: (!price)? "#bbbbbb" : "black"}}>$</SignText>
-                    <PriceInputField placeholder="가격" value={price ? Number(price).toLocaleString() : ''}
+                    <PriceInputField placeholder="Price" value={price ? Number(price).toLocaleString() : ''}
                                      onChangeText={(value) => handleSetPrice(value)} keyboardType="numeric"/>
                 </Flex>
                 <Divider/>
-                <InfoInputField placeholder="내용을 입력하세요" flex="1" multiline={true} value={info} onChangeText={setInfo} />
+                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} />
             </Flex>
         </Container>
     )

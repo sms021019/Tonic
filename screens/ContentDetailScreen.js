@@ -8,9 +8,8 @@ import theme from '../utils/theme';
 import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base";
 import Swiper from "react-native-swiper";
 import {LinearGradient} from "expo-linear-gradient";
-import EllipsisButton from "../components/EllipsisButton";
 
-export default function ContentDetailScreen({navigation, contentData}) {
+export default function ContentDetailScreen({navigation, postData}) {
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -40,14 +39,14 @@ export default function ContentDetailScreen({navigation, contentData}) {
         });
     }, [navigation]);
 
-    const imageDownloadUrls = contentData.imageDownloadUrls;
-    const title = contentData.title;
-    const price = contentData.price;
-    const info = contentData.info;
+    const uriWraps = postData.imageDownloadUrls;
+    const title = postData.title;
+    const price = postData.price;
+    const info = postData.info;
 
 
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: contentData});
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: postData});
     }
 
     function handleDeletePost() {
@@ -63,10 +62,10 @@ export default function ContentDetailScreen({navigation, contentData}) {
                     activeDot={<View style={styles.activeDot} />}
                     loop={false}
                 >
-                    {imageDownloadUrls.map((url, index) => (
-                        <View key={url + index}>
+                    {uriWraps.map((wrap, index) => (
+                        <View key={wrap.oUri + index}>
                             <Image style={{width: windowWidth, height: windowWidth}}
-                                   source={{uri: url}}
+                                   source={{uri: wrap.oUri}}
                             />
                             <LinearGradient
                                 // Background Linear Gradient
