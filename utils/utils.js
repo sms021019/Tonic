@@ -2,37 +2,39 @@ import {Dimensions} from "react-native";
 import React from "react";
 
 export const NavigatorType = {
-    MAIN: "mainNavigator",
-    LOGIN: "LoginNavigator",
-    HOME: "HomeNavigator",
-    CONTENT_DETAIL: "ContentDetailNavigator",
-    POSTING: "postingNavigator",
-    START: "startNavigator",
-    SEARCH: "searchNavigator",
-    EMAIL: "EmailVerification",
-    SETTING: "SettingNavigator",
+    MAIN:               "mainNavigator",
+    LOGIN:              "loginNavigator",
+    HOME:               "homeNavigator",
+    CONTENT_DETAIL:     "contentDetailNavigator",
+    POSTING:            "postingNavigator",
+    START:              "startNavigator",
+    SEARCH:             "searchNavigator",
+    EMAIL:              "emailVerification",
+    SETTING:            "settingNavigator",
+    EDIT_PROFILE:       "editProfileNavigator",
 }
 
 export const ScreenType = {
-    INTRO: "introScreen",
-    LOGIN: "loginScreen",
-    SIGNUP: "signupScreen",
-    CONTENT: "contentScreen",
-    CONTENT_DETAIL: "contentDetailScreen",
-    CHAT: "chatScreen",
-    CHAT_LIST: "chatListScreen",
-    CHANNEL: "channelScreen",
-    MYPAGE: "mypageScreen",
-    POSTING: "postingScreen",
-    SEARCH: "searchScreen",
-    ERROR: "errorScreen",
-    SETTING: "settingScreen",
+    INTRO:              "introScreen",
+    LOGIN:              "loginScreen",
+    SIGNUP:             "signupScreen",
+    CONTENT:            "contentScreen",
+    CONTENT_DETAIL:     "contentDetailScreen",
+    CHAT:               "chatScreen",
+    CHAT_LIST:          "chatListScreen",
+    CHANNEL:            "channelScreen",
+    MYPAGE:             "mypageScreen",
+    POSTING:            "postingScreen",
+    SEARCH:             "searchScreen",
+    ERROR:              "errorScreen",
+    SETTING:            "settingScreen",
+    EDIT_PROFILE:       "editProfileScreen",
 }
 
 export const DBCollectionType = {
-    USERS: "users",
-    POSTS: "posts",
-    MESSAGES: "messages",
+    USERS:      "users",
+    POSTS:      "posts",
+    MESSAGES:   "messages",
 }
 
 export const StorageDirectoryType = {
@@ -40,34 +42,34 @@ export const StorageDirectoryType = {
 }
 
 export const PageMode = {
-    EDIT: "edit",
-    CREATE: "create",
+    EDIT:     "edit",
+    CREATE:   "create",
 }
 
 const palette = {
-    tealGreen: "#128c7e",
-    tealGreenDark: "#075e54",
-    green: "#25d366",
-    lime: "#dcf8c6",
-    skyblue: "#34b7f1",
-    smokeWhite: "#ece5dd",
-    white: "white",
-    gray: "#3C3C3C",
-    lightGray: "#757575",
-    iconGray: "#717171",
+    tealGreen:          "#128c7e",
+    tealGreenDark:      "#075e54",
+    green:              "#25d366",
+    lime:               "#dcf8c6",
+    skyblue:            "#34b7f1",
+    smokeWhite:         "#ece5dd",
+    white:              "white",
+    gray:               "#3C3C3C",
+    lightGray:          "#757575",
+    iconGray:           "#717171",
 };
 
 export const theme = {
     colors: {
-        background: palette.smokeWhite,
-        foreground: palette.tealGreenDark,
-        primary: palette.tealGreen,
-        tertiary: palette.lime,
-        secondary: palette.green,
-        white: palette.white,
-        text: palette.gray,
-        secondaryText: palette.lightGray,
-        iconGray: palette.iconGray,
+        background:     palette.smokeWhite,
+        foreground:     palette.tealGreenDark,
+        primary:        palette.tealGreen,
+        tertiary:       palette.lime,
+        secondary:      palette.green,
+        white:          palette.white,
+        text:           palette.gray,
+        secondaryText:  palette.lightGray,
+        iconGray:       palette.iconGray,
     },
 };
 

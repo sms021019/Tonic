@@ -51,7 +51,11 @@ export default function MyPage({navigation}) {
        Handlers
  -------------------*/
     function handleContentClick(data) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data});
+    }
+
+    function handleEditProfileClick() {
+        navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
 
     return (
@@ -69,7 +73,7 @@ export default function MyPage({navigation}) {
                         <Text style={styles.emailText}>
                             yongshn220@gmail.com
                         </Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={handleEditProfileClick}>
                             <Text style={styles.editText}>
                                 Edit Profile
                             </Text>
