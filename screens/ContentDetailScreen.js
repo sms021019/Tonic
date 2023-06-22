@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useState} from 'react'
+import React, {useLayoutEffect, useState, useContext} from 'react'
 import {View, Text, StyleSheet, Image} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
@@ -7,6 +7,12 @@ import GoBackButton from "../components/GoBackButton";
 import theme from '../utils/theme';
 import {Box, Center, Divider, Flex, ScrollView, SectionList, TextArea} from "native-base";
 import Swiper from "react-native-swiper";
+
+import { CreateChatroom } from './Channel';
+import { db } from '../firebase';
+import { doc } from 'firebase/firestore';
+import GlobalContext from '../context/Context';
+
 
 export default function ContentDetailScreen({navigation, contentData}) {
     useLayoutEffect(() => {
@@ -25,6 +31,15 @@ export default function ContentDetailScreen({navigation, contentData}) {
     const title = contentData.title;
     const price = contentData.price;
     const info = contentData.info;
+    const userRefString = contentData.user;
+    const { user } = useContext(GlobalContext);
+
+    const handleChatClick = () => {
+        CreateChatroom(doc(db, `/${userRefString}`), user).then((ref) => {
+            navigation.navigate('Chatroom', {ref : ref});
+        });
+    }
+
 
     return (
         <Container>
@@ -59,7 +74,7 @@ export default function ContentDetailScreen({navigation, contentData}) {
                     <Text flex="1" style={styles.priceText}>
                         ${price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}}>
+                    <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
                         <TonicText>Chat</TonicText>
                     </ChatButton>
                 </Flex>

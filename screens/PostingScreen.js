@@ -150,6 +150,7 @@ export default function PostingScreen({navigation, label}) {
                 price: Number(price),
                 info: info,
                 imageDownloadUrls: downloadUrls,
+                user: `users/${user?.email}`,
             }).then(() => {
                 navigation.navigate(NavigatorType.HOME);
             }).catch(() => {
