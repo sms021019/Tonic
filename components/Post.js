@@ -27,8 +27,8 @@ export default function Post(props) {
     const data = props.data;
     const title = data.title;
     const price = data.price;
-    const imageUrls = data.imageDownloadUrls;
-    const bannerImageUrl = imageUrls[0];
+    const uriWraps = data.imageDownloadUrls;
+    const bannerImageUrl = uriWraps[0].sUri;
 
     function handlePostClick() {
         props.onClickHandler();

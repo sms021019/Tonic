@@ -12,7 +12,7 @@ export default function PostingNavigator({route}) {
     return (
         <Stack.Navigator screenOptions={{headerShown: true}}>
             <Stack.Screen name="ContentDetail">
-                {props => <PostingScreen {...props} mode={route?.params?.mode} contentData={route?.params?.data} /> }
+                {props => <PostingScreen {...props} mode={route?.params?.mode} postData={route?.params?.data} /> }
             </Stack.Screen>
         </Stack.Navigator>
     )

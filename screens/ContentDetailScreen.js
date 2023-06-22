@@ -9,15 +9,12 @@ import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base
 import Swiper from "react-native-swiper";
 import {LinearGradient} from "expo-linear-gradient";
 import EllipsisButton from "../components/EllipsisButton";
-
 import { CreateChatroom } from './Channel';
 import { db } from '../firebase';
 import { doc } from 'firebase/firestore';
 import GlobalContext from '../context/Context';
 
-
-export default function ContentDetailScreen({navigation, contentData}) {
-
+export default function ContentDetailScreen({navigation, postData}) {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTransparent: true,
@@ -36,17 +33,27 @@ export default function ContentDetailScreen({navigation, contentData}) {
                         </Pressable>
                     );
                 }}>
-                    <Menu.Item onPress={handleEditPost}>
-                        <Text style={{color: theme.colors.primary}}>Edit</Text>
-                    </Menu.Item>
-                    <Menu.Item onPress={handleDeletePost}>
-                        <Text style={{color: theme.colors.alert}}>Delete</Text>
-                    </Menu.Item>
+                    {(/* is mine? */ true)?
+                        <>
+                            <Menu.Item onPress={handleEditPost}>
+                                <Text style={{color: theme.colors.primary}}>Edit</Text>
+                            </Menu.Item>
+                            <Menu.Item onPress={handleDeletePost}>
+                                <Text style={{color: theme.colors.alert}}>Delete</Text>
+                            </Menu.Item>
+                        </>
+                        :
+                        <>
+                            <Menu.Item onPress={handleReportPost}>
+                            <Text style={{color: theme.colors.alert}}>Report</Text>
+                            </Menu.Item>
+                        </>
+                    }
                 </Menu>
         });
     }, [navigation]);
-
-    const imageDownloadUrls = contentData.imageDownloadUrls;
+    
+    const uriWraps = postData.imageDownloadUrls;
     const title = contentData.title;
     const price = contentData.price;
     const info = contentData.info;
@@ -60,12 +67,15 @@ export default function ContentDetailScreen({navigation, contentData}) {
     }
 
 
-
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: contentData});
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: postData});
     }
 
     function handleDeletePost() {
+
+    }
+
+    function handleReportPost() {
 
     }
 
@@ -78,10 +88,10 @@ export default function ContentDetailScreen({navigation, contentData}) {
                     activeDot={<View style={styles.activeDot} />}
                     loop={false}
                 >
-                    {imageDownloadUrls.map((url, index) => (
-                        <View key={url + index}>
+                    {uriWraps.map((wrap, index) => (
+                        <View key={wrap.oUri + index}>
                             <Image style={{width: windowWidth, height: windowWidth}}
-                                   source={{uri: url}}
+                                   source={{uri: wrap.oUri}}
                             />
                             <LinearGradient
                                 // Background Linear Gradient

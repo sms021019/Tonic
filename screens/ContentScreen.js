@@ -33,7 +33,7 @@ export default function ContentScreen({navigation}) {
 
     useEffect(() => {
         if (postDataList.length === 0) {
-            LoadAllPostDataFromDBAndSet();
+            LoadAndSetAllPostDataFromDB();
         }
     }, []);
 
@@ -51,14 +51,17 @@ export default function ContentScreen({navigation}) {
 
     function handleRefresh() {
         setRefreshing(true)
-        LoadAllPostDataFromDBAndSet();
+        LoadAndSetAllPostDataFromDB();
     }
 
-    function LoadAllPostDataFromDBAndSet() {
+    function LoadAndSetAllPostDataFromDB() {
         getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
             let dataList = [];
             querySnapshot.forEach((doc) => {
-                dataList.push(doc.data());
+                let data = doc.data();
+                data["docId"] = doc.id;
+                console.log(data);
+                dataList.push(data);
             });
             setPostDataList(dataList);
             setRefreshing(false);
