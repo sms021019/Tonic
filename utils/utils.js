@@ -10,11 +10,23 @@ export const NavigatorType = {
     START: "startNavigator",
     SEARCH: "searchNavigator",
     EMAIL: "EmailVerification",
+    SETTING: "SettingNavigator",
 }
 
 export const ScreenType = {
+    INTRO: "introScreen",
+    LOGIN: "loginScreen",
+    SIGNUP: "signupScreen",
     CONTENT: "contentScreen",
-    CONTENT_DETAIL: "contentDetailScreen"
+    CONTENT_DETAIL: "contentDetailScreen",
+    CHAT: "chatScreen",
+    CHAT_LIST: "chatListScreen",
+    CHANNEL: "channelScreen",
+    MYPAGE: "mypageScreen",
+    POSTING: "postingScreen",
+    SEARCH: "searchScreen",
+    ERROR: "errorScreen",
+    SETTING: "settingScreen",
 }
 
 export const DBCollectionType = {
@@ -25,6 +37,11 @@ export const DBCollectionType = {
 
 export const StorageDirectoryType = {
     POST_IMAGES: "postImages",
+}
+
+export const PageMode = {
+    EDIT: "edit",
+    CREATE: "create",
 }
 
 const palette = {

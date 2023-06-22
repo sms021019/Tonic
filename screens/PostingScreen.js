@@ -17,15 +17,16 @@ import {
     windowWidth,
     createURL,
     LOG_ERROR,
-    StorageDirectoryType
+    StorageDirectoryType, PageMode
 } from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
+import {content} from "../tailwind.config";
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
-export default function PostingScreen({navigation, label}) {
+export default function PostingScreen({navigation, mode, contentData}) {
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
     const [info, setInfo] = useState('');
@@ -36,22 +37,40 @@ export default function PostingScreen({navigation, label}) {
     const [hasError, setHasError] = useState(false);
     const [user, setUser] = useState(null);
 
+    mode = mode? mode : PageMode.CREATE;
+
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerRight: () => ( <Button onPress={() => setPosting(true)} title="Post"/> ),
+            title: (mode === PageMode.CREATE)? "Sell" : "Edit",
+            headerRight: () => (
+                <Button
+                    onPress={() => setPosting(true)}
+                    title={(mode === PageMode.CREATE)? "Post" : "Save"}/>
+            ),
         });
     }, [navigation]);
 
     useEffect(() => {
         if (posting) {
-            setPosting(false);
-            handlePostClick();
+            if (!loading) {
+                setLoading(true);
+                handlePostClick();
+            }
         }
     }, [posting]);
 
     useEffect(() => {
         if (!user) {
             setUser(auth.currentUser);
+        }
+
+        if (mode === PageMode.EDIT) {
+            if (contentData === null) { setHasError(true); return;}
+
+            setTitle(contentData.title);
+            setPrice(contentData.price);
+            setInfo(contentData.info);
+            setImageUrls(contentData.imageDownloadUrls);
         }
     }, [])
 
@@ -73,7 +92,7 @@ export default function PostingScreen({navigation, label}) {
                 component.push(
                     <Box key={i}>
                         <UploadImageBox>
-                            <UploadImage source={{uri: imageUrls[i].uri}}/>
+                            <UploadImage source={{uri: imageUrls[i]}}/>
                         </UploadImageBox>
                         <TouchableOpacity
                             style={{position: 'absolute', left: 40, top: -5}}
@@ -114,11 +133,17 @@ export default function PostingScreen({navigation, label}) {
     }
 
     function handlePostClick() {
-        if (title === null || title === '')                            { alert('제목을 입력해주세요.'); return; }
-        if (price == null || price === '' || Number(price) === null)   { alert('가격을 입력해주세요.'); return; }
+        if (title === null || title === '' || price == null || price === '' || Number(price) === null) {
+            alert('가격을 입력해주세요.');
+            setPosting(false);
+            setLoading(false);
+            return;
+        }
 
-        setLoading(true);
-        asyncHandlePostClick().then(() => setLoading(false));
+        asyncHandlePostClick().then(() => {
+            setPosting(false)
+            setLoading(false)
+        });
     }
 
     async function asyncHandlePostClick() {
@@ -127,14 +152,13 @@ export default function PostingScreen({navigation, label}) {
         try {
             // Convert ImageURL into Blob, upload Blob into Storage, get downloadImageURLs.
             for (const imageUrl of imageUrls) {
-                if (imageUrl.uri === null || imageUrl.fileName === null) return SetErrorAndSendLog("Invalid imageUrl (no uri or no filename)");
 
                 let storageURL = createURL(StorageDirectoryType.POST_IMAGES, user.displayName, new Date().getTime())
 
                 if (storageURL === null) return SetErrorAndSendLog("Invalid storageURL")
 
                 let storageRef = ref(storage, storageURL);
-                const blob = await asyncCreateBlobByImageUri(imageUrl.uri);
+                const blob = await asyncCreateBlobByImageUri(imageUrl);
 
                 if (storageRef === null || blob === null) return SetErrorAndSendLog("Invalid storageRef or blob");
 
@@ -199,7 +223,7 @@ export default function PostingScreen({navigation, label}) {
         });
 
         if (result?.assets[0]) {
-            setImageUrls((prev) => ([...prev, result.assets[0]]));
+            setImageUrls((prev) => ([...prev, result.assets[0]?.uri]));
         }
     }
 

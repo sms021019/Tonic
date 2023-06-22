@@ -4,7 +4,7 @@ import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
 // util
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {DBCollectionType, NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 // components
 import Post from "../components/Post";
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
@@ -37,6 +37,36 @@ export default function ContentScreen({navigation}) {
         }
     }, []);
 
+
+/* ------------------
+       Handlers
+ -------------------*/
+    function handleContentClick(data) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
+    }
+
+    function handleCreateButtonClick() {
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
+    }
+
+    function handleRefresh() {
+        setRefreshing(true)
+        LoadAllPostDataFromDBAndSet();
+    }
+
+    function LoadAllPostDataFromDBAndSet() {
+        getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
+            let dataList = [];
+            querySnapshot.forEach((doc) => {
+                dataList.push(doc.data());
+            });
+            setPostDataList(dataList);
+            setRefreshing(false);
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+
 /* ------------------
       Components
  -------------------*/
@@ -61,35 +91,6 @@ export default function ContentScreen({navigation}) {
     )
 
     const MainView = !user ? LoadingView : ContentView
-
-/* ------------------
-       Handlers
- -------------------*/
-    function handleContentClick(data) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
-    }
-
-    function handleCreateButtonClick() {
-        navigation.navigate(NavigatorType.POSTING);
-    }
-
-    function handleRefresh() {
-        setRefreshing(true)
-        LoadAllPostDataFromDBAndSet();
-    }
-
-    function LoadAllPostDataFromDBAndSet() {
-        getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
-            let dataList = [];
-            querySnapshot.forEach((doc) => {
-                dataList.push(doc.data());
-            });
-            setPostDataList(dataList);
-            setRefreshing(false);
-        }).catch((err) => {
-            console.log(err);
-        });
-    }
 
 /* ------------------
       Render

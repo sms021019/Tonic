@@ -1,5 +1,5 @@
 // React
-import {useState, useEffect, useContext, createContext} from 'react';
+import React, {useState, useEffect, useContext, createContext} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native'
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
 // Navigator
@@ -15,6 +15,8 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from '../firebase';
 // Global Context
 import GlobalContext from '../context/Context';
+import ContentDetailScreen from "../screens/ContentDetailScreen";
+import SettingNavigator from "./SettingNavigator";
 
 
 const Stack = createStackNavigator();
@@ -50,6 +52,7 @@ export default function MainNavigator() {
             <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />
             <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator}/>
             <Stack.Screen name={NavigatorType.POSTING} component={PostingNavigator}/>
+            <Stack.Screen name={NavigatorType.SETTING} component={SettingNavigator}/>
         </Stack.Navigator>
     )
 }

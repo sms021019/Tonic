@@ -1,12 +1,14 @@
 import React, {useLayoutEffect, useState, useContext} from 'react'
-import {View, Text, StyleSheet, Image} from 'react-native'
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import {NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 import theme from '../utils/theme';
-import {Box, Center, Divider, Flex, ScrollView, SectionList, TextArea} from "native-base";
+import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base";
 import Swiper from "react-native-swiper";
+import {LinearGradient} from "expo-linear-gradient";
+import EllipsisButton from "../components/EllipsisButton";
 
 import { CreateChatroom } from './Channel';
 import { db } from '../firebase';
@@ -15,15 +17,32 @@ import GlobalContext from '../context/Context';
 
 
 export default function ContentDetailScreen({navigation, contentData}) {
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
             headerLeft: () => <GoBackButton
                 color={theme.colors.white}
-                ml={10}
+                ml={15}
                 callback={() => navigation.navigate(NavigatorType.HOME)}
-            />
+            />,
+            // TODO : check if the current user is the owner of the post.
+            headerRight: () =>
+                <Menu w="120px" trigger={triggerProps => {
+                    return (
+                        <Pressable accessibilityLabel="More options menu" {...triggerProps}>
+                            <HamburgerIcon size={6} color="white" mr={5}/>
+                        </Pressable>
+                    );
+                }}>
+                    <Menu.Item onPress={handleEditPost}>
+                        <Text style={{color: theme.colors.primary}}>Edit</Text>
+                    </Menu.Item>
+                    <Menu.Item onPress={handleDeletePost}>
+                        <Text style={{color: theme.colors.alert}}>Delete</Text>
+                    </Menu.Item>
+                </Menu>
         });
     }, [navigation]);
 
@@ -41,6 +60,15 @@ export default function ContentDetailScreen({navigation, contentData}) {
     }
 
 
+
+    function handleEditPost() {
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: contentData});
+    }
+
+    function handleDeletePost() {
+
+    }
+
     return (
         <Container>
             <ScrollView>
@@ -54,6 +82,13 @@ export default function ContentDetailScreen({navigation, contentData}) {
                         <View key={url + index}>
                             <Image style={{width: windowWidth, height: windowWidth}}
                                    source={{uri: url}}
+                            />
+                            <LinearGradient
+                                // Background Linear Gradient
+                                colors={['rgba(0,0,0,0.1)', 'transparent']}
+                                start={{ x: 0, y: 0.2}}
+                                end={{x: 0, y: 0.3}}
+                                style={styles.background}
                             />
                         </View>
                     ))}
@@ -84,10 +119,19 @@ export default function ContentDetailScreen({navigation, contentData}) {
 }
 
 const styles = StyleSheet.create({
+
     slide: {
         flex: 1,
         justifyContent: "center",
         backgroundColor: "transparent",
+    },
+
+    background: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
     },
 
     dot: {
@@ -124,12 +168,15 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
 
-    contentArea: {display:'flex',  alignItems:'left', justifyContent:'center', width:"100%", padding:16, shadowOpacity:0.07, shadowRadius:10, shadowOffset: {height: -15}, backgroundColor:'white' },
+    contentArea: {display: 'flex', justifyContent:'center', width:"100%", padding:16,
+        shadowOpacity:0.07, shadowRadius:10, shadowOffset: {width: 0, height: -15}, backgroundColor:'white' },
 
     priceText: {fontSize: 24, fontWeight:'800', paddingLeft:10},
-    titleText: {fontSize: 24, fontWeight: 800},
-    userNameText: {fontSize: 16, fontWeight: 600, marginRight:8, color:theme.colors.primary},
-    contentText: {fontSize: 20}
+    titleText: {fontSize: 24, fontWeight: '800'},
+    userNameText: {fontSize: 16, fontWeight: '600', marginRight:8, color:theme.colors.primary},
+    contentText: {fontSize: 20},
+    bottomSheetPrimaryText: {fontSize: 22, fontWeight: '600', color:theme.colors.primary, margin:15},
+    bottomSheetAlertText: {fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15}
 });
 
 
