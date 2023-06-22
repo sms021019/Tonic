@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useRef, useState} from 'react'
+import React, {useLayoutEffect, useState, useContext} from 'react'
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
@@ -8,6 +8,11 @@ import theme from '../utils/theme';
 import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base";
 import Swiper from "react-native-swiper";
 import {LinearGradient} from "expo-linear-gradient";
+import EllipsisButton from "../components/EllipsisButton";
+import { CreateChatroom } from './Channel';
+import { db } from '../firebase';
+import { doc } from 'firebase/firestore';
+import GlobalContext from '../context/Context';
 
 export default function ContentDetailScreen({navigation, postData}) {
     useLayoutEffect(() => {
@@ -47,11 +52,19 @@ export default function ContentDetailScreen({navigation, postData}) {
                 </Menu>
         });
     }, [navigation]);
-
+    
     const uriWraps = postData.imageDownloadUrls;
-    const title = postData.title;
-    const price = postData.price;
-    const info = postData.info;
+    const title = contentData.title;
+    const price = contentData.price;
+    const info = contentData.info;
+    const userRefString = contentData.user;
+    const { user } = useContext(GlobalContext);
+
+    const handleChatClick = () => {
+        CreateChatroom(doc(db, `/${userRefString}`), user).then((ref) => {
+            navigation.navigate('Chatroom', {ref : ref});
+        });
+    }
 
 
     function handleEditPost() {
@@ -106,7 +119,7 @@ export default function ContentDetailScreen({navigation, postData}) {
                     <Text flex="1" style={styles.priceText}>
                         ${price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}}>
+                    <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
                         <TonicText>Chat</TonicText>
                     </ChatButton>
                 </Flex>

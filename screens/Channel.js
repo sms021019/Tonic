@@ -39,6 +39,43 @@ import {
     orderBy,
 } from 'firebase/firestore';
 
+import { DBCollectionType } from '../utils/utils';
+
+export const CreateChatroom = async (ref, user) => {
+    let errorMessage;
+    console.log("creating new chatroom...");
+        try{
+            const oppUserDoc = await getDoc(ref);
+    
+            const chatroom = {
+                participants: [oppUserDoc.data().email, user.email]
+            }
+    
+            const chatroomRef = await addDoc(collection(db, 'chatrooms'), chatroom);
+    
+            await updateDoc(chatroomRef, {
+                ref: chatroomRef
+            })
+            
+            await updateDoc(ref, {
+                chatrooms: arrayUnion(chatroomRef)
+            })
+            await updateDoc(doc(db, `/users/${user?.email}`), {
+                chatrooms: arrayUnion(chatroomRef)
+            })
+
+            return chatroomRef;
+        }catch(error){
+            errorMessage = `Create Chatroom failed: ${error}`
+        }finally{
+            if(errorMessage){
+                console.log(errorMessage);
+            }else{
+                console.log("Chatroom Created");
+            }
+        }
+}
+
 
 export default function Channel({ navigation: {navigate}}) {
     const { user } = useContext(GlobalContext);
@@ -51,92 +88,86 @@ export default function Channel({ navigation: {navigate}}) {
 
     const [email, setEmail] = useState("");
     const [chatroomIds, setChatroomIds] = useState([]);
+    const [chatroomsData, setChatroomsData] = useState([]);
+    const [loading, setLoading] = useState("true");
 
     const chatroomsColloection = collection(db, 'chatrooms');
     const usersCollectionRef = collection(db, 'users');
 
+    const currentUserRef = doc(db, `/users/${user?.email}`);
 
 
     useEffect(() => {
-        const q = query(collection(db, 'chatrooms'), where("participants", "array-contains", user.email));
-        const docs = getDocs(collection(db, 'chatrooms'), q);
-        // docs.forEach(doc => {
-        //     const oppEmail = doc?.data()?.participants.find(email => {email !== user.email});
-        //     const oppUserRef = doc(usersCollectionRef, oppEmail);
-        //     const oppUserDoc = getDoc(oppUserRef);            
-        // });
+        if(chatroomsData.length === 0){
+            loadChatrooms();
+        }
+    }, []);
 
+    const getChatroomByRef = async ref => {
+        const chatroomSnapshot = await getDoc(ref);
+        return chatroomSnapshot.data();
+    }
+    
 
-        const unsubscribe = onSnapshot(q, snapshot => {
-            setChatroomIds(
-                snapshot.docs.map(doc => (
-                    {
-                    id: doc.id,
-                    emails: doc.data().participants,
-                    lastMessage: doc.data().lastMessage,
-                    profilePicture: doc.data().profilePicture,
-                }))
-            )
-        });
-        return () => unsubscribe();
-    }, [navigate]);
-
-    const handleCreateChat = async () => {
-        try{
-                const inputSnap = email.toLowerCase();
-                
-
-                const currentUserRef = doc(usersCollectionRef, user.email);
-                const oppUserRef = doc(usersCollectionRef, inputSnap);
-
-                const currentUserDoc = await getDoc(currentUserRef);
-                const oppUserDoc = await getDoc(oppUserRef);
-                
-                if(currentUserDoc.empty || oppUserDoc.empty){
-                    throw "Document does not exist!";
-                }
-
-                console.log(oppUserDoc.data());
-                
-                
-                const newChatroomRef = await addDoc(chatroomsColloection,  {
-                    participants: [user.email, oppUserDoc.data().email],
-                });
-                
-
-                console.log("checkpoint");
-                console.log(newChatroomRef.id);
-                
-                await updateDoc(currentUserRef, {
-                    chatrooms: arrayUnion(newChatroomRef.id)
-                })
-                await updateDoc(oppUserRef, {
-                    chatrooms: arrayUnion(newChatroomRef.id)
-                })
-
-        }catch(error){
-            console.log("Create Chatroom failed: ", error)
-        }finally {
+    const testCreatingChat = () => {
+        CreateChatroom(doc(db, `/users/${email}`), user).then((ref) => {
             setEmail('');
             setModalVisible(prev => !prev);
-        }
+            navigate('Chatroom', {ref: ref});
+        })
     }
+
+    const loadChatrooms = () => {
+        console.log("loading chatrooms...");
+        let tempArr = [];
+        let counter = 0;
+        getDoc(currentUserRef).then(doc => {
+            doc.data().chatrooms?.forEach(async (ref) => {
+                const chatroom = await getChatroomByRef(ref);
+                tempArr.push(chatroom);
+                counter++;
+                console.log(`counter: ${counter}`)
+                console.log(`tempArr: ${tempArr.length}`)
+                if(counter === doc.data().chatrooms.length){
+                    setChatroomsData(tempArr);
+                    setLoading("false");
+                    console.log("loading end");
+                    
+                }
+                }
+            
+            );
+        });
+    }
+
+    const Content = () => {
+    if(loading === 'true'){
+        return <Text>loading...</Text>
+    }else if(loading === 'false'){
+        return <ChatList/>
+    }
+    }
+
 
     
     const ChatList = () => {
-        
+        // console.log(chatroomsData.length);
         // const chatroomsColloection = collection(db, 'chatrooms');
-
-        return(chatroomIds.map(chatroom => {
-            const oppEmail = chatroom?.emails?.map(email => {
+        let count = 0;
+        return(chatroomsData.map(chatroom => {
+            
+            count++;
+            
+            const oppEmail = chatroom?.participants?.map(email => {
                 if(email !== user?.email){
                     return email;
                 }
             })
+            // console.log(oppEmail)
                 
                 return(
-                    <View key={chatroom.id}>
-                        <TouchableOpacity onPress={() => navigate('Chatroom', {id: chatroom.id})}>
+                    <View key={`chatroom${count}`}>
+                        <TouchableOpacity onPress={() => navigate('Chatroom', {ref: chatroom.ref})}>
                         <Box borderBottomWidth="1" _dark={{
                             borderColor: "muted.50"
                             }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m="2">
@@ -203,11 +234,11 @@ export default function Channel({ navigation: {navigate}}) {
                         }
                     }} placeholder="이메일"
                         value={email}
-                        onChangeText={text => setEmail(text)}
+                        onChangeText={text => setEmail(text.toLowerCase())}
                     />
                     <TouchableOpacity
                         style={[styles.button, styles.buttonClose]}
-                        onPress={handleCreateChat}>
+                        onPress={testCreatingChat}>
                         <Text style={styles.textStyle}>채팅하기</Text>
                     </TouchableOpacity>
                 </View>
@@ -233,7 +264,7 @@ export default function Channel({ navigation: {navigate}}) {
                 <MessageText>메시지</MessageText>
             </TopContainer>
             <View>
-                <ChatList/>
+                <Content/>
             </View>
         </SafeAreaView>
     );
