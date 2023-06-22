@@ -28,8 +28,10 @@ import { signOut } from 'firebase/auth';
 
 export default function Chat({navigation: {navigate}, route}) {
     const [messages, setMessages] = useState([]);
-    const collectionRef = collection(db, 'chatrooms');
-    const chatroomRef = doc(collectionRef, route.params.id);
+    // const collectionRef = collection(db, 'chatrooms');
+    // const chatroomRef = doc(collectionRef, route.params.id);
+    // console.log(route.params.ref);
+    const chatroomRef = route.params.ref;
     const chatroomMessagesRef = collection(chatroomRef, "messages");
     
 
