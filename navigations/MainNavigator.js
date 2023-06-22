@@ -17,6 +17,7 @@ import {auth} from '../firebase';
 import GlobalContext from '../context/Context';
 import ContentDetailScreen from "../screens/ContentDetailScreen";
 import SettingNavigator from "./SettingNavigator";
+import EditProfileNavigator from "./EditProfileNavigator";
 
 
 const Stack = createStackNavigator();
@@ -52,6 +53,7 @@ export default function MainNavigator() {
             <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />
             <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator}/>
             <Stack.Screen name={NavigatorType.POSTING} component={PostingNavigator}/>
+            <Stack.Screen name={NavigatorType.EDIT_PROFILE} component={EditProfileNavigator}/>
             <Stack.Screen name={NavigatorType.SETTING} component={SettingNavigator}/>
         </Stack.Navigator>
     )
