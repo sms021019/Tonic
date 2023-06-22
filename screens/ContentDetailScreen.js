@@ -62,7 +62,7 @@ export default function ContentDetailScreen({navigation, postData}) {
 
     const handleChatClick = () => {
         CreateChatroom(doc(db, `/${userRefString}`), user).then((ref) => {
-            navigation.navigate('Chatroom', {ref : ref});
+            navigation.navigate('Chat', { screen: 'Chatroom', params: {ref: ref}, });
         });
     }
 

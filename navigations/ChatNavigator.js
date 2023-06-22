@@ -12,7 +12,7 @@ export default function ChatNavigator() {
     return (
         <Stack.Navigator options={{headerShown: false}}>
             <Stack.Screen name="Channel" component={Channel} options={{headerShown: false}}/>
-            <Stack.Screen name="Chatroom" component={Chat}/>
+            <Stack.Screen name="Chatroom" component={Chat} screenOptions={{headerShown: true}}/>
         </Stack.Navigator>
     )
 }
