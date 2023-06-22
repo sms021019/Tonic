@@ -54,10 +54,10 @@ export default function ContentDetailScreen({navigation, postData}) {
     }, [navigation]);
     
     const uriWraps = postData.imageDownloadUrls;
-    const title = contentData.title;
-    const price = contentData.price;
-    const info = contentData.info;
-    const userRefString = contentData.user;
+    const title = postData.title;
+    const price = postData.price;
+    const info = postData.info;
+    const userRefString = postData.user;
     const { user } = useContext(GlobalContext);
 
     const handleChatClick = () => {
