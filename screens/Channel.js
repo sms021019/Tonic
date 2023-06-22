@@ -140,6 +140,8 @@ export default function Channel({ navigation: {navigate}}) {
         });
     }
 
+    //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
+
     const Content = () => {
     if(loading === 'true'){
         return <Text>loading...</Text>

@@ -195,6 +195,7 @@ export default function PostingScreen({navigation, mode, postData}) {
             price: Number(price),
             info: info,
             imageDownloadUrls: uris,
+            user: `users/${user?.email}`,
         }).then(() => {
             navigation.navigate(NavigatorType.HOME);
         }).catch(() => {
