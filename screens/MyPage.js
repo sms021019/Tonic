@@ -55,7 +55,12 @@ export default function MyPage({navigation}) {
     }
 
     function handleEditProfileClick() {
-        navigation.navigate(NavigatorType.EDIT_PROFILE);
+        signOut(auth).then(() => {
+            console.log('signed out')
+        }).catch((error) => {
+            console.log(error);
+        })
+        // navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
 
     return (
