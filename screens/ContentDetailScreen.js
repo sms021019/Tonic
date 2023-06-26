@@ -2,7 +2,7 @@ import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
+import {NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 import theme from '../utils/theme';
 import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base";
@@ -18,16 +18,18 @@ import {
 import GlobalContext from '../context/Context';
 
 export default function ContentDetailScreen({navigation, postData}) {
-    let userInfo;
+    const [userInfo, setUserInfo] = useState(null);
+
+    useEffect(() => {
+        let postUserRef = doc(db, postData.user);
+        getDoc(postUserRef).then((doc) => {
+            setUserInfo(doc.data());
+            console.log('loaded data')
+        })
+    },[])
 
     useLayoutEffect(() => {
-        const userRefString = postData.user;
-        const userRef = doc(db, `/${userRefString}`);
-        const userData = getDoc(userRef);
-        userInfo = {
-            username: userData.then((doc) => {return doc.data().username})
-        }
-        console.log(userInfo.username);
+        
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
@@ -69,14 +71,13 @@ export default function ContentDetailScreen({navigation, postData}) {
     const title = postData.title;
     const price = postData.price;
     const info = postData.info;
+    const userRefString = postData.user;
     const { user } = useContext(GlobalContext);
     
 
-    
-
     const handleChatClick = () => {
-        CreateChatroom(doc(db, `/${userRefString}`), user).then((ref) => {
-            navigation.navigate('Chat', { screen: 'Chatroom', params: {ref: ref}, });
+        CreateChatroom(doc(db, userRefString), user).then((ref) => {
+            navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }
 
@@ -122,7 +123,7 @@ export default function ContentDetailScreen({navigation, postData}) {
                         <Text style={styles.titleText}>{title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
-                        <Text style={styles.userNameText}>{userInfo?.username}</Text>
+                        <Text style={styles.userNameText}>{`@${userInfo?.username}`}</Text>
                         <Text style={{color:'gray'}}>1 day ago</Text>
                     </Flex>
                     <Text style={styles.contentText}>{info}</Text>
