@@ -40,6 +40,9 @@ import {
 } from 'firebase/firestore';
 
 import { DBCollectionType } from '../utils/utils';
+import { transcode } from 'buffer';
+
+import { ScreenType } from '../utils/utils';
 
 export const CreateChatroom = async (ref, user) => {
     let errorMessage;
@@ -74,6 +77,88 @@ export const CreateChatroom = async (ref, user) => {
                 console.log("Chatroom Created");
             }
         }
+
+        // try{
+        //     await runTransaction(db, async(transaction) => {
+        //         const oppUserDoc = await transaction.get(ref);
+        //         if(!oppUserDoc.exists()){
+        //             throw "Opponent does not exist!";
+        //         }
+        //         const chatroom = {
+        //             participants: [oppUserDoc.data().email, user.email]
+        //         }
+
+        //     })
+        // }
+}
+
+export const ExitChatroom = async (ref, user) => {
+    console.log("Exiting chatroom...");
+    try{
+        await runTransaction(db, async (transaction) => {
+            const currentUserRef = doc(db, `/users/${user?.email}`);
+            const currentUserDoc = await transaction.get(currentUserRef);
+            
+            const chatroomDoc = await transaction.get(ref);
+            const currentUserEmail = currentUserDoc.data().email;
+
+            if(!currentUserDoc.exists()){
+                throw "User document does not exist!";
+            }
+
+            
+            let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
+            let index = -1;
+            for(let i = 0; i < copyOfUserChatrooms.length; i++){
+                if(ref.id === copyOfUserChatrooms[i].id){
+                    index = i;
+                }
+            }
+            console.log(index);
+    
+            // console.log(currentUserDoc.data().chatrooms[0])
+            if(index > -1) {
+                copyOfUserChatrooms.splice(index, 1);
+                transaction.update(currentUserRef, {
+                    chatrooms: copyOfUserChatrooms,
+                })
+            }else{
+                return Promise.reject("Sorry! Chatroom reference doesn't exist");
+            }
+
+            
+
+            if(!chatroomDoc.exists()){
+                throw "Chatroom document does not exist!";
+            }
+
+            let leftParticipants = chatroomDoc.data().participants.length;
+            if( leftParticipants === 1){
+                console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
+                transaction.delete(ref);
+            }else if( leftParticipants > 1){
+                let copyOfParticipants = chatroomDoc.data().participants;
+                let temp = copyOfParticipants.indexOf(currentUserEmail);
+                console.log(temp);
+                if( temp > -1) {
+                    copyOfParticipants.splice(temp, 1);
+                    transaction.update(ref, {
+                        participants: copyOfParticipants,
+                    })
+                }else{
+                    return Promise.reject("Sorry! User reference doesn't exist");
+                }
+            }else{
+                throw "Please check number of participants"
+            }
+            
+
+        });
+
+        console.log("Transaction successfully committed!");
+    }catch(error){
+        console.error(error);
+    }
 }
 
 
@@ -87,21 +172,23 @@ export default function Channel({ navigation: {navigate}}) {
     hideModal = () => setModalVisible(false);
 
     const [email, setEmail] = useState("");
-    const [chatroomIds, setChatroomIds] = useState([]);
     const [chatroomsData, setChatroomsData] = useState([]);
     const [loading, setLoading] = useState("true");
 
-    const chatroomsColloection = collection(db, 'chatrooms');
-    const usersCollectionRef = collection(db, 'users');
+    const [refreshing, setRefreshing] = useState(false);
 
     const currentUserRef = doc(db, `/users/${user?.email}`);
 
 
     useEffect(() => {
-        if(chatroomsData.length === 0){
             loadChatrooms();
-        }
-    }, []);
+        
+    }, [navigate]);
+
+    function handleRefresh() {
+        setRefreshing(true)
+        loadChatrooms();
+    }
 
     const getChatroomByRef = async ref => {
         const chatroomSnapshot = await getDoc(ref);
@@ -113,7 +200,7 @@ export default function Channel({ navigation: {navigate}}) {
         CreateChatroom(doc(db, `/users/${email}`), user).then((ref) => {
             setEmail('');
             setModalVisible(prev => !prev);
-            navigate('Chatroom', {ref: ref});
+            navigate(ScreenType.CHAT, {ref: ref});
         })
     }
 
@@ -122,6 +209,13 @@ export default function Channel({ navigation: {navigate}}) {
         let tempArr = [];
         let counter = 0;
         getDoc(currentUserRef).then(doc => {
+            if(doc.data().chatrooms.length === 0) {
+                console.log("Currently there are no chatrooms");
+                setChatroomsData(tempArr);
+                setLoading("false");
+                setRefreshing(false);
+                
+            }
             doc.data().chatrooms?.forEach(async (ref) => {
                 const chatroom = await getChatroomByRef(ref);
                 tempArr.push(chatroom);
@@ -131,8 +225,8 @@ export default function Channel({ navigation: {navigate}}) {
                 if(counter === doc.data().chatrooms.length){
                     setChatroomsData(tempArr);
                     setLoading("false");
+                    setRefreshing(false);
                     console.log("loading end");
-                    
                 }
                 }
             
@@ -146,67 +240,55 @@ export default function Channel({ navigation: {navigate}}) {
     if(loading === 'true'){
         return <Text>loading...</Text>
     }else if(loading === 'false'){
-        return <ChatList/>
+        return <ChatList2/>
     }
     }
 
+    const ChatList2 = () => {
 
-    
-    const ChatList = () => {
-        // console.log(chatroomsData.length);
-        // const chatroomsColloection = collection(db, 'chatrooms');
-        let count = 0;
-        return(chatroomsData.map(chatroom => {
+        return (
+        <Box flex={1} px="0">
             
-            count++;
-            
-            const oppEmail = chatroom?.participants?.map(email => {
-                if(email !== user?.email){
-                    return email;
-                }
-            })
-            // console.log(oppEmail)
-                
-                return(
-                    <View key={`chatroom${count}`}>
-                        <TouchableOpacity onPress={() => navigate('Chatroom', {ref: chatroom.ref})}>
-                        <Box borderBottomWidth="1" _dark={{
-                            borderColor: "muted.50"
-                            }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m="2">
-                                    <HStack space={[2, 3]} justifyContent="space-between">
-                                    <Avatar size="48px" source={{
-                                uri: chatroom.profilePicture
-                                }} />
-                                    <VStack>
-                                        <Text _dark={{
-                                    color: "warmGray.50"
-                                }} color="coolGray.800" bold>
-                                        {oppEmail}
-                                        </Text>
-                                        <Text color="coolGray.600" _dark={{
-                                    color: "warmGray.200"
-                                }}>
-                                        {chatroom.recentText}
-                                        </Text>
-                                    </VStack>
-                                    <Spacer />
-                                    <Text fontSize="xs" _dark={{
-                                color: "warmGray.50"
-                                }} color="coolGray.800" alignSelf="flex-start">
-                                        {chatroom.timeStamp}
-                                    </Text>
-                                    </HStack>
-                                </Box>
-                                </TouchableOpacity>
-
-                    </View>
-                    )
-
-            })
-        )
+            <FlatList data={chatroomsData} renderItem={({
+            item
+            }) => 
+            <TouchableOpacity onPress={() => navigate(ScreenType.CHAT, {ref: item.ref})}>
+            <Box borderBottomWidth="1" _dark={{
+            borderColor: "muted.50"
+            }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m="2">
+                    <HStack space={[2, 3]} justifyContent="space-between">
+                    <Avatar size="48px" source={{
+                uri: item.avatarUrl
+                }} />
+                    <VStack>
+                        <Text _dark={{
+                    color: "warmGray.50"
+                }} color="coolGray.800" bold>
+                        {item.participants[0] === user.email ? item.participants[1] : item.participants[0]}
+                        </Text>
+                        <Text color="coolGray.600" _dark={{
+                    color: "warmGray.200"
+                }}>
+                        {item.recentText}
+                        </Text>
+                    </VStack>
+                    <Spacer />
+                    <Text fontSize="xs" _dark={{
+                color: "warmGray.50"
+                }} color="coolGray.800" alignSelf="flex-start">
+                        {item.timeStamp}
+                    </Text>
+                    </HStack>
+                </Box>
+                </TouchableOpacity>
+                } 
+                keyExtractor={(item, index) => 'key'+index}
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                />
+        </Box>
+        );
     }
-
-
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
@@ -265,12 +347,19 @@ export default function Channel({ navigation: {navigate}}) {
             <TopContainer>
                 <MessageText>메시지</MessageText>
             </TopContainer>
-            <View>
+            <ContentArea>
                 <Content/>
-            </View>
+            </ContentArea>
         </SafeAreaView>
     );
 };
+
+
+const ContentArea = styled.View`
+  display: flex;
+  flex: 1;
+  background-color: #fff;
+`;
 
 
 const TopContainer = styled.View`

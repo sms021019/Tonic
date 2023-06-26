@@ -12,6 +12,7 @@ export const NavigatorType = {
     EMAIL:              "emailVerification",
     SETTING:            "settingNavigator",
     EDIT_PROFILE:       "editProfileNavigator",
+    CHAT:               "chatNavigator",
 }
 
 export const ScreenType = {
