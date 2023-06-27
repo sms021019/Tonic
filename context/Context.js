@@ -1,8 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
-import {theme} from '../utils/utils.js'
 
 const GlobalContext = React.createContext({
-    theme,
     useFirestoreQuery,
 });
 

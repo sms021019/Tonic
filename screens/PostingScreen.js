@@ -18,6 +18,8 @@ import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
 import AnimatedLoader from "react-native-animated-loader";
+// Model
+import PostModel from '../models/PostModel'
 
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
@@ -68,12 +70,14 @@ export default function PostingScreen({navigation, mode, postData}) {
     }, [posting]);
 
     useEffect(() => {
-        if (!user) {
+        if (!user)
             setUser(auth.currentUser);
-        }
 
         if (mode === PageMode.EDIT) {
-            if (postData === null) { setHasError(true); return;}
+            if (postData === null) {
+                setHasError(true);
+                return;
+            }
 
             setTitle(postData.title);
             setPrice(postData.price);
@@ -108,7 +112,6 @@ export default function PostingScreen({navigation, mode, postData}) {
 
         const originalImage = result.assets[0];
 
-        console.log("0----------");
         const resizedImage = await ImageManipulator.manipulateAsync(
             originalImage.uri,
             [{ resize: { width: 100, height: 100 } }],
@@ -163,7 +166,7 @@ export default function PostingScreen({navigation, mode, postData}) {
             }
 
             if (mode === PageMode.CREATE)
-                createAndUploadPostToDB(downloadUriWraps);
+                createPostToDB(downloadUriWraps);
             else
                 updatePostToDB(downloadUriWraps);
         }
@@ -187,37 +190,31 @@ export default function PostingScreen({navigation, mode, postData}) {
         return await getDownloadURL(storageRef);
     }
 
-    function createAndUploadPostToDB(downloadUriWraps) {
+    async function createPostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
 
-        addDoc(collection(db, DBCollectionType.POSTS), {
-            title: title,
-            price: Number(price),
-            info: info,
-            imageDownloadUrls: uris,
-            user: `users/${user?.email}`,
-        }).then(() => {
+        const postModel = new PostModel(uris, title, Number(price), info, toUserRefFormat(user), user?.email);
+        let result = await postModel.saveData().then(() => {
             navigation.navigate(NavigatorType.HOME);
-        }).catch(() => {
-            return SetErrorAndSendLog("Error occurs while creating new post(document) into Database.");
-        });
+        })
+
+        if (result === false) {
+            setHasError(true);
+        }
     }
 
-    function updatePostToDB(downloadUriWraps) {
+    async function updatePostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
         const postRef = doc(db, DBCollectionType.POSTS, postData.docId);
 
-        updateDoc(postRef, {
-            title: title,
-            price: Number(price),
-            info: info,
-            imageDownloadUrls: uris,
-            user: `users/${user?.email}`,
-        }).then(() => {
+        let postModel = new PostModel(uris, title, Number(price), info, toUserRefFormat(user), user?.email);
+        postModel.setRef(postRef);
+
+        let result = await postModel.updateData().then(() => {
             navigation.navigate(NavigatorType.HOME);
-        }).catch(() => {
-            return SetErrorAndSendLog("Error occurs while updating a post(document) into Database.");
         });
+
+        if (result === false) setHasError(true);
     }
 
 /* ---------------------
@@ -248,6 +245,10 @@ export default function PostingScreen({navigation, mode, postData}) {
 
         value = Number(value);
         setPrice(value);
+    }
+
+    function toUserRefFormat(user) {
+        return `users/${user?.email}`
     }
 
     function SetErrorAndSendLog(...messages) {
