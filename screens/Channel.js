@@ -47,49 +47,75 @@ import { ScreenType } from '../utils/utils';
 export const CreateChatroom = async (ref, user) => {
     let errorMessage;
     console.log("creating new chatroom...");
-        try{
-            const oppUserDoc = await getDoc(ref);
+        // try{
+        //     const oppUserDoc = await getDoc(ref);
     
-            const chatroom = {
-                participants: [oppUserDoc.data().email, user.email]
-            }
+        //     const chatroom = {
+        //         participants: [oppUserDoc.data().email, user.email]
+        //     }
     
-            const chatroomRef = await addDoc(collection(db, 'chatrooms'), chatroom);
+        //     const chatroomRef = await addDoc(collection(db, 'chatrooms'), chatroom);
     
-            await updateDoc(chatroomRef, {
-                ref: chatroomRef
-            })
+        //     await updateDoc(chatroomRef, {
+        //         ref: chatroomRef
+        //     })
             
-            await updateDoc(ref, {
-                chatrooms: arrayUnion(chatroomRef)
-            })
-            await updateDoc(doc(db, `/users/${user?.email}`), {
-                chatrooms: arrayUnion(chatroomRef)
-            })
+        //     await updateDoc(ref, {
+        //         chatrooms: arrayUnion(chatroomRef)
+        //     })
+        //     await updateDoc(doc(db, `/users/${user?.email}`), {
+        //         chatrooms: arrayUnion(chatroomRef)
+        //     })
 
-            return chatroomRef;
+        //     return chatroomRef;
+        // }catch(error){
+        //     errorMessage = `Create Chatroom failed: ${error}`
+        // }finally{
+        //     if(errorMessage){
+        //         console.log(errorMessage);
+        //     }else{
+        //         console.log("Chatroom Created");
+        //     }
+        // }
+
+        try{
+            const transactionResult = await runTransaction(db, async(transaction) => {
+                const oppUserDoc = await transaction.get(ref);
+                if(!oppUserDoc.exists()){
+                    throw "Opponent does not exist!";
+                }
+                
+                const chatroomsCol = collection(db, 'chatrooms');
+                const chatroomRef = doc(chatroomsCol);
+                const chatroomId = chatroomRef.id;
+                const chatroom = {
+                    ref: chatroomRef,
+                    participants: [oppUserDoc.data().email, user.email]
+                }
+
+                transaction.set(chatroomRef, chatroom);
+
+                
+
+                transaction.update(ref, {
+                    chatrooms: arrayUnion(chatroomRef)
+                });
+
+                transaction.update(doc(db, `/users/${user?.email}`), {
+                    chatrooms: arrayUnion(chatroomRef)
+                });
+
+                console.log("Transaction successfully committed!");
+                console.log(chatroomRef);
+                return chatroomRef;
+
+
+            })
+            return transactionResult
         }catch(error){
-            errorMessage = `Create Chatroom failed: ${error}`
-        }finally{
-            if(errorMessage){
-                console.log(errorMessage);
-            }else{
-                console.log("Chatroom Created");
-            }
+            console.log(error)
         }
 
-        // try{
-        //     await runTransaction(db, async(transaction) => {
-        //         const oppUserDoc = await transaction.get(ref);
-        //         if(!oppUserDoc.exists()){
-        //             throw "Opponent does not exist!";
-        //         }
-        //         const chatroom = {
-        //             participants: [oppUserDoc.data().email, user.email]
-        //         }
-
-        //     })
-        // }
 }
 
 export const ExitChatroom = async (ref, user) => {
@@ -197,11 +223,24 @@ export default function Channel({ navigation: {navigate}}) {
     
 
     const testCreatingChat = () => {
-        CreateChatroom(doc(db, `/users/${email}`), user).then((ref) => {
-            setEmail('');
-            setModalVisible(prev => !prev);
-            navigate(ScreenType.CHAT, {ref: ref});
-        })
+        if(email.length === 0){
+            alert('Email can\'t be empty!');
+        }else if(email === user?.email){
+            alert('You can\'t type your email!');
+        }else{
+            CreateChatroom(doc(db, `/users/${email}`), user).then((ref) => {
+                if(ref){
+                    setEmail('');
+                    setModalVisible(prev => !prev);
+                    navigate(ScreenType.CHAT, {ref: ref});
+                }else{
+                    alert("Couldn't find the user!");
+                    setEmail('');
+                }
+            })
+
+        }
+
     }
 
     const loadChatrooms = () => {
@@ -264,7 +303,7 @@ export default function Channel({ navigation: {navigate}}) {
                         <Text _dark={{
                     color: "warmGray.50"
                 }} color="coolGray.800" bold>
-                        {item.participants[0] === user.email ? item.participants[1] : item.participants[0]}
+                        {item.participants[0] === user?.email ? item.participants[1] : item.participants[0]}
                         </Text>
                         <Text color="coolGray.600" _dark={{
                     color: "warmGray.200"
