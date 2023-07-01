@@ -3,6 +3,7 @@ import DBHelper from "../helpers/DBHelper";
 
 export default class PostModel {
     constructor(imageDownloadUrls, title, price, info, user, email) {
+        this.id = null;
         this.ref = null;
         this.collectionType = DBCollectionType.POSTS;
 
@@ -22,6 +23,13 @@ export default class PostModel {
     }
     static loadData(doc) {
 
+    }
+
+    static async loadAllData() {
+        let dest = []
+        let result = await DBHelper.loadAllData(DBCollectionType.POSTS, dest);
+        console.log(dest);
+        return result;
     }
 
     async updateData() {

@@ -1,8 +1,28 @@
-import {addDoc, collection, updateDoc} from "firebase/firestore";
-import {LOG_ERROR} from "../utils/utils";
+import {addDoc, collection, getDocs, updateDoc} from "firebase/firestore";
+import {DBCollectionType, LOG_ERROR} from "../utils/utils";
 import {db} from "../firebase";
 export default class DBHelper {
     constructor() {
+    }
+
+    static async loadData(collectionType, id) {
+
+    }
+
+    static async loadAllData(collectionType, dest = []) {
+        try {
+            let snapshot = await getDocs(collection(db, DBCollectionType.POSTS));
+
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                data["docId"] = doc.id;
+                dest.push(data);
+            });
+            return true;
+        }
+        catch(error) {
+            return false;
+        }
     }
 
     static async addData(collectionType, data) {
