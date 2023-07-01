@@ -21,7 +21,7 @@ export default function ContentDetailScreen({navigation, postData}) {
     const [userInfo, setUserInfo] = useState(null);
 
     useEffect(() => {
-        let postUserRef = doc(db, postData.user);
+        let postUserRef = doc(db, `/users/${postData.user}`);
         getDoc(postUserRef).then((doc) => {
             setUserInfo(doc.data());
             console.log('loaded data')
@@ -71,12 +71,12 @@ export default function ContentDetailScreen({navigation, postData}) {
     const title = postData.title;
     const price = postData.price;
     const info = postData.info;
-    const userRefString = postData.user;
+    const userEmail = postData.user;
     const { user } = useContext(GlobalContext);
     
 
     const handleChatClick = () => {
-        CreateChatroom(doc(db, userRefString), user).then((ref) => {
+        CreateChatroom(doc(db, `/users/${userEmail}`), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }
