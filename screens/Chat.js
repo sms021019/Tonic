@@ -6,7 +6,7 @@ import React, {
     useContext
 } from 'react'
 import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat } from 'react-native-gifted-chat'
+import { GiftedChat, Composer, Send } from 'react-native-gifted-chat'
 import {
     collection,
     addDoc,
@@ -30,6 +30,11 @@ import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import { ExitChatroom } from './Channel';
 import {NavigatorType,ScreenType} from "../utils/utils";
+import * as ImagePicker from 'expo-image-picker';
+import Icon from 'react-native-vector-icons/Octicons';
+import Icon2 from 'react-native-vector-icons/Feather';
+
+
 
 
 
@@ -105,6 +110,101 @@ export default function Chat({navigation, route}) {
         });
     }, []);
 
+    const pickImageasync = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        let imgURI = null;
+        const hasStoragePermissionGranted = status === "granted";
+
+        if (!hasStoragePermissionGranted) return null;
+
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 4],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            imgURI = result.uri;
+        }
+
+        return imgURI;
+    };
+
+    const uploadImageToStorage = async (imgURI) => {
+        const ref = `messages/${[FILE_REFERENCE_HERE]}`
+
+        const imgRef = firebase.storage().ref(ref);
+
+        const metadata = { contentType: "image/jpg" };
+
+
+        // Fetch image data as BLOB from device file manager 
+
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function (e) {
+                reject(new TypeError("Network request failed"));
+            };
+            xhr.responseType = "blob";
+            xhr.open("GET", imgURI, true);
+            xhr.send(null);
+        });
+
+        // Put image Blob data to firebase servers
+        await imgRef.put(blob, metadata);
+
+        // We're done with the blob, close and release it
+        blob.close();
+
+        // Image permanent URL
+        const url = await imgRef.getDownloadURL();
+
+
+        return url
+    };
+       
+
+    const handleSendImage = () => {
+        try{
+            pickImageasync().then((imgURI) => {
+                uploadImageToStorage(imgURI);
+            })
+
+        }catch(e){
+            console.log(e);
+        }
+    }
+
+    // renderComposer = props => {
+    //     return (
+    //         <View style={{ flexDirection: 'row' }}>
+    //             <Composer {...props} />
+    //             <Icon name="image" size={40}/>
+    //         </View>
+    //     );
+    // }
+    
+    renderSend = props => {      
+        if (!props.text.trim()) { // text box empty
+            return  (
+                <TouchableOpacity onPress={handleSendImage}>
+                    <Icon name="image" size={40}/>
+                </TouchableOpacity>
+            );
+          }
+        return (
+            <Send {...props}>
+                <Icon2 name='send' size={40}/>     
+            </Send>
+        );
+      }
+
     
    
     return (
@@ -120,6 +220,7 @@ export default function Chat({navigation, route}) {
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
+                renderSend={this.renderSend}
                 
             />
         </SafeAreaView>

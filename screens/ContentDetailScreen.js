@@ -28,6 +28,14 @@ export default function ContentDetailScreen({navigation, postData}) {
     const userRefString = postData.user;
     const { user } = useContext(GlobalContext);
 
+    useEffect(() => {
+        let postUserRef = doc(db, `/users/${postData.user}`);
+        getDoc(postUserRef).then((doc) => {
+            setUserInfo(doc.data());
+            console.log('loaded data')
+        })
+    },[])
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTransparent: true,
@@ -57,16 +65,8 @@ export default function ContentDetailScreen({navigation, postData}) {
         });
     }, [navigation]);
 
-
-    useEffect(() => {
-        let postUserRef = doc(db, postData.user);
-        getDoc(postUserRef).then((doc) => {
-            setUserInfo(doc.data());
-        })
-    },[])
-
     const handleChatClick = () => {
-        CreateChatroom(doc(db, userRefString), user).then((ref) => {
+        CreateChatroom(doc(db, `/users/${userEmail}`), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }

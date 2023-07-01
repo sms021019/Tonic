@@ -2,17 +2,16 @@ import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
 
 export default class PostModel {
-    constructor(imageDownloadUrls, title, price, info, user, email) {
+    constructor(imageDownloadUrls, title, price, info, email) {
         this.id = null;
         this.ref = null;
         this.collectionType = DBCollectionType.POSTS;
 
         this.imageDownloadUrls = imageDownloadUrls;
         this.title = title;
-        this.price = price;
+        this.price = Number(price); // Todo : valid check
         this.info = info;
-        this.user = user;
-        this.email = email;
+        this.userEmail = email;
     }
     setRef(ref) {
         this.ref = ref;
@@ -36,15 +35,13 @@ export default class PostModel {
         if (this.isValid() === false) return false;
         if (this.ref == null) return false;
 
-        let result = await DBHelper.updateData(this.ref, this.getData());
-        return result;
+        return await DBHelper.updateData(this.ref, this.getData());
     }
 
     async saveData() {
         if (this.isValid() === false) return false;
 
-        let result = await DBHelper.addData(this.collectionType, this.getData());
-        return result;
+        return await DBHelper.addData(this.collectionType, this.getData());
     }
 
     getData() {
@@ -53,8 +50,7 @@ export default class PostModel {
             price: Number(this.price),
             info: this.info,
             imageDownloadUrls: this.imageDownloadUrls,
-            user: this.user,
-            email: this.email,
+            email: this.userEmail,
         }
     }
 }

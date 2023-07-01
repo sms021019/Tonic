@@ -193,28 +193,28 @@ export default function PostingScreen({navigation, mode, postData}) {
     async function createPostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
 
-        const postModel = new PostModel(uris, title, Number(price), info, toUserRefFormat(user), user?.email);
-        let result = await postModel.saveData().then(() => {
-            navigation.navigate(NavigatorType.HOME);
-        })
-
-        if (result === false) {
+        const postModel = new PostModel(uris, title, price, info, user?.email);
+        if (await postModel.saveData() === false) {
             setHasError(true);
+            return;
         }
+
+        navigation.navigate(NavigatorType.HOME);
     }
 
     async function updatePostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
         const postRef = doc(db, DBCollectionType.POSTS, postData.docId);
 
-        let postModel = new PostModel(uris, title, Number(price), info, toUserRefFormat(user), user?.email);
+        let postModel = new PostModel(uris, title, price, info, user?.email);
         postModel.setRef(postRef);
 
-        let result = await postModel.updateData().then(() => {
-            navigation.navigate(NavigatorType.HOME);
-        });
+        if (await postModel.updateData() === false) {
+            setHasError(true);
+            return;
+        }
 
-        if (result === false) setHasError(true);
+        navigation.navigate(NavigatorType.HOME);
     }
 
 /* ---------------------
