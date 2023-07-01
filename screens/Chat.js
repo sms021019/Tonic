@@ -181,14 +181,6 @@ export default function Chat({navigation, route}) {
         }
     }
 
-    // renderComposer = props => {
-    //     return (
-    //         <View style={{ flexDirection: 'row' }}>
-    //             <Composer {...props} />
-    //             <Icon name="image" size={40}/>
-    //         </View>
-    //     );
-    // }
     
     renderSend = props => {      
         if (!props.text.trim()) { // text box empty

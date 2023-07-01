@@ -45,39 +45,7 @@ import { transcode } from 'buffer';
 import { ScreenType } from '../utils/utils';
 
 export const CreateChatroom = async (ref, user) => {
-    let errorMessage;
     console.log("creating new chatroom...");
-        // try{
-        //     const oppUserDoc = await getDoc(ref);
-    
-        //     const chatroom = {
-        //         participants: [oppUserDoc.data().email, user.email]
-        //     }
-    
-        //     const chatroomRef = await addDoc(collection(db, 'chatrooms'), chatroom);
-    
-        //     await updateDoc(chatroomRef, {
-        //         ref: chatroomRef
-        //     })
-            
-        //     await updateDoc(ref, {
-        //         chatrooms: arrayUnion(chatroomRef)
-        //     })
-        //     await updateDoc(doc(db, `/users/${user?.email}`), {
-        //         chatrooms: arrayUnion(chatroomRef)
-        //     })
-
-        //     return chatroomRef;
-        // }catch(error){
-        //     errorMessage = `Create Chatroom failed: ${error}`
-        // }finally{
-        //     if(errorMessage){
-        //         console.log(errorMessage);
-        //     }else{
-        //         console.log("Chatroom Created");
-        //     }
-        // }
-
         try{
             const transactionResult = await runTransaction(db, async(transaction) => {
                 const oppUserDoc = await transaction.get(ref);

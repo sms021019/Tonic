@@ -76,7 +76,7 @@ export default function MyPage({navigation}) {
                             UserName
                         </Text>
                         <Text style={styles.emailText}>
-                            yongshn220@gmail.com
+                            {user?.email}
                         </Text>
                         <TouchableOpacity onPress={handleEditProfileClick}>
                             <Text style={styles.editText}>

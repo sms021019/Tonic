@@ -196,7 +196,9 @@ export default function PostingScreen({navigation, mode, postData}) {
             info: info,
             imageDownloadUrls: uris,
             user: user?.email,
-        }).then(() => {
+        }).then((ref) => {
+            
+
             navigation.navigate(NavigatorType.HOME);
         }).catch(() => {
             return SetErrorAndSendLog("Error occurs while creating new post(document) into Database.");
