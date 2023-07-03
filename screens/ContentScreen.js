@@ -15,12 +15,14 @@ import GlobalContext from '../context/Context';
 // firebase
 import {getDocs, collection} from 'firebase/firestore';
 import {db} from "../firebase";
+// model
+import PostModel from "../models/PostModel";
 
 const LoadingView = <View><Text>Loading...</Text></View>
 
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
-    const [postDataList, setPostDataList] = useState([]);
+    const [postModelList, setPostModelList] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
 
     useLayoutEffect(() => {
@@ -32,8 +34,8 @@ export default function ContentScreen({navigation}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (postDataList.length === 0) {
-            LoadAndSetAllPostDataFromDB();
+        if (postModelList.length === 0) {
+            LoadAndSetPostModel();
         }
     }, []);
 
@@ -41,8 +43,8 @@ export default function ContentScreen({navigation}) {
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(data) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data})
+    function handleContentClick(postModel) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postModel: postModel})
     }
 
     function handleCreateButtonClick() {
@@ -51,25 +53,24 @@ export default function ContentScreen({navigation}) {
 
     function handleRefresh() {
         setRefreshing(true)
-        LoadAndSetAllPostDataFromDB();
-    }
-
-    function LoadAndSetAllPostDataFromDB() {
-        getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
-            let dataList = [];
-            querySnapshot.forEach((doc) => {
-                let data = doc.data();
-                data["docId"] = doc.id;
-                console.log(data);
-                dataList.push(data);
-            });
-            setPostDataList(dataList);
-            setRefreshing(false);
-        }).catch((err) => {
-            console.log(err);
+        LoadAndSetPostModel().then((result) => {
+            if (result === false) {
+                console.log("Fail to refresh.")
+            }
         });
     }
 
+    async function LoadAndSetPostModel() {
+        let postModelList = [];
+        if (await PostModel.loadAllData(/* OUT */ postModelList) === false) {
+            // ERROR HANDLE
+            console.log("fail to load data");
+            return false;
+        }
+
+        setPostModelList(postModelList);
+        setRefreshing(false);
+    }
 
 /* ------------------
       Components
@@ -77,12 +78,12 @@ export default function ContentScreen({navigation}) {
     const ContentView = (
         <Center flex={1} px="0">
             <FlatList
-                data={postDataList}
+                data={postModelList}
                 renderItem={(data) => {
                     return (
                         <View>
                             <View style={{margin: 20}}>
-                                <Post onClickHandler={() => handleContentClick(data.item)} key={data.id} data={data.item}/>
+                                <Post onClickHandler={() => handleContentClick(data.item)} key={data.id} model={data.item}/>
                             </View>
                             <Divider/>
                         </View>

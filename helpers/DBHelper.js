@@ -27,11 +27,10 @@ export default class DBHelper {
 
     static async loadAllData(collectionType, dest = []) {
         try {
-            let snapshot = await getDocs(collection(db, DBCollectionType.POSTS));
-
+            let snapshot = await getDocs(collection(db, collectionType));
             snapshot.forEach((doc) => {
                 let data = doc.data();
-                data["docId"] = doc.id;
+                data["doc_id"] = doc.id;
                 dest.push(data);
             });
             return true;
