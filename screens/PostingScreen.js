@@ -36,7 +36,7 @@ class UriWrap {
     }
 }
 
-export default function PostingScreen({navigation, mode, postData}) {
+export default function PostingScreen({navigation, mode, postModel}) {
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [title, setTitle] =       useState('');
     const [price, setPrice] =       useState('');
@@ -74,15 +74,15 @@ export default function PostingScreen({navigation, mode, postData}) {
             setUser(auth.currentUser);
 
         if (mode === PageMode.EDIT) {
-            if (postData === null) {
+            if (postModel === null) {
                 setHasError(true);
                 return;
             }
 
-            setTitle(postData.title);
-            setPrice(postData.price);
-            setInfo(postData.info);
-            setUriWraps(postData.imageDownloadUrls);
+            setTitle(postModel.title);
+            setPrice(postModel.price);
+            setInfo(postModel.info);
+            setUriWraps(postModel.imageDownloadUrls);
         }
     }, [])
 
@@ -204,7 +204,7 @@ export default function PostingScreen({navigation, mode, postData}) {
 
     async function updatePostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
-        const postRef = doc(db, DBCollectionType.POSTS, postData.docId);
+        const postRef = doc(db, DBCollectionType.POSTS, postModel.id);
 
         let postModel = new PostModel(uris, title, price, info, user?.email);
         postModel.setRef(postRef);

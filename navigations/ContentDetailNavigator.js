@@ -10,7 +10,7 @@ export default function ContentDetailNavigator({route}) {
     return (
         <Stack.Navigator screenOptions={{headerShown: true}}>
             <Stack.Screen name={ScreenType.CONTENT_DETAIL}>
-                {props => <ContentDetailScreen {...props} postData={route?.params?.data}/>}
+                {props => <ContentDetailScreen {...props} postModel={route?.params?.postModel}/>}
             </Stack.Screen>
         </Stack.Navigator>
     )

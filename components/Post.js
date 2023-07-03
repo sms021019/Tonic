@@ -15,19 +15,20 @@ import {
 } from "native-base";
 import {windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
+import {View} from "react-native";
 
 export default function Post(props) {
 
-    if (props.data === null) {
+    if (props.model === null) {
         return (
-            <Box></Box>
+            <View> no model data </View>
         )
     }
 
-    const data = props.data;
-    const title = data.title;
-    const price = data.price;
-    const uriWraps = data.imageDownloadUrls;
+    const postModel = props.model;
+    const title = postModel.title;
+    const price = postModel.price;
+    const uriWraps = postModel.imageDownloadUrls;
     const bannerImageUrl = uriWraps[0].sUri;
 
     function handlePostClick() {

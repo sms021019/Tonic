@@ -8,7 +8,7 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {LinearGradient} from "expo-linear-gradient";
 // DB
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import {collection, doc, getDoc} from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
@@ -19,13 +19,13 @@ import { CreateChatroom } from './Channel';
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 
-export default function ContentDetailScreen({navigation, postData}) {
+export default function ContentDetailScreen({navigation, postModel}) {
     const [userInfo, setUserInfo] = useState(null);
-    const uriWraps = postData.imageDownloadUrls;
-    const title = postData.title;
-    const price = postData.price;
-    const info = postData.info;
-    const userEmail = postData.email;
+    const uriWraps = postModel.imageDownloadUrls;
+    const title = postModel.title;
+    const price = postModel.price;
+    const info = postModel.info;
+    const userEmail = postModel.userEmail;
     const { user } = useContext(GlobalContext);
 
     useEffect(() => {
@@ -76,7 +76,7 @@ export default function ContentDetailScreen({navigation, postData}) {
     }
 
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: postData});
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, postModel: postModel});
     }
 
     function handleDeletePost() {
