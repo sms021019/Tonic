@@ -5,23 +5,30 @@ export default class DBHelper {
     constructor() {
     }
 
-    static async loadData(props) {
-        const {collectionType, id, ref} = props;
+    static async loadData() {
 
-        if(ref){
-            console.log("loading data with ref")
-            const snapshot = await getDoc(ref);
-            if(snapshot.exists()){
-                console.log("found document!");
-                return snapshot.data();
-            }else{
-                console.log("document does not exists with the given ref!");
-                return null
+    }
+
+    static async loadDataByRef(ref, dest) {
+        try {
+            if(ref) {
+                console.log("loading data with ref")
+                const snapshot = await getDoc(ref);
+                if(snapshot.exists()){
+                    console.log("found document!");
+                    dest.push(snapshot.data());
+                    return true;
+                }
+                else {
+                    console.log("document does not exists with the given ref!");
+                    return false;
+                }
             }
-        }else{
-            console.log("loading data with id and collection type")
-            const snapshot = await getDoc(doc(collection(db, collectionType), id));
-            return snapshot.data();
+            else return false
+        }
+        catch(error) {
+            // TO DO : handle error
+            return false
         }
     }
 

@@ -226,39 +226,44 @@ export default function Channel({ navigation: {navigate}}) {
         }
     }
 
-    const loadChatrooms = async () => {
-        console.log("loading chatrooms...");
-        let tempArr = [];
-        let counter = 0;
-        getDoc(currentUserRef).then(doc => {
-            if(doc.data().chatrooms.length === 0) {
-                console.log("Currently there are no chatrooms");
-                setChatroomsData(tempArr);
-                setLoading("false");
-                setRefreshing(false);
+    // const loadChatrooms = async () => {
+    async function loadChatrooms() {
+        // console.log("loading chatrooms...");
+        // let tempArr = [];
+        // let counter = 0;
+        // getDoc(currentUserRef).then(doc => {
+        //     if(doc.data().chatrooms.length === 0) {
+        //         console.log("Currently there are no chatrooms");
+        //         setChatroomsData(tempArr);
+        //         setLoading("false");
+        //         setRefreshing(false);
                 
-            }
-            doc.data().chatrooms?.forEach(async (ref) => {
-                const chatroom = await getChatroomByRef(ref);
-                tempArr.push(chatroom);
-                counter++;
-                if(counter === doc.data().chatrooms.length){
-                    setChatroomsData(tempArr);
-                    setLoading("false");
-                    setRefreshing(false);
-                    console.log("loading end");
-                }
-                }
+        //     }
+        //     doc.data().chatrooms?.forEach(async (ref) => {
+        //         const chatroom = await getChatroomByRef(ref);
+        //         tempArr.push(chatroom);
+        //         counter++;
+        //         if(counter === doc.data().chatrooms.length){
+        //             setChatroomsData(tempArr);
+        //             setLoading("false");
+        //             setRefreshing(false);
+        //             console.log("loading end");
+        //         }
+        //         }
             
-            );
-        });
+        //     );
+        // });
 
-        const chatroomModel = new ChatroomModel();
         // const currentUserDoc = await DBHelper.loadData({ref: currentUserRef});
-        if(await ChatroomModel.loadData(currentUserRef) === false){
-            //set error true
+        let chatroomData = [];
+        if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
+            // TO DO
+            return;
         }
 
+        setChatroomsData(chatroomData);
+        setLoading("false");
+        setRefreshing(false);
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
@@ -317,7 +322,6 @@ export default function Channel({ navigation: {navigate}}) {
         );
     }
 
-    if (hasError) return <ErrorScreen/>
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
