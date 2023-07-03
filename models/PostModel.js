@@ -42,6 +42,34 @@ export default class PostModel {
         return true;
     }
 
+    static async loadAllPostsByUser(currentUserRef, dest){
+        let userData = []
+        if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
+            // TO DO:
+            return false;
+        }
+        else {
+            userData = userData[0];
+        }
+
+        if(userData.posts.length === 0){
+            console.log("No chatrooms")
+            return true;
+        }
+
+        for (let i = 0; i < userData.posts.length; i++) {
+            let data = [];
+            if (await DBHelper.loadDataByRef(userData.posts[i], data) === false) {
+                // TO DO:
+                return false;
+            }
+            dest.push(data[0]);
+        }
+        return true;
+
+
+    }
+
     static createModelByDBData(data) {
         if (this.isLoadDataValid(data) === false) {
             console.log("Data is not valid");

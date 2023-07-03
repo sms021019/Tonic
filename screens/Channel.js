@@ -42,6 +42,14 @@ import {
 import { DBCollectionType } from '../utils/utils';
 import { transcode } from 'buffer';
 import { ScreenType } from '../utils/utils';
+import ChatroomModel from '../models/ChatroomModel';
+import ErrorScreen from "./ErrorScreen";
+import DBHelper from '../helpers/DBHelper';
+
+import { useIsFocused } from '@react-navigation/native'
+
+
+
 
 export const CreateChatroom = async (ref, user) => {
     console.log("creating new chatroom...");
@@ -170,17 +178,21 @@ export default function Channel({ navigation: {navigate}}) {
     const [email, setEmail] = useState("");
     const [chatroomsData, setChatroomsData] = useState([]);
     const [loading, setLoading] = useState("true");
-
+    const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
     // const currentUserRef = doc(db, `/users/${user?.email}`);
     const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
 
+    const isFocused = useIsFocused()
+
 
     useEffect(() => {
+        if(isFocused){
             loadChatrooms();
+        }
         
-    }, [navigate]);
+    }, [isFocused]);
 
     function handleRefresh() {
         setRefreshing(true)
@@ -193,70 +205,79 @@ export default function Channel({ navigation: {navigate}}) {
     }
     
 
-    const testCreatingChat = () => {
+    const handleCreateChatroom = async () => {
         if(email.length === 0){
             alert('Email can\'t be empty!');
         }else if(email === user?.email){
             alert('You can\'t type your email!');
         }else{
-            CreateChatroom(doc(collection(db, DBCollectionType.USERS), email), user).then((ref) => {
+            const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), email), user);
+            await chatroomModel.saveData().then( ref => {
                 if(ref){
                     setEmail('');
                     setModalVisible(prev => !prev);
+                    chatroomModel.setRef(ref);
                     navigate(ScreenType.CHAT, {ref: ref});
                 }else{
-                    alert("Couldn't find the user!");
-                    setEmail('');
+                    setHasError(true);
+                    return;
                 }
             })
-
         }
-
     }
 
-    const loadChatrooms = () => {
-        console.log("loading chatrooms...");
-        let tempArr = [];
-        let counter = 0;
-        getDoc(currentUserRef).then(doc => {
-            if(doc.data().chatrooms.length === 0) {
-                console.log("Currently there are no chatrooms");
-                setChatroomsData(tempArr);
-                setLoading("false");
-                setRefreshing(false);
+    // const loadChatrooms = async () => {
+    async function loadChatrooms() {
+        // console.log("loading chatrooms...");
+        // let tempArr = [];
+        // let counter = 0;
+        // getDoc(currentUserRef).then(doc => {
+        //     if(doc.data().chatrooms.length === 0) {
+        //         console.log("Currently there are no chatrooms");
+        //         setChatroomsData(tempArr);
+        //         setLoading("false");
+        //         setRefreshing(false);
                 
-            }
-            doc.data().chatrooms?.forEach(async (ref) => {
-                const chatroom = await getChatroomByRef(ref);
-                tempArr.push(chatroom);
-                counter++;
-                console.log(`counter: ${counter}`)
-                console.log(`tempArr: ${tempArr.length}`)
-                if(counter === doc.data().chatrooms.length){
-                    setChatroomsData(tempArr);
-                    setLoading("false");
-                    setRefreshing(false);
-                    console.log("loading end");
-                }
-                }
+        //     }
+        //     doc.data().chatrooms?.forEach(async (ref) => {
+        //         const chatroom = await getChatroomByRef(ref);
+        //         tempArr.push(chatroom);
+        //         counter++;
+        //         if(counter === doc.data().chatrooms.length){
+        //             setChatroomsData(tempArr);
+        //             setLoading("false");
+        //             setRefreshing(false);
+        //             console.log("loading end");
+        //         }
+        //         }
             
-            );
-        });
+        //     );
+        // });
+
+        // const currentUserDoc = await DBHelper.loadData({ref: currentUserRef});
+        let chatroomData = [];
+        if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
+            // TO DO
+            return;
+        }
+
+        setChatroomsData(chatroomData);
+        setLoading("false");
+        setRefreshing(false);
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
+    const LoadingView = <View><Text>Loading...</Text></View>
+    
+    // const Content = () => {
+    // if(loading === 'true'){
+    //     return <Text m={2}>loading...</Text>
+    // }else if(loading === 'false'){
+    //     return <ChatList2/>
+    // }
+    // }
 
-    const Content = () => {
-    if(loading === 'true'){
-        return <Text>loading...</Text>
-    }else if(loading === 'false'){
-        return <ChatList2/>
-    }
-    }
-
-    const ChatList2 = () => {
-
-        return (
+    const ChatList2 = (
         <Box flex={1} px="0">
             
             <FlatList data={chatroomsData} renderItem={({
@@ -298,7 +319,8 @@ export default function Channel({ navigation: {navigate}}) {
                 />
         </Box>
         );
-    }
+            
+        const Content = !user ? LoadingView : ChatList2;
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
@@ -332,7 +354,7 @@ export default function Channel({ navigation: {navigate}}) {
                     />
                     <TouchableOpacity
                         style={[styles.button, styles.buttonClose]}
-                        onPress={testCreatingChat}>
+                        onPress={handleCreateChatroom}>
                         <Text style={styles.textStyle}>채팅하기</Text>
                     </TouchableOpacity>
                 </View>
@@ -358,7 +380,7 @@ export default function Channel({ navigation: {navigate}}) {
                 <MessageText>메시지</MessageText>
             </TopContainer>
             <ContentArea>
-                <Content/>
+                {Content}
             </ContentArea>
         </SafeAreaView>
     );
