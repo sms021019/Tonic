@@ -3,7 +3,7 @@ import DBHelper from "../helpers/DBHelper";
 
 export default class PostModel {
     constructor(imageDownloadUrls, title, price, info, email) {
-        this.id = null;
+        this.doc_id = null;
         this.ref = null;
         this.collectionType = DBCollectionType.POSTS;
 
@@ -11,11 +11,16 @@ export default class PostModel {
         this.title = title;
         this.price = Number(price); // Todo : valid check
         this.info = info;
-        this.userEmail = email;
+        this.email = email;
     }
 
-    setId = (id) => this.id = id;
+    setDocId = (doc_id) => this.doc_id = doc_id;
     setRef = (ref) => this.ref = ref;
+    setImageDownloadUrls = (setImageDownloadUrls) => this.setImageDownloadUrls = setImageDownloadUrls;
+    setTitle = (title) => this.title = title;
+    setPrice = (price) => this.price = price;
+    setInfo = (info) => this.info = info;
+    setUserEmail = (email) => this.email = email;
 
     static async loadData(doc) {
 
@@ -29,7 +34,7 @@ export default class PostModel {
         }
 
         for (let i = 0; i < dataList.length; i++) {
-            let postModel = this.convertLoadDataIntoModel(dataList[i]);
+            let postModel = this.createModelByDBData(dataList[i]);
             if (postModel === null) return false;
 
             dest.push(postModel);
@@ -37,15 +42,15 @@ export default class PostModel {
         return true;
     }
 
-    static convertLoadDataIntoModel(data) {
+    static createModelByDBData(data) {
         if (this.isLoadDataValid(data) === false) {
             console.log("Data is not valid");
             return null;
         }
 
-        let postModel = new PostModel(data.imageDownloadUrls, data.title, data.price, data.info, data.email,)
-        postModel.setId(data.doc_id);
-
+        let postModel = new PostModel(data.imageDownloadUrls, data.title, data.price, data.info, data.email)
+        postModel.setDocId(data.doc_id);
+        postModel.setRef(data.ref);
         return postModel
     }
     async updateData() {
@@ -67,7 +72,7 @@ export default class PostModel {
             price: Number(this.price),
             info: this.info,
             imageDownloadUrls: this.imageDownloadUrls,
-            email: this.userEmail,
+            email: this.email,
         }
     }
 
@@ -82,7 +87,7 @@ export default class PostModel {
             data.title === null ||
             data.price === null ||
             data.info === null ||
-            data.userEmail === null
+            data.email === null
         ) {
             return false;
         }

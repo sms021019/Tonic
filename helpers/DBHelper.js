@@ -35,6 +35,7 @@ export default class DBHelper {
             snapshot.forEach((doc) => {
                 let data = doc.data();
                 data["doc_id"] = doc.id;
+                data["ref"] = doc.ref;
                 dest.push(data);
             });
             return true;
