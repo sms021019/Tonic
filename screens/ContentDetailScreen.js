@@ -8,7 +8,7 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {LinearGradient} from "expo-linear-gradient";
 // DB
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils

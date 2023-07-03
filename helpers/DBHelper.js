@@ -44,15 +44,14 @@ export default class DBHelper {
     static async addData(collectionType, data) {
         try {
             if(collectionType === DBCollectionType.POSTS){
-                console.log("Adding a new post...");
-                console.log(collectionType);
-                console.log(data);
+                console.log("Creating a new post...");
+                //당장 계시물 추가하려면 사진이 있어야만 가능함
                 const transactionResult = await runTransaction(db, async(transaction) => {
                     const newPostRef = doc(collection(db, collectionType));
                     transaction.set(newPostRef, data);
-                    console.log("checkp")
-                    console.log(data.email)
-                    transaction.update(doc(db, `/users/${data.email}`), {
+                
+                    // transaction.update(doc(db, `/users/${data.email}`), {
+                    transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
                         posts: arrayUnion(newPostRef)
                     });
 
@@ -61,8 +60,40 @@ export default class DBHelper {
                 });
                 return transactionResult;
 
+            }else if(collectionType === DBCollectionType.CHATROOMS){
+                console.log("Creating a new chatroom...");
+                const transactionResult = await runTransaction(db, async(transaction) => {
+                    const oppUserDoc = await transaction.get(data.opponentRef);
+                    if(!oppUserDoc.exists()){
+                        throw "Opponent does not exist!";
+                    }
+                    if(oppUserDoc.data().email === data.user.email){
+                        throw "Can\'t make room by yourself!";
+                    }
+                    
+                    const chatroomsCol = collection(db, DBCollectionType.CHATROOMS);
+                    const chatroomRef = doc(chatroomsCol);
+                    // const chatroomId = chatroomRef.id;
+                    const chatroom = {
+                        ref: chatroomRef,
+                        participants: [oppUserDoc.data().email, data.user.email]
+                    }
+    
+                    transaction.set(chatroomRef, chatroom);
+    
+                    transaction.update(data.opponentRef, {
+                        chatrooms: arrayUnion(chatroomRef)
+                    });
+    
+                    transaction.update(doc(collection(db, DBCollectionType.USERS), data.user.email), {
+                        chatrooms: arrayUnion(chatroomRef)
+                    });
+    
+                    console.log("Transaction successfully committed!");
+                    return chatroomRef;
+                });
+                return transactionResult;
             }
-            // await addDoc(collection(db, collectionType), data);
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");
