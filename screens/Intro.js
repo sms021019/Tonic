@@ -2,12 +2,12 @@ import React from "react";
 import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
 import {flexCenter, TonicButton, TonicButtonWhite} from "../utils/styleComponents";
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 
 export default function Intro({navigation}) {
     const goLogin = () => {
-        navigation.push("Login");
+        navigation.push(ScreenType.LOGIN);
     };
 
     return (

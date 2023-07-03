@@ -41,7 +41,6 @@ import {
 
 import { DBCollectionType } from '../utils/utils';
 import { transcode } from 'buffer';
-
 import { ScreenType } from '../utils/utils';
 
 export const CreateChatroom = async (ref, user) => {
@@ -52,8 +51,11 @@ export const CreateChatroom = async (ref, user) => {
                 if(!oppUserDoc.exists()){
                     throw "Opponent does not exist!";
                 }
+                if(oppUserDoc.data().email === user?.email){
+                    throw "Can\'t make room by yourself!";
+                }
                 
-                const chatroomsCol = collection(db, 'chatrooms');
+                const chatroomsCol = collection(db, DBCollectionType.CHATROOMS);
                 const chatroomRef = doc(chatroomsCol);
                 const chatroomId = chatroomRef.id;
                 const chatroom = {
@@ -69,7 +71,7 @@ export const CreateChatroom = async (ref, user) => {
                     chatrooms: arrayUnion(chatroomRef)
                 });
 
-                transaction.update(doc(db, `/users/${user?.email}`), {
+                transaction.update(doc(collection(db, DBCollectionType.USERS), user.email), {
                     chatrooms: arrayUnion(chatroomRef)
                 });
 
@@ -90,7 +92,7 @@ export const ExitChatroom = async (ref, user) => {
     console.log("Exiting chatroom...");
     try{
         await runTransaction(db, async (transaction) => {
-            const currentUserRef = doc(db, `/users/${user?.email}`);
+            const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
             const currentUserDoc = await transaction.get(currentUserRef);
             
             const chatroomDoc = await transaction.get(ref);
@@ -171,7 +173,8 @@ export default function Channel({ navigation: {navigate}}) {
 
     const [refreshing, setRefreshing] = useState(false);
 
-    const currentUserRef = doc(db, `/users/${user?.email}`);
+    // const currentUserRef = doc(db, `/users/${user?.email}`);
+    const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
 
 
     useEffect(() => {
@@ -196,7 +199,7 @@ export default function Channel({ navigation: {navigate}}) {
         }else if(email === user?.email){
             alert('You can\'t type your email!');
         }else{
-            CreateChatroom(doc(db, `/users/${email}`), user).then((ref) => {
+            CreateChatroom(doc(collection(db, DBCollectionType.USERS), email), user).then((ref) => {
                 if(ref){
                     setEmail('');
                     setModalVisible(prev => !prev);

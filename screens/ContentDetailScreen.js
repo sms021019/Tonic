@@ -1,35 +1,46 @@
+// React
 import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
+import {View, Text, StyleSheet, Image} from 'react-native'
+import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
-import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
-import GoBackButton from "../components/GoBackButton";
-import theme from '../utils/theme';
-import {Box, Flex, ScrollView, Menu, Pressable, HamburgerIcon} from "native-base";
 import Swiper from "react-native-swiper";
+import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {LinearGradient} from "expo-linear-gradient";
-import EllipsisButton from "../components/EllipsisButton";
-import { CreateChatroom } from './Channel';
+// DB
 import { db } from '../firebase';
-import { 
-    doc,
-    getDoc
-} from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+// Context
 import GlobalContext from '../context/Context';
+// Utils
+import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowWidth} from "../utils/utils";
+import theme from '../utils/theme';
+// Component
+import { CreateChatroom } from './Channel';
+import GoBackButton from "../components/GoBackButton";
+import MenuButton from '../components/MenuButton'
 
 export default function ContentDetailScreen({navigation, postData}) {
     const [userInfo, setUserInfo] = useState(null);
+    const uriWraps = postData.imageDownloadUrls;
+    const title = postData.title;
+    const price = postData.price;
+    const info = postData.info;
+    const userEmail = postData.email;
+    const { user } = useContext(GlobalContext);
 
     useEffect(() => {
-        let postUserRef = doc(db, `/users/${postData.user}`);
+        let postUserRef = doc(collection(db, DBCollectionType.USERS), userEmail);
         getDoc(postUserRef).then((doc) => {
-            setUserInfo(doc.data());
-            console.log('loaded data')
+            if(!(doc.data() === undefined)){
+                setUserInfo(doc.data());
+                console.log('loaded data')
+            }else{
+                console.log('User info is undefined');
+            }
         })
     },[])
 
     useLayoutEffect(() => {
-        
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
@@ -39,48 +50,30 @@ export default function ContentDetailScreen({navigation, postData}) {
                 callback={() => navigation.navigate(NavigatorType.HOME)}
             />,
             // TODO : check if the current user is the owner of the post.
-            headerRight: () =>
-                <Menu w="120px" trigger={triggerProps => {
-                    return (
-                        <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                            <HamburgerIcon size={6} color="white" mr={5}/>
-                        </Pressable>
-                    );
-                }}>
-                    {(/* is mine? */ true)?
-                        <>
-                            <Menu.Item onPress={handleEditPost}>
-                                <Text style={{color: theme.colors.primary}}>Edit</Text>
-                            </Menu.Item>
-                            <Menu.Item onPress={handleDeletePost}>
-                                <Text style={{color: theme.colors.alert}}>Delete</Text>
-                            </Menu.Item>
-                        </>
-                        :
-                        <>
-                            <Menu.Item onPress={handleReportPost}>
-                            <Text style={{color: theme.colors.alert}}>Report</Text>
-                            </Menu.Item>
-                        </>
+            headerRight: () => (
+                <MenuButton
+                    mr={5}
+                    size={6}
+                    items={
+                        true ?
+                            [
+                                {name: "Edit", color: theme.colors.primary, callback: handleEditPost},
+                                {name: "Delete", color: theme.colors.alert, callback: handleDeletePost},
+                            ] :
+                            [
+                                {name: "Report", color: theme.colors.alert, callback: handleReportPost},
+                            ]
                     }
-                </Menu>
+                />
+            )
         });
     }, [navigation]);
-    
-    const uriWraps = postData.imageDownloadUrls;
-    const title = postData.title;
-    const price = postData.price;
-    const info = postData.info;
-    const userEmail = postData.user;
-    const { user } = useContext(GlobalContext);
-    
 
     const handleChatClick = () => {
-        CreateChatroom(doc(db, `/users/${userEmail}`), user).then((ref) => {
+        CreateChatroom(doc(collection(db, DBCollectionType.USERS), userEmail), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }
-
 
     function handleEditPost() {
         navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, data: postData});
@@ -144,64 +137,18 @@ export default function ContentDetailScreen({navigation, postData}) {
 }
 
 const styles = StyleSheet.create({
-
-    slide: {
-        flex: 1,
-        justifyContent: "center",
-        backgroundColor: "transparent",
-    },
-
-    background: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-    },
-
-    dot: {
-        backgroundColor: "rgba(255,255,255,.5)",
-        width: 7,
-        height: 7,
-        borderRadius: 4,
-        marginLeft: 3,
-        marginRight: 3,
-        marginTop: 3,
-        marginBottom: 3,
-    },
-
-    activeDot: {
-        backgroundColor: "#FFF",
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginLeft: 3,
-        marginRight: 3,
-        marginTop: 3,
-        marginBottom: 3,
-    },
-
-    footerArea: {
-        alignSelf: 'center',
-        height: 100,
-        width: "100%",
-        borderRadius: 4,
-        padding: 10,
-        shadowColor: 'black',
-        shadowRadius: 8,
-        shadowOpacity: 0.07,
-        backgroundColor: 'white',
-    },
-
-    contentArea: {display: 'flex', justifyContent:'center', width:"100%", padding:16,
-        shadowOpacity:0.07, shadowRadius:10, shadowOffset: {width: 0, height: -15}, backgroundColor:'white' },
-
-    priceText: {fontSize: 24, fontWeight:'800', paddingLeft:10},
-    titleText: {fontSize: 24, fontWeight: '800'},
-    userNameText: {fontSize: 16, fontWeight: '600', marginRight:8, color:theme.colors.primary},
-    contentText: {fontSize: 20},
-    bottomSheetPrimaryText: {fontSize: 22, fontWeight: '600', color:theme.colors.primary, margin:15},
-    bottomSheetAlertText: {fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15}
+    slide:                  { flex: 1, justifyContent: "center", backgroundColor: "transparent",},
+    background:             { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,},
+    dot:                    {backgroundColor: "rgba(255,255,255,.5)", width: 7, height: 7, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
+    activeDot:              { backgroundColor: "#FFF", width: 8, height: 8, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
+    footerArea:             { alignSelf: 'center', height: 100, width: "100%", borderRadius: 4, padding: 10, shadowColor: 'black', shadowRadius: 8, shadowOpacity: 0.07, backgroundColor: 'white' },
+    contentArea:            { display: 'flex', justifyContent:'center', width:"100%", padding:16, shadowOpacity:0.07, shadowRadius:10, shadowOffset: {width: 0, height: -15}, backgroundColor:'white' },
+    priceText:              { fontSize: 24, fontWeight:'800', paddingLeft:10},
+    titleText:              { fontSize: 24, fontWeight: '800'},
+    userNameText:           { fontSize: 16, fontWeight: '600', marginRight:8, color:theme.colors.primary},
+    contentText:            { fontSize: 20},
+    bottomSheetPrimaryText: { fontSize: 22, fontWeight: '600', color:theme.colors.primary, margin:15},
+    bottomSheetAlertText:   { fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15}
 });
 
 
@@ -211,7 +158,6 @@ const Container = styled.View`
   align-items: center;
   justify-content: center;
 `;
-
 
 const ChatButton = styled.Pressable`
     ${TonicButton};

@@ -11,12 +11,15 @@ import {DBCollectionType, NavigatorType, PageMode, windowWidth} from "../utils/u
 import {Box, Center, Divider, ScrollView} from "native-base";
 import theme from "../utils/theme";
 import Post from "../components/Post";
-import {collection, getDocs} from "firebase/firestore";
+import {collection, getDocs, getDoc, doc} from "firebase/firestore";
+import DBHelper from '../helpers/DBHelper';
 
 
 export default function MyPage({navigation}) {
     const { user } = useContext(GlobalContext);
     const [postDataList, setPostDataList] = useState([]);
+
+    const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -34,14 +37,23 @@ export default function MyPage({navigation}) {
     }, []);
 
     function LoadAndSetAllPostDataFromDB() {
-        getDocs(collection(db, DBCollectionType.POSTS)).then((querySnapshot) => {
+        let counter = 0;
+        getDoc(currentUserRef).then((querySnapshot) => {
             let dataList = [];
-            querySnapshot.forEach((doc) => {
-                let data = doc.data();
-                data["docId"] = doc.id;
+            querySnapshot.data().posts.forEach(async (ref) => {
+                const tempPost = await DBHelper.loadData({ref: ref});
+                let data = tempPost;
+                
+                data["docId"] = ref.id;
                 dataList.push(data);
+                counter++;
+
+                
+                if(querySnapshot.data().posts.length === counter){
+                    setPostDataList(dataList);
+                }
             });
-            setPostDataList(dataList);
+            
         }).catch((err) => {
             console.log(err);
         });
@@ -93,9 +105,9 @@ export default function MyPage({navigation}) {
                     </Box>
                     <Center>
                         {postDataList.map((data) =>
-                                <View>
+                                <View key={data.docId}>
                                     <View style={{margin: 20}}>
-                                        <Post onClickHandler={() => handleContentClick(data)} key={data.docId} data={data}/>
+                                        <Post onClickHandler={() => handleContentClick(data)}  data={data}/>
                                     </View>
                                     <Divider/>
                                 </View>)

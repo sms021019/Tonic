@@ -9,7 +9,7 @@ import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
+import {DBCollectionType, windowWidth} from "../utils/utils";
 
 
 import {auth, db} from '../firebase';
@@ -35,7 +35,7 @@ const LoginScreen = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(async userCredentials => {
                 const user = userCredentials.user;
-                const usersCollectionRef = collection(db, 'users');
+                const usersCollectionRef = collection(db, DBCollectionType.USERS);
                 await updateProfile(user, {displayName: username}).catch(
                     (err) => console.log(err)
                 );
@@ -50,7 +50,7 @@ const LoginScreen = () => {
                     email: user.email,
                 });
 
-                const userCollection = await getDocs(collection(db, "users"));
+                const userCollection = await getDocs(collection(db, DBCollectionType.USERS));
                 userCollection.forEach((doc) => {
                     if (doc.data().uid === user.uid) {
                         console.log(doc.data().username)
