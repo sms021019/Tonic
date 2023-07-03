@@ -1,6 +1,6 @@
 // React
 import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
-import {View, Text, StyleSheet, Image} from 'react-native'
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
 import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
 import Swiper from "react-native-swiper";
@@ -18,9 +18,11 @@ import theme from '../utils/theme';
 import { CreateChatroom } from './Channel';
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
+import Modal from '../utils/modal'
 
 export default function ({navigation, postModel}) {
-    const [userInfo, setUserInfo] = useState(null);
+    const [owner, setPostOwner] = useState(null);
+    const [deleteModalOn, setDeleteModalOn] = useState(false);
     const uriWraps = postModel.imageDownloadUrls;
     const title = postModel.title;
     const price = postModel.price;
@@ -29,14 +31,16 @@ export default function ({navigation, postModel}) {
     const { user } = useContext(GlobalContext);
 
     useEffect(() => {
-        let postUserRef = doc(collection(db, DBCollectionType.USERS), email);
-        getDoc(postUserRef).then((doc) => {
-            if(!(doc.data() === undefined)){
-                setUserInfo(doc.data());
-                console.log('loaded data')
-            }else{
-                console.log('User info is undefined');
+        let userRef = doc(collection(db, DBCollectionType.USERS), email);
+
+        getDoc(userRef).then((doc) => {
+            if(doc.data() === null) {
+                // To Do : error handling.
+                console.log(" err no post user");
+                return;
             }
+
+            setPostOwner(doc.data());
         })
     },[])
 
@@ -55,10 +59,10 @@ export default function ({navigation, postModel}) {
                     mr={5}
                     size={6}
                     items={
-                        true ?
+                        isMyPost() ?
                             [
                                 {name: "Edit", color: theme.colors.primary, callback: handleEditPost},
-                                {name: "Delete", color: theme.colors.alert, callback: handleDeletePost},
+                                {name: "Delete", color: theme.colors.alert, callback: OpenDeleteModal},
                             ] :
                             [
                                 {name: "Report", color: theme.colors.alert, callback: handleReportPost},
@@ -69,7 +73,11 @@ export default function ({navigation, postModel}) {
         });
     }, [navigation]);
 
-    const handleChatClick = () => {
+    function isMyPost() {
+        return user.email === postModel.email;
+    }
+
+    function handleChatClick() {
         CreateChatroom(doc(collection(db, DBCollectionType.USERS), email), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
@@ -79,8 +87,14 @@ export default function ({navigation, postModel}) {
         navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, postModel: postModel});
     }
 
-    function handleDeletePost() {
+    function OpenDeleteModal() {
+        setDeleteModalOn(true);
+    }
 
+    function handleDeletePost() {
+        console.log("Delete post");
+
+        setDeleteModalOn(false);
     }
 
     function handleReportPost() {
@@ -89,6 +103,24 @@ export default function ({navigation, postModel}) {
 
     return (
         <Container>
+            <Modal
+                visible={deleteModalOn}
+                dismiss={() => setDeleteModalOn(false)}
+            >
+                <View style={styles.modalView}>
+                    <Text style={styles.deleteModalText}>
+                        Do you want to delete post?
+                    </Text>
+                    <Flex direction="row" style={{marginTop: 20}}>
+                        <TouchableOpacity onPress={() => setDeleteModalOn(false)} style={{marginRight: 40}} >
+                            <Text style={styles.tonicTextGray}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleDeletePost}>
+                            <Text style={styles.tonicTextBlue}>Delete</Text>
+                        </TouchableOpacity>
+                    </Flex>
+                </View>
+            </Modal>
             <ScrollView>
                 <Swiper
                     height={windowWidth}
@@ -116,7 +148,7 @@ export default function ({navigation, postModel}) {
                         <Text style={styles.titleText}>{title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
-                        <Text style={styles.userNameText}>{`@${userInfo?.username}`}</Text>
+                        <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
                         <Text style={{color:'gray'}}>1 day ago</Text>
                     </Flex>
                     <Text style={styles.contentText}>{info}</Text>
@@ -148,7 +180,27 @@ const styles = StyleSheet.create({
     userNameText:           { fontSize: 16, fontWeight: '600', marginRight:8, color:theme.colors.primary},
     contentText:            { fontSize: 20},
     bottomSheetPrimaryText: { fontSize: 22, fontWeight: '600', color:theme.colors.primary, margin:15},
-    bottomSheetAlertText:   { fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15}
+    bottomSheetAlertText:   { fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15},
+    deleteModalText:        { fontSize: 16, fontWeight: '600' },
+    tonicTextGray:          { fontSize: 18, fontWeight: '600', color: theme.colors.iconGray },
+    tonicTextBlue:          { fontSize: 18, fontWeight: '600', color: theme.colors.primary },
+
+
+    modalView: {
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
 });
 
 
@@ -161,6 +213,14 @@ const Container = styled.View`
 
 const ChatButton = styled.Pressable`
     ${TonicButton};
+    width: 70px;
+    height: 50px;
+    border-radius: 8px;
+`;
+
+const ModalButton = styled.Pressable`
+    ${TonicButton};
+    display: flex;
     width: 70px;
     height: 50px;
     border-radius: 8px;

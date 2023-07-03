@@ -26,7 +26,11 @@ export default function Post(props) {
     }
 
     const postModel = props.model;
-    const title = postModel.title;
+    let title = postModel.title;
+    // if (title.length > 30){
+    //     title = title.substring(0, 30) + "...";
+    // }
+
     const price = postModel.price;
     const uriWraps = postModel.imageDownloadUrls;
     const bannerImageUrl = uriWraps[0].sUri;
@@ -51,13 +55,13 @@ export default function Post(props) {
                                         size="100%"/>
                                 </Center>
                                 <Flex flex="1" marginLeft="5">
-                                    <Text color="coolGray.800" fontWeight="medium" fontSize="lg">
+                                    <Text color="coolGray.800" fontWeight="medium" fontSize="lg" numberOfLines={1}>
                                         {title}
                                     </Text>
-                                    <Text flex="1" mt="2" fontSize="xl" fontWeight="bold" color="coolGray.700">
+                                    <Text flex="1" mt="2" fontSize="xl" fontWeight="bold" color="coolGray.700" numberOfLines={1}>
                                         ${price}
                                     </Text>
-                                    <Text flex="0.5" fontSize="sm" color="coolGray.800">
+                                    <Text flex="0.5" fontSize="sm" color="coolGray.800" numberOfLines={1}>
                                         1d
                                     </Text>
                                 </Flex>
