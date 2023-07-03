@@ -13,6 +13,7 @@ import theme from "../utils/theme";
 import Post from "../components/Post";
 import {collection, getDocs, getDoc, doc} from "firebase/firestore";
 import DBHelper from '../helpers/DBHelper';
+import PostModel from '../models/PostModel';
 
 
 export default function MyPage({navigation}) {
@@ -36,34 +37,41 @@ export default function MyPage({navigation}) {
         }
     }, []);
 
-    function LoadAndSetAllPostDataFromDB() {
-        let counter = 0;
-        getDoc(currentUserRef).then((querySnapshot) => {
-            let dataList = [];
-            querySnapshot.data().posts.forEach(async (ref) => {
-                const tempPost = await DBHelper.loadData({ref: ref});
-                let data = tempPost;
+    async function LoadAndSetAllPostDataFromDB() {
+        // let counter = 0;
+        // getDoc(currentUserRef).then((querySnapshot) => {
+        //     let dataList = [];
+        //     querySnapshot.data().posts.forEach(async (ref) => {
+        //         const tempPost = await DBHelper.loadData({ref: ref});
+        //         let data = tempPost;
                 
-                data["docId"] = ref.id;
-                dataList.push(data);
-                counter++;
+        //         data["docId"] = ref.id;
+        //         dataList.push(data);
+        //         counter++;
 
                 
-                if(querySnapshot.data().posts.length === counter){
-                    setPostDataList(dataList);
-                }
-            });
+        //         if(querySnapshot.data().posts.length === counter){
+        //             setPostDataList(dataList);
+        //         }
+        //     });
             
-        }).catch((err) => {
-            console.log(err);
-        });
+        // }).catch((err) => {
+        //     console.log(err);
+        // });
+        let postData = [];
+        if (await PostModel.loadAllPostsByUser(currentUserRef, /* OUT */ postData) === false) {
+            // TO DO
+            return;
+        }
+
+        setPostDataList(postData);
     }
 
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(data) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {data: data});
+    function handleContentClick(postModel) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postModel: postModel});
     }
 
     function handleEditProfileClick() {
@@ -105,9 +113,10 @@ export default function MyPage({navigation}) {
                     </Box>
                     <Center>
                         {postDataList.map((data) =>
-                                <View key={data.docId}>
+                                <View>
                                     <View style={{margin: 20}}>
-                                        <Post onClickHandler={() => handleContentClick(data)}  data={data}/>
+                                        {/* <Post onClickHandler={() => handleContentClick(data)}  data={data}/> */}
+                                        <Post onClickHandler={() => handleContentClick(data)} key={data.doc_id} model={data}/>
                                     </View>
                                     <Divider/>
                                 </View>)
