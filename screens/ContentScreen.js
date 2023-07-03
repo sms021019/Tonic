@@ -36,7 +36,10 @@ export default function ContentScreen({navigation}) {
 
     useEffect(() => {
         if (postModelList.length === 0) {
-            LoadAndSetPostModel();
+            LoadAndSetPostModel().then((result) =>{
+                if (result === false)
+                    console.log("Fail to refresh");
+            }) ;
         }
     }, []);
 
@@ -76,30 +79,6 @@ export default function ContentScreen({navigation}) {
 /* ------------------
       Components
  -------------------*/
-    // const ContentView = (
-    //     <Center flex={1} px="0">
-    //         <FlatList
-    //             data={postModelList}
-    //             renderItem={(data) => {
-    //                 return (
-    //                     <View>
-    //                         <View style={{margin: 20}}>
-    //                             <Post onClickHandler={() => handleContentClick(data.item)} key={data.id} model={data.item}/>
-    //                         </View>
-    //                         <Divider/>
-    //                     </View>
-    //                 );
-    //             }}
-    //             refreshing={refreshing}
-    //             onRefresh={handleRefresh}
-    //         />
-    //     </Center>
-    // )
-    // const handleClick = props.handleClick? props.handleClick : null;
-    // const margin = props.margin? props.margin : 20;
-    // const refreshing = props.refreshing? props.refreshing : false;
-    // const handleRefresh = props.handleRefresh? props.handleRefresh : null;
-
     const ContentView = (
         <PostList
             modelList={postModelList}
@@ -109,15 +88,13 @@ export default function ContentScreen({navigation}) {
         />
     )
 
-    const MainView = !user ? LoadingView : ContentView
-
 /* ------------------
       Render
 -------------------*/
     return (
         <Container>
             <ContentArea>
-                {MainView}
+                {!user ? LoadingView : ContentView}
             </ContentArea>
             <CreateButtonArea>
                 <TouchableOpacity

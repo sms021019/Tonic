@@ -30,7 +30,7 @@ export default class PostModel {
         let dataList = []
         let loadState = await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList);
         if (loadState === false || dataList.length === 0) {
-            return false;3
+            return false;
         }
 
         for (let i = 0; i < dataList.length; i++) {
