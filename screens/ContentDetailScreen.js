@@ -12,7 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {NavigatorType, PageMode, ScreenType, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowWidth} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import { CreateChatroom } from './Channel';
@@ -25,14 +25,18 @@ export default function ContentDetailScreen({navigation, postData}) {
     const title = postData.title;
     const price = postData.price;
     const info = postData.info;
-    const userRefString = postData.user;
+    const userEmail = postData.email;
     const { user } = useContext(GlobalContext);
 
     useEffect(() => {
-        let postUserRef = doc(db, `/users/${postData.user}`);
+        let postUserRef = doc(collection(db, DBCollectionType.USERS), userEmail);
         getDoc(postUserRef).then((doc) => {
-            setUserInfo(doc.data());
-            console.log('loaded data')
+            if(!(doc.data() === undefined)){
+                setUserInfo(doc.data());
+                console.log('loaded data')
+            }else{
+                console.log('User info is undefined');
+            }
         })
     },[])
 
@@ -66,7 +70,7 @@ export default function ContentDetailScreen({navigation, postData}) {
     }, [navigation]);
 
     const handleChatClick = () => {
-        CreateChatroom(doc(db, `/users/${userEmail}`), user).then((ref) => {
+        CreateChatroom(doc(collection(db, DBCollectionType.USERS), userEmail), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }

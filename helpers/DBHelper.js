@@ -1,12 +1,28 @@
-import {addDoc, collection, getDocs, updateDoc} from "firebase/firestore";
+import {Transaction, addDoc, collection, getDocs, runTransaction, updateDoc, doc, arrayUnion, getDoc} from "firebase/firestore";
 import {DBCollectionType, LOG_ERROR} from "../utils/utils";
 import {db} from "../firebase";
 export default class DBHelper {
     constructor() {
     }
 
-    static async loadData(collectionType, id) {
+    static async loadData(props) {
+        const {collectionType, id, ref} = props;
 
+        if(ref){
+            console.log("loading data with ref")
+            const snapshot = await getDoc(ref);
+            if(snapshot.exists()){
+                console.log("found document!");
+                return snapshot.data();
+            }else{
+                console.log("document does not exists with the given ref!");
+                return null
+            }
+        }else{
+            console.log("loading data with id and collection type")
+            const snapshot = await getDoc(doc(collection(db, collectionType), id));
+            return snapshot.data();
+        }
     }
 
     static async loadAllData(collectionType, dest = []) {
@@ -27,8 +43,26 @@ export default class DBHelper {
 
     static async addData(collectionType, data) {
         try {
-            await addDoc(collection(db, collectionType), data);
-            return true;
+            if(collectionType === DBCollectionType.POSTS){
+                console.log("Adding a new post...");
+                console.log(collectionType);
+                console.log(data);
+                const transactionResult = await runTransaction(db, async(transaction) => {
+                    const newPostRef = doc(collection(db, collectionType));
+                    transaction.set(newPostRef, data);
+                    console.log("checkp")
+                    console.log(data.email)
+                    transaction.update(doc(db, `/users/${data.email}`), {
+                        posts: arrayUnion(newPostRef)
+                    });
+
+                    console.log("Transaction successfully committed!");
+                    return true;
+                });
+                return transactionResult;
+
+            }
+            // await addDoc(collection(db, collectionType), data);
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");

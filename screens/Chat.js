@@ -29,7 +29,7 @@ import { Menu, Pressable, HamburgerIcon } from 'native-base';
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import { ExitChatroom } from './Channel';
-import {NavigatorType,ScreenType} from "../utils/utils";
+import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Octicons';
 import Icon2 from 'react-native-vector-icons/Feather';
@@ -46,7 +46,7 @@ export default function Chat({navigation, route}) {
     // const chatroomRef = doc(collectionRef, route.params.id);
     // console.log(route.params.ref);
     const chatroomRef = route.params.ref;
-    const chatroomMessagesRef = collection(chatroomRef, "messages");
+    const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
     const { user } = useContext(GlobalContext);
     
 
@@ -181,14 +181,6 @@ export default function Chat({navigation, route}) {
         }
     }
 
-    // renderComposer = props => {
-    //     return (
-    //         <View style={{ flexDirection: 'row' }}>
-    //             <Composer {...props} />
-    //             <Icon name="image" size={40}/>
-    //         </View>
-    //     );
-    // }
     
     renderSend = props => {      
         if (!props.text.trim()) { // text box empty

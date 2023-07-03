@@ -36,6 +36,7 @@ export const DBCollectionType = {
     USERS:      "users",
     POSTS:      "posts",
     MESSAGES:   "messages",
+    CHATROOMS:  "chatrooms",
 }
 
 export const StorageDirectoryType = {
