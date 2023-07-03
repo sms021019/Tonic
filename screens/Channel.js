@@ -267,18 +267,17 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
+    const LoadingView = <View><Text>Loading...</Text></View>
+    
+    // const Content = () => {
+    // if(loading === 'true'){
+    //     return <Text m={2}>loading...</Text>
+    // }else if(loading === 'false'){
+    //     return <ChatList2/>
+    // }
+    // }
 
-    const Content = () => {
-    if(loading === 'true'){
-        return <Text m={2}>loading...</Text>
-    }else if(loading === 'false'){
-        return <ChatList2/>
-    }
-    }
-
-    const ChatList2 = () => {
-
-        return (
+    const ChatList2 = (
         <Box flex={1} px="0">
             
             <FlatList data={chatroomsData} renderItem={({
@@ -320,8 +319,8 @@ export default function Channel({ navigation: {navigate}}) {
                 />
         </Box>
         );
-    }
-
+            
+        const Content = !user ? LoadingView : ChatList2;
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
@@ -381,7 +380,7 @@ export default function Channel({ navigation: {navigate}}) {
                 <MessageText>메시지</MessageText>
             </TopContainer>
             <ContentArea>
-                <Content/>
+                {Content}
             </ContentArea>
         </SafeAreaView>
     );

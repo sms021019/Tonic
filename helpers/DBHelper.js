@@ -12,15 +12,12 @@ export default class DBHelper {
     static async loadDataByRef(ref, dest) {
         try {
             if(ref) {
-                console.log("loading data with ref")
                 const snapshot = await getDoc(ref);
                 if(snapshot.exists()){
-                    console.log("found document!");
                     dest.push(snapshot.data());
                     return true;
                 }
                 else {
-                    console.log("document does not exists with the given ref!");
                     return false;
                 }
             }
