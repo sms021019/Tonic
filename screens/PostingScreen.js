@@ -204,10 +204,11 @@ export default function PostingScreen({navigation, mode, postModel}) {
 
     async function updatePostToDB(downloadUriWraps) {
         let uris = toPostUriListFormat(downloadUriWraps);
-        const postRef = doc(db, DBCollectionType.POSTS, postModel.id);
 
-        let postModel = new PostModel(uris, title, price, info, user?.email);
-        postModel.setRef(postRef);
+        postModel.setImageDownloadUrls(uris);
+        postModel.setTitle(title);
+        postModel.setPrice(price);
+        postModel.setInfo(info);
 
         if (await postModel.updateData() === false) {
             setHasError(true);

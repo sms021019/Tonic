@@ -19,17 +19,17 @@ import { CreateChatroom } from './Channel';
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 
-export default function ContentDetailScreen({navigation, postModel}) {
+export default function ({navigation, postModel}) {
     const [userInfo, setUserInfo] = useState(null);
     const uriWraps = postModel.imageDownloadUrls;
     const title = postModel.title;
     const price = postModel.price;
     const info = postModel.info;
-    const userEmail = postModel.userEmail;
+    const email = postModel.email;
     const { user } = useContext(GlobalContext);
 
     useEffect(() => {
-        let postUserRef = doc(collection(db, DBCollectionType.USERS), userEmail);
+        let postUserRef = doc(collection(db, DBCollectionType.USERS), email);
         getDoc(postUserRef).then((doc) => {
             if(!(doc.data() === undefined)){
                 setUserInfo(doc.data());
@@ -70,7 +70,7 @@ export default function ContentDetailScreen({navigation, postModel}) {
     }, [navigation]);
 
     const handleChatClick = () => {
-        CreateChatroom(doc(collection(db, DBCollectionType.USERS), userEmail), user).then((ref) => {
+        CreateChatroom(doc(collection(db, DBCollectionType.USERS), email), user).then((ref) => {
             navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
         });
     }
