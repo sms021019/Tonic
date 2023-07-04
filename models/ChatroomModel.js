@@ -30,6 +30,7 @@ export default class ChatroomModel {
         let userData = []
         if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
             // TO DO:
+            console.log("Failed to load the data of current user!");
             return false;
         }
         else {
@@ -45,24 +46,20 @@ export default class ChatroomModel {
             let data = [];
             if (await DBHelper.loadDataByRef(userData.chatrooms[i], data) === false) {
                 // TO DO:
+                console.log(`Failed to load chatrooms[${i}] data!`);
                 return false;
             }
             dest.push(data[0]);
         }
         return true;
+    }
 
-        // let loadState = await DBHelper.loadAllData(DBCollectionType.CHATROOMS, /* OUT */ dataList);
-        // if (loadState === false || dataList.length === 0) {
-        //     return false;
-        // }
-
-        // for (let i = 0; i < dataList.length; i++) {
-        //     let postModel = this.convertLoadDataIntoModel(dataList[i]);
-        //     if (postModel === null) return false;
-
-        //     dest.push(postModel);
-        // }
-        // return true;
+    static async exitChatroom(ref, user) {
+        if(await DBHelper.deleteChatroom(ref, user) === false){
+            // TO DO:
+            return false;
+        }
+        return true;
     }
 
     async updateData() {
@@ -75,7 +72,7 @@ export default class ChatroomModel {
     async saveData() {
         if (this.isValid() === false) return false;
 
-        return await DBHelper.addData(this.collectionType, this.getData());
+        return (await DBHelper.addData(this.collectionType, this.getData()));
     }
 
     getData() {

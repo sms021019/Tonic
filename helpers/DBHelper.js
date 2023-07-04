@@ -5,6 +5,36 @@ export default class DBHelper {
     constructor() {
     }
 
+    static async getCollectionRefByName(name, dest) {
+        try {
+            if(name) {
+                let ref = collection(db, name);
+                dest.push(ref);
+                return true
+            }
+            else return false
+        }
+        catch(error) {
+            LOG_ERROR(name , `Error occurs while getting ${name} collection reference from the DB.`);
+            return false
+        }
+    }
+
+    static async getDocRefById(collectionRef, id, dest) {
+        try {
+            if(collectionRef && id) {
+                let ref = doc(collectionRef, id);
+                dest.push(ref);
+                return true
+            }
+            else return false
+        }
+        catch(error) {
+            LOG_ERROR(id , `Error occurs while getting ${id} document reference from the given collection ref.`);
+            return false
+        }
+    }
+
     static async loadData() {
 
     }
@@ -14,7 +44,10 @@ export default class DBHelper {
             if(ref) {
                 const snapshot = await getDoc(ref);
                 if(snapshot.exists()){
-                    dest.push(snapshot.data());
+                    let data = snapshot.data();
+                    data["doc_id"] = snapshot.id;
+                    data["ref"] = snapshot.ref;
+                    dest.push(data);
                     return true;
                 }
                 else {
@@ -24,7 +57,7 @@ export default class DBHelper {
             else return false
         }
         catch(error) {
-            // TO DO : handle error
+            LOG_ERROR(ref?.id , "Error occurs while loading data from the DB.");
             return false
         }
     }
@@ -101,7 +134,7 @@ export default class DBHelper {
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");
-            return true;
+            return false;
         }
     }
 
@@ -118,5 +151,72 @@ export default class DBHelper {
 
     static async deleteData() {
 
+    }
+
+    static async deleteChatroom(ref, user) {
+        try{
+            await runTransaction(db, async (transaction) => {
+                const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
+                const currentUserDoc = await transaction.get(currentUserRef);
+                
+                const chatroomDoc = await transaction.get(ref);
+                const currentUserEmail = currentUserDoc.data().email;
+    
+                if(!currentUserDoc.exists()){
+                    throw "User document does not exist!";
+                }
+    
+                
+                let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
+                let index = -1;
+                for(let i = 0; i < copyOfUserChatrooms.length; i++){
+                    if(ref.id === copyOfUserChatrooms[i].id){
+                        index = i;
+                    }
+                }
+                console.log(index);
+        
+                if(index > -1) {
+                    copyOfUserChatrooms.splice(index, 1);
+                    transaction.update(currentUserRef, {
+                        chatrooms: copyOfUserChatrooms,
+                    })
+                }else{
+                    return Promise.reject("Sorry! Chatroom reference doesn't exist");
+                }
+    
+                if(!chatroomDoc.exists()){
+                    throw "Chatroom document does not exist!";
+                }
+    
+                let leftParticipants = chatroomDoc.data().participants.length;
+                if( leftParticipants === 1){
+                    console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
+                    transaction.delete(ref);
+                }else if( leftParticipants > 1){
+                    let copyOfParticipants = chatroomDoc.data().participants;
+                    let temp = copyOfParticipants.indexOf(currentUserEmail);
+                    console.log(temp);
+                    if( temp > -1) {
+                        copyOfParticipants.splice(temp, 1);
+                        transaction.update(ref, {
+                            participants: copyOfParticipants,
+                        })
+                    }else{
+                        return Promise.reject("Sorry! User reference doesn't exist");
+                    }
+                }else{
+                    throw "Please check number of participants"
+                }
+                
+    
+            });
+    
+            console.log("Transaction successfully committed!");
+            return true;
+        }catch(error){
+            console.error(error);
+            return false;
+        }
     }
 }

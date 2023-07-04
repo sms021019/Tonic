@@ -15,10 +15,11 @@ import GlobalContext from '../context/Context';
 import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowWidth} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
-import { CreateChatroom } from './Channel';
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 import Modal from '../utils/modal'
+// Model
+import ChatroomModel from '../models/ChatroomModel';
 
 export default function ({navigation, postModel}) {
     const [owner, setPostOwner] = useState(null);
@@ -77,10 +78,17 @@ export default function ({navigation, postModel}) {
         return user.email === postModel.email;
     }
 
-    function handleChatClick() {
-        CreateChatroom(doc(collection(db, DBCollectionType.USERS), email), user).then((ref) => {
-            navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
-        });
+    async function handleChatClick() {
+        const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), email), user);
+        await chatroomModel.saveData().then( ref => {
+            if(ref){
+                chatroomModel.setRef(ref);
+                navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
+            }else{
+                // TO DO: error handle
+                return;
+            }
+        })
     }
 
     function handleEditPost() {

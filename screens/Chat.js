@@ -28,11 +28,12 @@ import { signOut } from 'firebase/auth';
 import { Menu, Pressable, HamburgerIcon } from 'native-base';
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
-import { ExitChatroom } from './Channel';
 import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Octicons';
 import Icon2 from 'react-native-vector-icons/Feather';
+import ChatroomModel from '../models/ChatroomModel';
+import ErrorScreen from "./ErrorScreen";
 
 
 
@@ -41,17 +42,15 @@ import Icon2 from 'react-native-vector-icons/Feather';
 
 
 export default function Chat({navigation, route}) {
+    const { user } = useContext(GlobalContext);
+
     const [messages, setMessages] = useState([]);
-    // const collectionRef = collection(db, 'chatrooms');
-    // const chatroomRef = doc(collectionRef, route.params.id);
-    // console.log(route.params.ref);
+    const [hasError, setHasError] = useState(false);
+
     const chatroomRef = route.params.ref;
     const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
-    const { user } = useContext(GlobalContext);
     
-
     useLayoutEffect(() => {
-
         navigation.setOptions({
             headerRight: () =>
             <Menu w="120px" trigger={triggerProps => {
@@ -75,10 +74,14 @@ export default function Chat({navigation, route}) {
             </Menu>
         });
 
-        const handleExitChatroom = () => {
-            ExitChatroom(chatroomRef, user).then(() => {
+        const handleExitChatroom = async () => {
+            if(await ChatroomModel.exitChatroom(chatroomRef, user) === false){
+                // TO DO: handle error
+                setHasError(true);
+                return;
+            }else{
                 navigation.navigate(ScreenType.CHANNEL);
-            })
+            }
         }
 
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
@@ -197,7 +200,10 @@ export default function Chat({navigation, route}) {
         );
       }
 
-    
+/* ------------------
+    Error Screen
+-------------------*/
+if (hasError) return <ErrorScreen/>
    
     return (
         <SafeAreaView style={{flex: 1,}}>

@@ -3,7 +3,7 @@ import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged} from 'firebase/auth';
 import {auth} from '../firebase';
@@ -34,12 +34,12 @@ export default function Login({navigation}) {
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.buttonOutline, styles.buttonBorder]}
-                                  onPress={() => navigation.push("PasswordReset")}>
+                                  onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>
                     <Text>
                         비밀번호 찾기 {'\t'}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push("Signup")}>
+                <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push(ScreenType.SIGNUP)}>
                     <Text>
                         회원가입
                     </Text>

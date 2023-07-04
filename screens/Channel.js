@@ -18,25 +18,11 @@ import {
     Text,
     Avatar,
     Spacer
-
  } from 'native-base';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { 
-    addDoc, 
     collection, 
-    getDoc, 
-    getDocs, 
-    runTransaction, 
-    where, 
-    writeBatch, 
-    updateDoc, 
-    arrayUnion, 
-    setDoc, 
-    query,
     doc,
-    limit,
-    onSnapshot,
-    orderBy,
 } from 'firebase/firestore';
 
 import { DBCollectionType } from '../utils/utils';
@@ -45,153 +31,31 @@ import { ScreenType } from '../utils/utils';
 import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
 import DBHelper from '../helpers/DBHelper';
-
 import { useIsFocused } from '@react-navigation/native'
-
-
-
-
-export const CreateChatroom = async (ref, user) => {
-    console.log("creating new chatroom...");
-        try{
-            const transactionResult = await runTransaction(db, async(transaction) => {
-                const oppUserDoc = await transaction.get(ref);
-                if(!oppUserDoc.exists()){
-                    throw "Opponent does not exist!";
-                }
-                if(oppUserDoc.data().email === user?.email){
-                    throw "Can\'t make room by yourself!";
-                }
-                
-                const chatroomsCol = collection(db, DBCollectionType.CHATROOMS);
-                const chatroomRef = doc(chatroomsCol);
-                const chatroomId = chatroomRef.id;
-                const chatroom = {
-                    ref: chatroomRef,
-                    participants: [oppUserDoc.data().email, user.email]
-                }
-
-                transaction.set(chatroomRef, chatroom);
-
-                
-
-                transaction.update(ref, {
-                    chatrooms: arrayUnion(chatroomRef)
-                });
-
-                transaction.update(doc(collection(db, DBCollectionType.USERS), user.email), {
-                    chatrooms: arrayUnion(chatroomRef)
-                });
-
-                console.log("Transaction successfully committed!");
-                console.log(chatroomRef);
-                return chatroomRef;
-
-
-            })
-            return transactionResult
-        }catch(error){
-            console.log(error)
-        }
-
-}
-
-export const ExitChatroom = async (ref, user) => {
-    console.log("Exiting chatroom...");
-    try{
-        await runTransaction(db, async (transaction) => {
-            const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
-            const currentUserDoc = await transaction.get(currentUserRef);
-            
-            const chatroomDoc = await transaction.get(ref);
-            const currentUserEmail = currentUserDoc.data().email;
-
-            if(!currentUserDoc.exists()){
-                throw "User document does not exist!";
-            }
-
-            
-            let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
-            let index = -1;
-            for(let i = 0; i < copyOfUserChatrooms.length; i++){
-                if(ref.id === copyOfUserChatrooms[i].id){
-                    index = i;
-                }
-            }
-            console.log(index);
-    
-            // console.log(currentUserDoc.data().chatrooms[0])
-            if(index > -1) {
-                copyOfUserChatrooms.splice(index, 1);
-                transaction.update(currentUserRef, {
-                    chatrooms: copyOfUserChatrooms,
-                })
-            }else{
-                return Promise.reject("Sorry! Chatroom reference doesn't exist");
-            }
-
-            
-
-            if(!chatroomDoc.exists()){
-                throw "Chatroom document does not exist!";
-            }
-
-            let leftParticipants = chatroomDoc.data().participants.length;
-            if( leftParticipants === 1){
-                console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
-                transaction.delete(ref);
-            }else if( leftParticipants > 1){
-                let copyOfParticipants = chatroomDoc.data().participants;
-                let temp = copyOfParticipants.indexOf(currentUserEmail);
-                console.log(temp);
-                if( temp > -1) {
-                    copyOfParticipants.splice(temp, 1);
-                    transaction.update(ref, {
-                        participants: copyOfParticipants,
-                    })
-                }else{
-                    return Promise.reject("Sorry! User reference doesn't exist");
-                }
-            }else{
-                throw "Please check number of participants"
-            }
-            
-
-        });
-
-        console.log("Transaction successfully committed!");
-    }catch(error){
-        console.error(error);
-    }
-}
-
 
 export default function Channel({ navigation: {navigate}}) {
     const { user } = useContext(GlobalContext);
+    
     const [modalVisible, setModalVisible] = useState(false);
-    state = {
-        isModalVisible: modalVisible,
-    };
-    showModal = () => setModalVisible(true);
-    hideModal = () => setModalVisible(false);
-
     const [email, setEmail] = useState("");
     const [chatroomsData, setChatroomsData] = useState([]);
     const [loading, setLoading] = useState("true");
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
-    // const currentUserRef = doc(db, `/users/${user?.email}`);
+    state = {
+        isModalVisible: modalVisible,
+    };
+    showModal = () => setModalVisible(true);
+    hideModal = () => setModalVisible(false);
+    
     const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
-
     const isFocused = useIsFocused()
-
 
     useEffect(() => {
         if(isFocused){
             loadChatrooms();
         }
-        
     }, [isFocused]);
 
     function handleRefresh() {
@@ -199,21 +63,28 @@ export default function Channel({ navigation: {navigate}}) {
         loadChatrooms();
     }
 
-    const getChatroomByRef = async ref => {
-        const chatroomSnapshot = await getDoc(ref);
-        return chatroomSnapshot.data();
-    }
-    
-
     const handleCreateChatroom = async () => {
+        
+        
         if(email.length === 0){
             alert('Email can\'t be empty!');
         }else if(email === user?.email){
             alert('You can\'t type your email!');
         }else{
-            const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), email), user);
+            let opponentRef = [];
+            if(await DBHelper.getDocRefById(DBCollectionType.USERS, email, opponentRef) === false){
+                //TO DO
+                setHasError(true);
+                return;
+            }else{
+                opponentRef = opponentRef[0];
+            }
+            const chatroomModel = new ChatroomModel(opponentRef, user);
+
+
             await chatroomModel.saveData().then( ref => {
                 if(ref){
+                    console.log(ref)
                     setEmail('');
                     setModalVisible(prev => !prev);
                     chatroomModel.setRef(ref);
@@ -226,41 +97,12 @@ export default function Channel({ navigation: {navigate}}) {
         }
     }
 
-    // const loadChatrooms = async () => {
     async function loadChatrooms() {
-        // console.log("loading chatrooms...");
-        // let tempArr = [];
-        // let counter = 0;
-        // getDoc(currentUserRef).then(doc => {
-        //     if(doc.data().chatrooms.length === 0) {
-        //         console.log("Currently there are no chatrooms");
-        //         setChatroomsData(tempArr);
-        //         setLoading("false");
-        //         setRefreshing(false);
-                
-        //     }
-        //     doc.data().chatrooms?.forEach(async (ref) => {
-        //         const chatroom = await getChatroomByRef(ref);
-        //         tempArr.push(chatroom);
-        //         counter++;
-        //         if(counter === doc.data().chatrooms.length){
-        //             setChatroomsData(tempArr);
-        //             setLoading("false");
-        //             setRefreshing(false);
-        //             console.log("loading end");
-        //         }
-        //         }
-            
-        //     );
-        // });
-
-        // const currentUserDoc = await DBHelper.loadData({ref: currentUserRef});
         let chatroomData = [];
         if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
-            // TO DO
+            setHasError(true);
             return;
         }
-
         setChatroomsData(chatroomData);
         setLoading("false");
         setRefreshing(false);
@@ -268,18 +110,9 @@ export default function Channel({ navigation: {navigate}}) {
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
     const LoadingView = <View><Text>Loading...</Text></View>
-    
-    // const Content = () => {
-    // if(loading === 'true'){
-    //     return <Text m={2}>loading...</Text>
-    // }else if(loading === 'false'){
-    //     return <ChatList2/>
-    // }
-    // }
 
     const ChatList2 = (
         <Box flex={1} px="0">
-            
             <FlatList data={chatroomsData} renderItem={({
             item
             }) => 
@@ -321,6 +154,11 @@ export default function Channel({ navigation: {navigate}}) {
         );
             
         const Content = !user ? LoadingView : ChatList2;
+
+/* ------------------
+    Error Screen
+-------------------*/
+if (hasError) return <ErrorScreen/>
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
