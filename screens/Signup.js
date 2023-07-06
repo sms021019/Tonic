@@ -23,46 +23,31 @@ import {
 } from 'firebase/firestore';
 
 import { EMAIL_DOMAIN } from '../utils/utils';
+import ErrorScreen from './ErrorScreen';
+import UserModel from '../models/UserModel';
 
 
 const LoginScreen = () => {
     const [email, setEmail] = useState(EMAIL_DOMAIN);
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
+    const [hasError, setHasError] = useState(false);
 
 
     const handleSignUp = async () => {
-        createUserWithEmailAndPassword(auth, email, password)
-            .then(async userCredentials => {
-                const user = userCredentials.user;
-                const usersCollectionRef = collection(db, DBCollectionType.USERS);
-                await updateProfile(user, {displayName: username}).catch(
-                    (err) => console.log(err)
-                );
-                // await addDoc(collection(db, "users"), {
-                //     username: username,
-                //     uid: user.uid,
-                //     email: user.email,
-                // });
-                await setDoc(doc(usersCollectionRef, user.email), {
-                    username: username,
-                    uid: user.uid,
-                    email: user.email,
-                });
 
-                const userCollection = await getDocs(collection(db, DBCollectionType.USERS));
-                userCollection.forEach((doc) => {
-                    if (doc.data().uid === user.uid) {
-                        console.log(doc.data().username)
-                    }
-                });
-                console.log('Registered in with: ', user.email);
-
-
-            })
-            .catch(error => alert(errorHandler(error)));
-
+        const userModel = new UserModel(username, email, password);
+        if(await userModel.saveData() === false){
+            //TO DO
+            setHasError(true);
+            return;
+        }
     }
+
+    /* ------------------
+        Error Screen
+    -------------------*/
+    if (hasError) return <ErrorScreen/>
 
     return (
         <Container>

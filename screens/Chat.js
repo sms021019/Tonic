@@ -16,14 +16,8 @@ import {
     onSnapshot,
     doc
 } from 'firebase/firestore';
-import { auth, db } from '../firebase';
-import { useNavigation } from '@react-navigation/native';
-import { AntDesign, Feather } from '@expo/vector-icons';
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
-
-import Channel from './Channel';
-import { signOut } from 'firebase/auth';
 
 import { Menu, Pressable, HamburgerIcon } from 'native-base';
 import theme from '../utils/theme';
@@ -211,8 +205,8 @@ if (hasError) return <ErrorScreen/>
                 messages={messages}
                 onSend={messages => onSend(messages)}
                 user={{
-                    _id: auth?.currentUser?.email,
-                    name: auth?.currentUser?.displayName,
+                    _id: user?.email,
+                    name: user?.displayName,
                     avatar: 'https://i.pravatar.cc/300'
                 }}
                 messagesContainerStyle={{

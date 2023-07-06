@@ -248,9 +248,6 @@ export default function PostingScreen({navigation, mode, postModel}) {
         setPrice(value);
     }
 
-    function toUserRefFormat(user) {
-        return `users/${user?.email}`
-    }
 
     function SetErrorAndSendLog(...messages) {
         setHasError(true);

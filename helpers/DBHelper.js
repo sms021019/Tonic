@@ -20,9 +20,18 @@ export default class DBHelper {
         }
     }
 
-    static async getDocRefById(collectionRef, id, dest) {
+    static async getDocRefById(collectionName, id, dest) {
         try {
-            if(collectionRef && id) {
+            if(collectionName && id) {
+                let collectionRef = [];
+                if(this.getCollectionRefByName(collectionName, /* OUT */ collectionRef) === false){
+                    // TO DO
+                    console.log("Can't find collection ref!")
+                    return false;
+                }else{
+                    collectionRef = collectionRef[0];
+                }
+
                 let ref = doc(collectionRef, id);
                 dest.push(ref);
                 return true
@@ -87,7 +96,6 @@ export default class DBHelper {
                     const newPostRef = doc(collection(db, collectionType));
                     transaction.set(newPostRef, data);
                 
-                    // transaction.update(doc(db, `/users/${data.email}`), {
                     transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
                         posts: arrayUnion(newPostRef)
                     });
@@ -130,7 +138,28 @@ export default class DBHelper {
                     return chatroomRef;
                 });
                 return transactionResult;
+            }else if(collectionType === DBCollectionType.USERS){
+                console.log("Creating a new user...");
+                const transactionResult = await runTransaction(db, async (transaction) => {
+                    let usersCollectionRef = [];
+                    if(this.getCollectionRefByName(collectionType, usersCollectionRef) === false){
+                        //TO DO
+                        LOG_ERROR(collectionType, "Error occurs while finding reference of collection from DB.");
+                        return false;
+                    }
+                    else {
+                        usersCollectionRef = usersCollectionRef[0];
+                    }
+                    
+                    transaction.set(doc(usersCollectionRef, data.email), data);
+
+                    console.log("Transaction successfully committed!")
+                    return true;
+
+                });
+                return transactionResult;
             }
+
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");
@@ -139,8 +168,10 @@ export default class DBHelper {
     }
 
     static async updateData(ref, data) {
+        console.log("updating document...")
         try {
             await updateDoc(ref, data);
+            console.log("updated success!")
             return true;
         }
         catch(error) {

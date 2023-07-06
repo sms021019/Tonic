@@ -1,41 +1,37 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { db, auth } from '../firebase';
-import { View, StyleSheet, Pressable, Alert } from "react-native";
-import { ListItem, Icon, Button, Divider } from '@rneui/base';
-import styled from "styled-components/native";
-import { flexCenter, Center } from "../utils/styleComponents";
 
-import GlobalContext from '../context/Context';
+// React
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet } from "react-native";
+// Design
+import { Icon, Button, Divider } from '@rneui/base';
+import { Center } from "../utils/styleComponents";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Modal from '../utils/modal';
 import { 
     Input,
     Box,
-    Heading,
     HStack,
     FlatList,
     VStack,
     Text,
     Avatar,
     Spacer
- } from 'native-base';
+} from 'native-base';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { 
-    collection, 
-    doc,
-} from 'firebase/firestore';
-
+import styled from "styled-components/native";
+// Modal
+import Modal from '../utils/modal';
+import GlobalContext from '../context/Context';
+// Util
 import { DBCollectionType } from '../utils/utils';
-import { transcode } from 'buffer';
 import { ScreenType } from '../utils/utils';
-import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
 import DBHelper from '../helpers/DBHelper';
 import { useIsFocused } from '@react-navigation/native'
+// Model
+import ChatroomModel from '../models/ChatroomModel';
 
 export default function Channel({ navigation: {navigate}}) {
-    const { user } = useContext(GlobalContext);
-    
+    const { user } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
     const [chatroomsData, setChatroomsData] = useState([]);
@@ -49,7 +45,6 @@ export default function Channel({ navigation: {navigate}}) {
     showModal = () => setModalVisible(true);
     hideModal = () => setModalVisible(false);
     
-    const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
     const isFocused = useIsFocused()
 
     useEffect(() => {
@@ -64,8 +59,6 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     const handleCreateChatroom = async () => {
-        
-        
         if(email.length === 0){
             alert('Email can\'t be empty!');
         }else if(email === user?.email){
@@ -98,6 +91,15 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     async function loadChatrooms() {
+        let currentUserRef = [];
+            if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
+                //TO DO
+                setHasError(true);
+                return;
+            }else{
+                currentUserRef = currentUserRef[0];
+            }
+
         let chatroomData = [];
         if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
             setHasError(true);
