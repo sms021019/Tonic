@@ -19,11 +19,14 @@ import { CreateChatroom } from './Channel';
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 import Modal from '../utils/modal'
+import DeletePostModal from "../components/DeletePostModal";
+import ReportPostModal from "../components/ReportPostModal";
 
 export default function ({navigation, postModel}) {
     const {events} = useContext(GlobalContext);
     const [owner, setPostOwner] = useState(null);
     const [deleteModalOn, setDeleteModalOn] = useState(false);
+    const [reportModalOn, setReportModalOn] = useState(false);
     const uriWraps = postModel.imageDownloadUrls;
     const title = postModel.title;
     const price = postModel.price;
@@ -66,7 +69,7 @@ export default function ({navigation, postModel}) {
                                 {name: "Delete", color: theme.colors.alert, callback: OpenDeleteModal},
                             ] :
                             [
-                                {name: "Report", color: theme.colors.alert, callback: handleReportPost},
+                                {name: "Report", color: theme.colors.alert, callback: OpenReportModal},
                             ]
                     }
                 />
@@ -92,6 +95,9 @@ export default function ({navigation, postModel}) {
         setDeleteModalOn(true);
     }
 
+    function OpenReportModal() {
+        setReportModalOn(true);
+    }
     async function handleDeletePost() {
         if (await postModel.deleteData() === false) {
             console.log("Fail to delete data.");
@@ -100,33 +106,19 @@ export default function ({navigation, postModel}) {
 
         setDeleteModalOn(false);
         events.invokeOnContentUpdate();
+        alert("Successfully delete the post.");
         navigation.navigate(ScreenType.CONTENT);
     }
 
     function handleReportPost() {
-
+        setReportModalOn(false);
+        alert("Successfully report the post.");
     }
 
     return (
         <Container>
-            <Modal
-                visible={deleteModalOn}
-                dismiss={() => setDeleteModalOn(false)}
-            >
-                <View style={styles.modalView}>
-                    <Text style={styles.deleteModalText}>
-                        Do you want to delete the post?
-                    </Text>
-                    <Flex direction="row" style={{marginTop: 20}}>
-                        <TouchableOpacity onPress={() => setDeleteModalOn(false)} style={{marginRight: 40}} >
-                            <Text style={styles.tonicTextGray}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDeletePost}>
-                            <Text style={styles.tonicTextRed}>Delete</Text>
-                        </TouchableOpacity>
-                    </Flex>
-                </View>
-            </Modal>
+            <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
+            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={handleReportPost}/>
             <ScrollView>
                 <Swiper
                     height={windowWidth}
@@ -187,26 +179,6 @@ const styles = StyleSheet.create({
     contentText:            { fontSize: 20},
     bottomSheetPrimaryText: { fontSize: 22, fontWeight: '600', color:theme.colors.primary, margin:15},
     bottomSheetAlertText:   { fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15},
-    deleteModalText:        { fontSize: 16, fontWeight: '600' },
-    tonicTextGray:          { fontSize: 18, fontWeight: '600', color: theme.colors.iconGray },
-    tonicTextRed:           { fontSize: 18, fontWeight: '600', color: theme.colors.tonicRed },
-
-
-    modalView: {
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
 });
 
 

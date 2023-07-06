@@ -19,6 +19,8 @@ export const ScreenType = {
     INTRO:              "introScreen",
     LOGIN:              "loginScreen",
     SIGNUP:             "signupScreen",
+    EMAIL_VERIFICATION: "emailVerification",
+    PASSWORD_RESET:     "passwordReset",
     CONTENT:            "contentScreen",
     CONTENT_DETAIL:     "contentDetailScreen",
     CHAT:               "chatScreen",
