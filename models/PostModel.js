@@ -55,7 +55,7 @@ export default class PostModel {
     }
     async updateData() {
         if (this.isValid() === false) return false;
-        if (this.ref == null) return false;
+        if (this.ref === null) return false;
 
         return await DBHelper.updateData(this.ref, this.getData());
     }
@@ -64,6 +64,12 @@ export default class PostModel {
         if (this.isValid() === false) return false;
 
         return await DBHelper.addData(this.collectionType, this.getData());
+    }
+
+    async deleteData() {
+        if (this.ref === null) return false;
+
+        return await DBHelper.deleteData(this.ref);
     }
 
     getData() {

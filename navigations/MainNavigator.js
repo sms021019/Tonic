@@ -25,6 +25,7 @@ const Stack = createStackNavigator();
 export default function MainNavigator() {
     const {user, setUser} = useContext(GlobalContext);
     const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth,
             async authenticatedUser => {
@@ -43,6 +44,10 @@ export default function MainNavigator() {
         )
     }
 
+
+/* ---------------------
+         Render
+ ----------------------*/
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
             { user ? user.emailVerified ? 

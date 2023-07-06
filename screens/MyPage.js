@@ -15,7 +15,7 @@ import {collection, getDocs, getDoc, doc} from "firebase/firestore";
 import DBHelper from '../helpers/DBHelper';
 
 
-export default function MyPage({navigation}) {
+export default function MyPage({navigation, events}) {
     const { user } = useContext(GlobalContext);
     const [postDataList, setPostDataList] = useState([]);
 

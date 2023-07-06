@@ -1,5 +1,5 @@
 // React
-import React, {useEffect, useLayoutEffect, useState} from 'react'
+import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Button, StyleSheet, TouchableOpacity, Text} from 'react-native'
 // Design
 import styled from "styled-components/native";
@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 // Firebase
-import {addDoc, collection, doc, updateDoc} from 'firebase/firestore';
 import {auth, db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
 // Utils
 import {createURL, DBCollectionType, LOG, LOG_ERROR, NavigatorType, PageMode, StorageDirectoryType, windowWidth} from "../utils/utils"
@@ -20,6 +19,8 @@ import ErrorScreen from "./ErrorScreen";
 import AnimatedLoader from "react-native-animated-loader";
 // Model
 import PostModel from '../models/PostModel'
+// Context
+import GlobalContext from "../context/Context";
 
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
@@ -37,6 +38,7 @@ class UriWrap {
 }
 
 export default function PostingScreen({navigation, mode, postModel}) {
+    const {events} = useContext(GlobalContext);
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
     const [title, setTitle] =       useState('');
     const [price, setPrice] =       useState('');
@@ -118,8 +120,6 @@ export default function PostingScreen({navigation, mode, postModel}) {
             {}
         );
 
-        console.log(resizedImage.uri);
-
         let uriWrap = new UriWrap(URIType.TEMP, originalImage.uri, resizedImage.uri)
 
         setUriWraps((prev) => ([...prev, uriWrap]));
@@ -165,10 +165,7 @@ export default function PostingScreen({navigation, mode, postModel}) {
                     downloadUriWraps.push( new UriWrap(URIType.DOWNLOAD, oDownloadUri, sDownloadUri) );
             }
 
-            if (mode === PageMode.CREATE)
-                createPostToDB(downloadUriWraps);
-            else
-                updatePostToDB(downloadUriWraps);
+            (mode === PageMode.CREATE)? createPostToDB(downloadUriWraps) : updatePostToDB(downloadUriWraps);
         }
         catch (err) {
             setHasError(true);
@@ -190,32 +187,38 @@ export default function PostingScreen({navigation, mode, postModel}) {
         return await getDownloadURL(storageRef);
     }
 
-    async function createPostToDB(downloadUriWraps) {
-        let uris = toPostUriListFormat(downloadUriWraps);
+    function createPostToDB(downloadUriWraps) {
+        async function asyncCreatePostToDB() {
+            let uris = toPostUriListFormat(downloadUriWraps);
 
-        const postModel = new PostModel(uris, title, price, info, user?.email);
-        if (await postModel.saveData() === false) {
-            setHasError(true);
-            return;
+            const postModel = new PostModel(uris, title, price, info, user?.email);
+            if (await postModel.saveData() === false) {
+                setHasError(true);
+            }
         }
-
-        navigation.navigate(NavigatorType.HOME);
+        asyncCreatePostToDB().then(() => {
+            events.invokeOnContentUpdate();
+            navigation.navigate(NavigatorType.HOME);
+        });
     }
 
-    async function updatePostToDB(downloadUriWraps) {
-        let uris = toPostUriListFormat(downloadUriWraps);
+    function updatePostToDB(downloadUriWraps) {
+        async function asyncUpdatePostToDB() {
+            let uris = toPostUriListFormat(downloadUriWraps);
 
-        postModel.setImageDownloadUrls(uris);
-        postModel.setTitle(title);
-        postModel.setPrice(price);
-        postModel.setInfo(info);
+            postModel.setImageDownloadUrls(uris);
+            postModel.setTitle(title);
+            postModel.setPrice(price);
+            postModel.setInfo(info);
 
-        if (await postModel.updateData() === false) {
-            setHasError(true);
-            return;
+            if (await postModel.updateData() === false) {
+                setHasError(true);
+            }
         }
-
-        navigation.navigate(NavigatorType.HOME);
+        asyncUpdatePostToDB().then(() => {
+            events.invokeOnContentUpdate();
+            navigation.navigate(NavigatorType.CONTENT_DETAIL, {postModel: postModel});
+        });
     }
 
 /* ---------------------

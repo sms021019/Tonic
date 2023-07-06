@@ -21,6 +21,7 @@ import MenuButton from '../components/MenuButton'
 import Modal from '../utils/modal'
 
 export default function ({navigation, postModel}) {
+    const {events} = useContext(GlobalContext);
     const [owner, setPostOwner] = useState(null);
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const uriWraps = postModel.imageDownloadUrls;
@@ -91,10 +92,15 @@ export default function ({navigation, postModel}) {
         setDeleteModalOn(true);
     }
 
-    function handleDeletePost() {
-        console.log("Delete post");
+    async function handleDeletePost() {
+        if (await postModel.deleteData() === false) {
+            console.log("Fail to delete data.");
+            return;
+        }
 
         setDeleteModalOn(false);
+        events.invokeOnContentUpdate();
+        navigation.navigate(ScreenType.CONTENT);
     }
 
     function handleReportPost() {
@@ -109,14 +115,14 @@ export default function ({navigation, postModel}) {
             >
                 <View style={styles.modalView}>
                     <Text style={styles.deleteModalText}>
-                        Do you want to delete post?
+                        Do you want to delete the post?
                     </Text>
                     <Flex direction="row" style={{marginTop: 20}}>
                         <TouchableOpacity onPress={() => setDeleteModalOn(false)} style={{marginRight: 40}} >
                             <Text style={styles.tonicTextGray}>Cancel</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleDeletePost}>
-                            <Text style={styles.tonicTextBlue}>Delete</Text>
+                            <Text style={styles.tonicTextRed}>Delete</Text>
                         </TouchableOpacity>
                     </Flex>
                 </View>
@@ -171,7 +177,7 @@ export default function ({navigation, postModel}) {
 const styles = StyleSheet.create({
     slide:                  { flex: 1, justifyContent: "center", backgroundColor: "transparent",},
     background:             { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,},
-    dot:                    {backgroundColor: "rgba(255,255,255,.5)", width: 7, height: 7, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
+    dot:                    { backgroundColor: "rgba(255,255,255,.5)", width: 7, height: 7, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
     activeDot:              { backgroundColor: "#FFF", width: 8, height: 8, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
     footerArea:             { alignSelf: 'center', height: 100, width: "100%", borderRadius: 4, padding: 10, shadowColor: 'black', shadowRadius: 8, shadowOpacity: 0.07, backgroundColor: 'white' },
     contentArea:            { display: 'flex', justifyContent:'center', width:"100%", padding:16, shadowOpacity:0.07, shadowRadius:10, shadowOffset: {width: 0, height: -15}, backgroundColor:'white' },
@@ -183,7 +189,7 @@ const styles = StyleSheet.create({
     bottomSheetAlertText:   { fontSize: 22, fontWeight: '600', color:theme.colors.alert, margin:15},
     deleteModalText:        { fontSize: 16, fontWeight: '600' },
     tonicTextGray:          { fontSize: 18, fontWeight: '600', color: theme.colors.iconGray },
-    tonicTextBlue:          { fontSize: 18, fontWeight: '600', color: theme.colors.primary },
+    tonicTextRed:           { fontSize: 18, fontWeight: '600', color: theme.colors.tonicRed },
 
 
     modalView: {

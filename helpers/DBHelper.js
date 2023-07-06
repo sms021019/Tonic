@@ -1,4 +1,4 @@
-import {Transaction, addDoc, collection, getDocs, runTransaction, updateDoc, doc, arrayUnion, getDoc} from "firebase/firestore";
+import {Transaction, addDoc, collection, getDocs, runTransaction, updateDoc, deleteDoc, doc, arrayUnion, getDoc} from "firebase/firestore";
 import {DBCollectionType, LOG_ERROR} from "../utils/utils";
 import {db} from "../firebase";
 export default class DBHelper {
@@ -81,7 +81,14 @@ export default class DBHelper {
         }
     }
 
-    static async deleteData() {
-
+    static async deleteData(ref) {
+        try {
+            await deleteDoc(ref);
+            return true;
+        }
+        catch (error) {
+            LOG_ERROR(ref, "Error occurs while delete data.");
+            return false;
+        }
     }
 }

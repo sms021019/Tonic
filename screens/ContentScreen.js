@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, TouchableOpacity, View, Button} from 'react-native'
 import {Center, FlatList, Input, Icon, Divider} from "native-base";
 import styled from "styled-components/native";
@@ -23,8 +23,14 @@ const LoadingView = <View><Text>Loading...</Text></View>
 
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
+    const {events} = useContext(GlobalContext);
     const [postModelList, setPostModelList] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Add Event
+    let onContentChangeEvent = useCallback(() => {
+        LoadAllPost();
+    }, [])
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -35,12 +41,8 @@ export default function ContentScreen({navigation}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (postModelList.length === 0) {
-            LoadAndSetPostModel().then((result) =>{
-                if (result === false)
-                    console.log("Fail to refresh");
-            }) ;
-        }
+        events.addOnContentUpdate(onContentChangeEvent);
+        LoadAllPost();
     }, []);
 
 
@@ -57,23 +59,24 @@ export default function ContentScreen({navigation}) {
 
     function handleRefresh() {
         setRefreshing(true)
-        LoadAndSetPostModel().then((result) => {
-            if (result === false) {
-                console.log("Fail to refresh.")
-            }
-        });
+        LoadAllPost();
     }
 
-    async function LoadAndSetPostModel() {
-        let postModelList = [];
-        if (await PostModel.loadAllData(/* OUT */ postModelList) === false) {
-            // ERROR HANDLE
-            console.log("fail to load data");
-            return false;
+     function LoadAllPost() {
+        async function asyncLoadAllPost() {
+            let postModelList = [];
+            if (await PostModel.loadAllData(/* OUT */ postModelList) === false) {
+                // ERROR HANDLE
+                console.log("fail to load data");
+                return false;
+            }
+
+            setPostModelList(postModelList);
+            setRefreshing(false);
+            return true;
         }
 
-        setPostModelList(postModelList);
-        setRefreshing(false);
+        asyncLoadAllPost();
     }
 
 /* ------------------

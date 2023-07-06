@@ -24,6 +24,7 @@ const theme = {
         iconGray: palette.iconGray,
         lightGray: palette.lightGray,
         alert: palette.tonicRed,
+        tonicRed: palette.tonicRed,
     },
 };
 
