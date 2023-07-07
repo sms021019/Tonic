@@ -24,7 +24,7 @@ const LoadingView = <View><Text>Loading...</Text></View>
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
     const {events} = useContext(GlobalContext);
-    const [postModelList, setPostModelList] = useState([]);
+    const {postModelList} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
 
     // Add Event
@@ -49,8 +49,8 @@ export default function ContentScreen({navigation}) {
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(postModel) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postModel: postModel})
+    function handleContentClick(docId) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId})
     }
 
     function handleCreateButtonClick() {
@@ -64,14 +64,14 @@ export default function ContentScreen({navigation}) {
 
      function LoadAllPost() {
         async function asyncLoadAllPost() {
-            let postModelList = [];
-            if (await PostModel.loadAllData(/* OUT */ postModelList) === false) {
+            let _postModelList = [];
+            if (await PostModel.loadAllData(/* OUT */ _postModelList) === false) {
                 // ERROR HANDLE
                 console.log("fail to load data");
                 return false;
             }
 
-            setPostModelList(postModelList);
+            postModelList.set(_postModelList);
             setRefreshing(false);
             return true;
         }

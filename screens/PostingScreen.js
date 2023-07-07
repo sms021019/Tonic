@@ -10,9 +10,9 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 // Firebase
-import {auth, db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
+import {auth, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
 // Utils
-import {createURL, DBCollectionType, LOG, LOG_ERROR, NavigatorType, PageMode, StorageDirectoryType, windowWidth} from "../utils/utils"
+import {createURL, LOG, LOG_ERROR, NavigatorType, PageMode, StorageDirectoryType, windowWidth} from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
@@ -21,6 +21,7 @@ import AnimatedLoader from "react-native-animated-loader";
 import PostModel from '../models/PostModel'
 // Context
 import GlobalContext from "../context/Context";
+import PostingImageUploader from "../components/PostingImageUploader";
 
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
@@ -37,19 +38,16 @@ class UriWrap {
     }
 }
 
-export default function PostingScreen({navigation, mode, postModel}) {
+export default function PostingScreen({navigation, mode, docId}) {
     const {events} = useContext(GlobalContext);
-    const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
-    const [title, setTitle] =       useState('');
-    const [price, setPrice] =       useState('');
-    const [info, setInfo] =         useState('');
-    const [UriWraps, setUriWraps] = useState([]);
+    const {postModelList} = useContext(GlobalContext);
+    const [postModel, setPostModel] = useState(null);
     const [posting, setPosting] =   useState(false);
     const [loading, setLoading] =   useState(false);
     const [hasError, setHasError] = useState(false);
     const [user, setUser] =         useState(null);
 
-    mode = mode? mode : PageMode.CREATE;
+
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -93,47 +91,8 @@ export default function PostingScreen({navigation, mode, postModel}) {
      Event Handlers (ImagePicker)
  ------------------------------------*/
     // Get selected image from user's library (ImagePicker)
-    async function asyncGetImageFromUserLibrary() {
-        if (UriWraps.length >= MAX_IMAGE_UPLOAD_COUNT) return;
-
-        if (!status?.granted) {
-            const permission = await requestPermission();
-            if (!permission.granted) {
-                return null;
-            }
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            maxWidth: 512,
-            maxHeight: 512,
-            aspect: [1, 1]
-        });
-
-        if (result?.assets[0] === null) return;
-
-        const originalImage = result.assets[0];
-
-        const resizedImage = await ImageManipulator.manipulateAsync(
-            originalImage.uri,
-            [{ resize: { width: 100, height: 100 } }],
-            {}
-        );
-
-        let uriWrap = new UriWrap(URIType.TEMP, originalImage.uri, resizedImage.uri)
-
-        setUriWraps((prev) => ([...prev, uriWrap]));
-    }
 
     // Remove user's selected image
-    function handleDeleteImageButtonClick(index) {
-        if (index < 0 || index >= UriWraps.length) { LOG(this, "ERR::Invalid index"); return; }
-
-        let newImageUrls = UriWraps;
-        newImageUrls.splice(index, 1);
-        setUriWraps(() => ([...newImageUrls]));
-    }
-
 /* -----------------------------------
      Event Handlers (Post to DB)
  ------------------------------------*/
@@ -277,36 +236,6 @@ export default function PostingScreen({navigation, mode, postModel}) {
     if (hasError) return <ErrorScreen/>
 
 
-/* ------------------
-      Components
- -------------------*/
-    const UploadedImages = getUploadedImagesComp();
-
-    function getUploadedImagesComp() {
-        let component = [];
-
-        for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
-            if (UriWraps[i]) {
-                component.push(
-                    <Box key={i}>
-                        <UploadImageBox>
-                            <UploadImage source={{uri: UriWraps[i].sUri}}/>
-                        </UploadImageBox>
-                        <TouchableOpacity
-                            style={{position: 'absolute', left: 40, top: -5}}
-                            onPress={() => handleDeleteImageButtonClick(i)}
-                        >
-                            <Icon name="close-circle" size={20} color="#242424"/>
-                        </TouchableOpacity>
-                    </Box>
-                )
-            } else {
-                component.push(<UploadImageBox key={i}><GrayText>{i + 1}</GrayText></UploadImageBox>);
-            }
-        }
-        return component
-    }
-
 /* -------------
      Render
  ---------------*/
@@ -322,21 +251,7 @@ export default function PostingScreen({navigation, mode, postModel}) {
                 <Text>{(mode === PageMode.CREATE)? "Uploading..." : "Updating..."}</Text>
             </AnimatedLoader>
             <Flex direction="column" style={{height: "100%", width: "100%"}}>
-                <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
-                    <Box style={{margin: windowWidth * 0.05}}>
-                        <TouchableOpacity
-                            onPress={asyncGetImageFromUserLibrary}
-                            style={[styles.button, styles.buttonOutline]}
-                        >
-                            <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
-                            <GrayText>{UriWraps.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
-                        </TouchableOpacity>
-                    </Box>
-                    <Divider orientation="vertical" height="80%"/>
-                    <ContentGroupBox>
-                        {UploadedImages}
-                    </ContentGroupBox>
-                </Flex>
+                <PostingImageUploader/>
                 <Divider/>
                 <TitleInputField placeholder="Title" value={title} onChangeText={setTitle}/>
                 <Divider/>
@@ -384,22 +299,6 @@ const ContentGroupBox = styled.View`
   justify-content: space-evenly;
 `
 
-const UploadImageBox = styled.View`
-  overflow: hidden;
-  width: ${windowWidth * 0.14}px;
-  height: ${windowWidth * 0.14}px;
-  border-width: 1px;
-  border-color: ${theme.colors.iconGray};
-  border-radius: 10px;
-  align-items: center;
-  justify-content: center;
-`;
-
-const UploadImage = styled.Image`
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-`
 
 const GrayText = styled.Text`
   color: ${theme.colors.text};

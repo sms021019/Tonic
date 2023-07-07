@@ -20,7 +20,7 @@ export default function PostList(props) {
                     return (
                         <View key={data.item.doc_id}>
                             <View style={{margin: margin}}>
-                                <Post onClickHandler={() => handleClick(data.item)} key={data.item.doc_id} model={data.item}/>
+                                <Post onClickHandler={() => handleClick(data.item.doc_id)} key={data.item.doc_id} model={data.item}/>
                             </View>
                             <Divider/>
                         </View>

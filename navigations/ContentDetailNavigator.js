@@ -7,12 +7,12 @@ import {ScreenType} from "../utils/utils";
 const Stack = createStackNavigator();
 
 export default function ContentDetailNavigator({route}) {
-    const {events} = route.params;
+    const {events, docId} = route.params;
 
     return (
         <Stack.Navigator screenOptions={{headerShown: true}}>
             <Stack.Screen name={ScreenType.CONTENT_DETAIL}>
-                {props => <ContentDetailScreen {...props} postModel={route?.params?.postModel} event={events}/>}
+                {props => <ContentDetailScreen {...props} docId={docId} event={events}/>}
             </Stack.Screen>
         </Stack.Navigator>
     )

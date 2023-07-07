@@ -21,22 +21,27 @@ import DeletePostModal from "../components/DeletePostModal";
 import ReportPostModal from "../components/ReportPostModal";
 // Model
 import ChatroomModel from '../models/ChatroomModel';
+import ImageSwiper from "../components/ImageSwiper";
 
 
-export default function ({navigation, postModel}) {
+export default function ContentDetailScreen({navigation, docId}) {
     const {events} = useContext(GlobalContext);
+    const {postModelList} = useContext(GlobalContext);
     const [owner, setPostOwner] = useState(null);
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportModalOn, setReportModalOn] = useState(false);
-    const uriWraps = postModel.imageDownloadUrls;
-    const title = postModel.title;
-    const price = postModel.price;
-    const info = postModel.info;
-    const email = postModel.email;
+    const postModel = postModelList.getOneByDocId(docId);
+
     const { user } = useContext(GlobalContext);
 
+    if (postModel === null) {
+        return (
+            <Text>Loading..</Text>
+        )
+    }
+
     useEffect(() => {
-        let userRef = doc(collection(db, DBCollectionType.USERS), email);
+        let userRef = doc(collection(db, DBCollectionType.USERS), postModel.email);
 
         getDoc(userRef).then((doc) => {
             if(doc.data() === null) {
@@ -53,16 +58,9 @@ export default function ({navigation, postModel}) {
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
-            headerLeft: () => <GoBackButton
-                color={theme.colors.white}
-                ml={15}
-                callback={() => navigation.navigate(NavigatorType.HOME)}
-            />,
-            // TODO : check if the current user is the owner of the post.
+            headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)}/>,
             headerRight: () => (
-                <MenuButton
-                    mr={5}
-                    size={6}
+                <MenuButton mr={5} size={6}
                     items={
                         isMyPost() ?
                             [
@@ -83,12 +81,13 @@ export default function ({navigation, postModel}) {
     }
 
     async function handleChatClick() {
-        const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), email), user);
+        const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), postModel.email), user);
         await chatroomModel.saveData().then( ref => {
             if(ref){
                 chatroomModel.setRef(ref);
                 navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
-            }else{
+            }
+            else{
                 // TO DO: error handle
                 return;
             }
@@ -96,7 +95,7 @@ export default function ({navigation, postModel}) {
     }
 
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, postModel: postModel});
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
     }
 
     function OpenDeleteModal() {
@@ -128,42 +127,22 @@ export default function ({navigation, postModel}) {
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
             <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={handleReportPost}/>
             <ScrollView>
-                <Swiper
-                    height={windowWidth}
-                    dot={<View style={styles.dot} />}
-                    activeDot={<View style={styles.activeDot} />}
-                    loop={false}
-                >
-                    {uriWraps.map((wrap, index) => (
-                        <View key={wrap.oUri + index}>
-                            <Image style={{width: windowWidth, height: windowWidth}}
-                                   source={{uri: wrap.oUri}}
-                            />
-                            <LinearGradient
-                                // Background Linear Gradient
-                                colors={['rgba(0,0,0,0.1)', 'transparent']}
-                                start={{ x: 0, y: 0.2}}
-                                end={{x: 0, y: 0.3}}
-                                style={styles.background}
-                            />
-                        </View>
-                    ))}
-                </Swiper>
+                <ImageSwiper  urls={postModel.imageDownloadUrls.map((url) => url.oUri)} />
                 <View style={styles.contentArea}>
-                    <Box w="100%" h="60px" alignItems="left" justifyContent="center">
-                        <Text style={styles.titleText}>{title}</Text>
+                    <Box style={styles.titleBox}>
+                        <Text style={styles.titleText}>{postModel.title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
                         <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
                         <Text style={{color:'gray'}}>1 day ago</Text>
                     </Flex>
-                    <Text style={styles.contentText}>{info}</Text>
+                    <Text style={styles.contentText}>{postModel.info}</Text>
                 </View>
             </ScrollView>
             <View style={styles.footerArea}>
                 <Flex direction="row" alignItems='center'>
                     <Text flex="1" style={styles.priceText}>
-                        ${price.toLocaleString()}
+                        ${postModel.price.toLocaleString()}
                     </Text>
                     <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
                         <TonicText>Chat</TonicText>
@@ -175,7 +154,8 @@ export default function ({navigation, postModel}) {
 }
 
 const styles = StyleSheet.create({
-    slide:                  { flex: 1, justifyContent: "center", backgroundColor: "transparent",},
+    titleBox:               { height: 60, justifyContent: "center"},
+    slide:                  { flex: 1, justifyContent: "center", backgroundColor: "transparent"},
     background:             { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,},
     dot:                    { backgroundColor: "rgba(255,255,255,.5)", width: 7, height: 7, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
     activeDot:              { backgroundColor: "#FFF", width: 8, height: 8, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
@@ -199,14 +179,6 @@ const Container = styled.View`
 
 const ChatButton = styled.Pressable`
     ${TonicButton};
-    width: 70px;
-    height: 50px;
-    border-radius: 8px;
-`;
-
-const ModalButton = styled.Pressable`
-    ${TonicButton};
-    display: flex;
     width: 70px;
     height: 50px;
     border-radius: 8px;
