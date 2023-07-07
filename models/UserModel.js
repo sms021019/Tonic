@@ -1,25 +1,24 @@
 import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
-export default class PostModel {
-    constructor(imageDownloadUrls, title, price, info, email) {
+
+export default class UserModel {
+    constructor(username, email, password) {
         this.doc_id = null;
         this.ref = null;
-        this.collectionType = DBCollectionType.POSTS;
+        this.collectionType = DBCollectionType.USERS;
 
-        this.imageDownloadUrls = imageDownloadUrls;
-        this.title = title;
-        this.price = Number(price); // Todo : valid check
-        this.info = info;
+        this.username = username;
         this.email = email;
+        this.password = password;
     }
 
     setDocId = (doc_id) => this.doc_id = doc_id;
     setRef = (ref) => this.ref = ref;
-    setImageDownloadUrls = (setImageDownloadUrls) => this.setImageDownloadUrls = setImageDownloadUrls;
-    setTitle = (title) => this.title = title;
-    setPrice = (price) => this.price = price;
-    setInfo = (info) => this.info = info;
+    setUsername = (username) => this.username = username;
+    setPassword = (password) => this.password = password;
     setUserEmail = (email) => this.email = email;
 
     static async loadData(doc) {
@@ -83,21 +82,73 @@ export default class PostModel {
     }
     async updateData() {
         if (this.isValid() === false) return false;
-        if (this.ref === null) return false;
+        if (this.ref == null) return false;
 
         return await DBHelper.updateData(this.ref, this.getData());
     }
 
     async saveData() {
         if (this.isValid() === false) return false;
+        try{
+            createUserWithEmailAndPassword(auth, this.email, this.password)
+            .then(async userCredentials => {
+                const user = userCredentials.user;
+                const userData = {
+                    username: this.username,
+                    uid: user.uid,
+                    email: user.email,
+                }
+         
+                if(await DBHelper.addData(this.collectionType, userData) === false){
+                    // TO DO
+                    console.log("Couldn't add a document to DB")
+                    return false;
+                }
+
+                // const userRef = [];
+                // if(await DBHelper.getCollectionRefByName(user.email, userRef) === false){
+                //     // TO DO
+                //     return false;
+                // }else{
+                //     userRef = userRef[0];
+                // }
+
+                // if(await DBHelper.updateData(userRef, {displayName: this.username}) === false){
+                //     // TO DO
+                //     console.log("Couldn't update a document to DB")
+                //     return false;
+                // }
+
+                await updateProfile(user, {displayName: this.username}).catch(
+                    (err) => {
+                        console.log(err);
+                        return false;
+                    }
+                );
+                
+                // await setDoc(doc(usersCollectionRef, user.email), {
+                //     username: username,
+                //     uid: user.uid,
+                //     email: user.email,
+                // });
+
+                // const userCollection = await getDocs(collection(db, DBCollectionType.USERS));
+                // userCollection.forEach((doc) => {
+                //     if (doc.data().uid === user.uid) {
+                //         console.log(doc.data().username)
+                //     }
+                // });
+                console.log('Registered in with: ', user.email);
+                return true;
+            }).catch((e) => {
+                console.log(e);
+                return false;
+            })
+        }catch(e){
+            return false;
+        }
 
         return await DBHelper.addData(this.collectionType, this.getData());
-    }
-
-    async deleteData() {
-        if (this.ref === null) return false;
-
-        return await DBHelper.deleteData(this.ref);
     }
 
     getData() {

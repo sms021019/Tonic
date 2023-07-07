@@ -5,23 +5,69 @@ export default class DBHelper {
     constructor() {
     }
 
-    static async loadData(props) {
-        const {collectionType, id, ref} = props;
-
-        if(ref){
-            console.log("loading data with ref")
-            const snapshot = await getDoc(ref);
-            if(snapshot.exists()){
-                console.log("found document!");
-                return snapshot.data();
-            }else{
-                console.log("document does not exists with the given ref!");
-                return null
+    static async getCollectionRefByName(name, dest) {
+        try {
+            if(name) {
+                let ref = collection(db, name);
+                dest.push(ref);
+                return true
             }
-        }else{
-            console.log("loading data with id and collection type")
-            const snapshot = await getDoc(doc(collection(db, collectionType), id));
-            return snapshot.data();
+            else return false
+        }
+        catch(error) {
+            LOG_ERROR(name , `Error occurs while getting ${name} collection reference from the DB.`);
+            return false
+        }
+    }
+
+    static async getDocRefById(collectionName, id, dest) {
+        try {
+            if(collectionName && id) {
+                let collectionRef = [];
+                if(this.getCollectionRefByName(collectionName, /* OUT */ collectionRef) === false){
+                    // TO DO
+                    console.log("Can't find collection ref!")
+                    return false;
+                }else{
+                    collectionRef = collectionRef[0];
+                }
+
+                let ref = doc(collectionRef, id);
+                dest.push(ref);
+                return true
+            }
+            else return false
+        }
+        catch(error) {
+            LOG_ERROR(id , `Error occurs while getting ${id} document reference from the given collection ref.`);
+            return false
+        }
+    }
+
+    static async loadData() {
+
+    }
+
+    static async loadDataByRef(ref, dest) {
+        try {
+            if(ref) {
+                const snapshot = await getDoc(ref);
+                if(snapshot.exists()){
+                    let data = snapshot.data();
+                    data["doc_id"] = snapshot.id;
+                    data["ref"] = snapshot.ref;
+                    dest.push(data);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else return false
+        }
+        catch(error) {
+            LOG_ERROR(ref?.id , "Error occurs while loading data from the DB.");
+            return false
         }
     }
 
@@ -44,15 +90,13 @@ export default class DBHelper {
     static async addData(collectionType, data) {
         try {
             if(collectionType === DBCollectionType.POSTS){
-                console.log("Adding a new post...");
-                console.log(collectionType);
-                console.log(data);
+                console.log("Creating a new post...");
+                //당장 계시물 추가하려면 사진이 있어야만 가능함
                 const transactionResult = await runTransaction(db, async(transaction) => {
                     const newPostRef = doc(collection(db, collectionType));
                     transaction.set(newPostRef, data);
-                    console.log("checkp")
-                    console.log(data.email)
-                    transaction.update(doc(db, `/users/${data.email}`), {
+                
+                    transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
                         posts: arrayUnion(newPostRef)
                     });
 
@@ -61,18 +105,73 @@ export default class DBHelper {
                 });
                 return transactionResult;
 
+            }else if(collectionType === DBCollectionType.CHATROOMS){
+                console.log("Creating a new chatroom...");
+                const transactionResult = await runTransaction(db, async(transaction) => {
+                    const oppUserDoc = await transaction.get(data.opponentRef);
+                    if(!oppUserDoc.exists()){
+                        throw "Opponent does not exist!";
+                    }
+                    if(oppUserDoc.data().email === data.user.email){
+                        throw "Can\'t make room by yourself!";
+                    }
+                    
+                    const chatroomsCol = collection(db, DBCollectionType.CHATROOMS);
+                    const chatroomRef = doc(chatroomsCol);
+                    // const chatroomId = chatroomRef.id;
+                    const chatroom = {
+                        ref: chatroomRef,
+                        participants: [oppUserDoc.data().email, data.user.email]
+                    }
+    
+                    transaction.set(chatroomRef, chatroom);
+    
+                    transaction.update(data.opponentRef, {
+                        chatrooms: arrayUnion(chatroomRef)
+                    });
+    
+                    transaction.update(doc(collection(db, DBCollectionType.USERS), data.user.email), {
+                        chatrooms: arrayUnion(chatroomRef)
+                    });
+    
+                    console.log("Transaction successfully committed!");
+                    return chatroomRef;
+                });
+                return transactionResult;
+            }else if(collectionType === DBCollectionType.USERS){
+                console.log("Creating a new user...");
+                const transactionResult = await runTransaction(db, async (transaction) => {
+                    let usersCollectionRef = [];
+                    if(this.getCollectionRefByName(collectionType, usersCollectionRef) === false){
+                        //TO DO
+                        LOG_ERROR(collectionType, "Error occurs while finding reference of collection from DB.");
+                        return false;
+                    }
+                    else {
+                        usersCollectionRef = usersCollectionRef[0];
+                    }
+                    
+                    transaction.set(doc(usersCollectionRef, data.email), data);
+
+                    console.log("Transaction successfully committed!")
+                    return true;
+
+                });
+                return transactionResult;
             }
-            // await addDoc(collection(db, collectionType), data);
+
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");
-            return true;
+            return false;
         }
     }
 
     static async updateData(ref, data) {
+        console.log("updating document...")
         try {
             await updateDoc(ref, data);
+            console.log("updated success!")
             return true;
         }
         catch(error) {
@@ -88,6 +187,73 @@ export default class DBHelper {
         }
         catch (error) {
             LOG_ERROR(ref, "Error occurs while delete data.");
+            return false;
+        }
+    }
+
+    static async deleteChatroom(ref, user) {
+        try{
+            await runTransaction(db, async (transaction) => {
+                const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
+                const currentUserDoc = await transaction.get(currentUserRef);
+                
+                const chatroomDoc = await transaction.get(ref);
+                const currentUserEmail = currentUserDoc.data().email;
+    
+                if(!currentUserDoc.exists()){
+                    throw "User document does not exist!";
+                }
+    
+                
+                let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
+                let index = -1;
+                for(let i = 0; i < copyOfUserChatrooms.length; i++){
+                    if(ref.id === copyOfUserChatrooms[i].id){
+                        index = i;
+                    }
+                }
+                console.log(index);
+        
+                if(index > -1) {
+                    copyOfUserChatrooms.splice(index, 1);
+                    transaction.update(currentUserRef, {
+                        chatrooms: copyOfUserChatrooms,
+                    })
+                }else{
+                    return Promise.reject("Sorry! Chatroom reference doesn't exist");
+                }
+    
+                if(!chatroomDoc.exists()){
+                    throw "Chatroom document does not exist!";
+                }
+    
+                let leftParticipants = chatroomDoc.data().participants.length;
+                if( leftParticipants === 1){
+                    console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
+                    transaction.delete(ref);
+                }else if( leftParticipants > 1){
+                    let copyOfParticipants = chatroomDoc.data().participants;
+                    let temp = copyOfParticipants.indexOf(currentUserEmail);
+                    console.log(temp);
+                    if( temp > -1) {
+                        copyOfParticipants.splice(temp, 1);
+                        transaction.update(ref, {
+                            participants: copyOfParticipants,
+                        })
+                    }else{
+                        return Promise.reject("Sorry! User reference doesn't exist");
+                    }
+                }else{
+                    throw "Please check number of participants"
+                }
+                
+    
+            });
+    
+            console.log("Transaction successfully committed!");
+            return true;
+        }catch(error){
+            console.error(error);
             return false;
         }
     }

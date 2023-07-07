@@ -34,7 +34,7 @@ export default function Login({navigation}) {
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.buttonOutline, styles.buttonBorder]}
-                                  onPress={() => navigation.push("PasswordReset")}>
+                                  onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>
                     <Text>
                         비밀번호 찾기 {'\t'}
                     </Text>
