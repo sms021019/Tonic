@@ -19,7 +19,7 @@ export default function MenuButton(props)
         }}>
             {
                 items.map((item) => (
-                    <Menu.Item onPress={item.callback}>
+                    <Menu.Item onPress={item.callback} key={item.name}>
                         <Text style={{color: item.color}}>{item.name}</Text>
                     </Menu.Item>
                 ))
