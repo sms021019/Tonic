@@ -113,10 +113,10 @@ export default function MyPage({navigation}) {
                     </Box>
                     <Center>
                         {postDataList.map((data) =>
-                                <View>
+                                <View key={data.doc_id}>
                                     <View style={{margin: 20}}>
                                         {/* <Post onClickHandler={() => handleContentClick(data)}  data={data}/> */}
-                                        <Post onClickHandler={() => handleContentClick(data)} key={data.doc_id} model={data}/>
+                                        <Post onClickHandler={() => handleContentClick(data)}  model={data}/>
                                     </View>
                                     <Divider/>
                                 </View>)

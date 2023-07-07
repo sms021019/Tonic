@@ -7,7 +7,7 @@ import { Text } from 'react-native'
 import { flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 
 import {auth} from '../firebase';
@@ -35,7 +35,7 @@ const EmailVerification = ({navigation}) => {
         signOut(auth)
         .then(() => {
             console.log(`${user?.email} logged out`);
-            navigation.navigate("Login");
+            navigation.navigate(ScreenType.LOGIN);
         })
         .catch(error => console.log(error))
     }
