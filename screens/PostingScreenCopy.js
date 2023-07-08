@@ -207,7 +207,7 @@
 //         async function asyncUpdatePostToDB() {
 //             let uris = toPostUriListFormat(downloadUriWraps);
 //
-//             postModel.setImageDownloadUrls(uris);
+//             postModel.imageDownloadUrls(uris);
 //             postModel.setTitle(title);
 //             postModel.setPrice(price);
 //             postModel.setInfo(info);

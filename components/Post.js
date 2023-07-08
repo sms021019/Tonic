@@ -26,14 +26,9 @@ export default function Post(props) {
     }
 
     const postModel = props.model;
-    let title = postModel.title;
-    // if (title.length > 30){
-    //     title = title.substring(0, 30) + "...";
-    // }
-
-    const price = postModel.price;
-    const uriWraps = postModel.imageDownloadUrls;
-    const bannerImageUrl = uriWraps[0].sUri;
+    const title = postModel._title;
+    const price = postModel._price;
+    const bannerImageUrl = postModel._imageModels[0]._sDownloadUrl;
 
     function handlePostClick() {
         props.onClickHandler();

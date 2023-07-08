@@ -1,23 +1,23 @@
+import React from "react";
 import {Box, Divider, Flex} from "native-base";
-import {LOG, windowWidth} from "../utils/utils";
 import {StyleSheet, TouchableOpacity} from "react-native";
+import styled from "styled-components/native";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
-import theme from "../utils/theme";
-import React, {useState} from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import styled from "styled-components/native";
+import {LOG, windowWidth} from "../utils/utils";
+import theme from "../utils/theme";
+import ImageModel from "../models/ImageModel";
 
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
-export default function PostingImageUploader () {
-    const [images, setImages] = useState([]);
+export default function PostingImageUploader ({imageModels, setImageModels}) {
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
     async function asyncGetImageFromUserLibrary() {
-        if (images.length >= MAX_IMAGE_UPLOAD_COUNT) return;
+        if (imageModels.length >= MAX_IMAGE_UPLOAD_COUNT) return;
 
         if (!status?.granted) {
             const permission = await requestPermission();
@@ -43,7 +43,8 @@ export default function PostingImageUploader () {
             {}
         );
 
-        setImages(prev => ([...prev, {oUri: originalImage.uri, sUri: smallImage.uri}]))
+        let model = ImageModel.newModel(originalImage.uri, smallImage.uri);
+        setImageModels(prev => ([...prev, model]))
     }
 
 
@@ -53,14 +54,14 @@ export default function PostingImageUploader () {
         let component = [];
 
         for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
-            if (images[i]) {
+            if (imageModels[i]) {
                 component.push(
                     <Box key={i}>
                         <UploadImageBox>
-                            <UploadImage source={{uri: images[i].sUri}}/>
+                            <UploadImage source={{uri: imageModels[i]._sDownloadUrl}}/>
                         </UploadImageBox>
                         <TouchableOpacity
-                            style={{position: 'absolute', left: 40, top: -5}}
+                            style={styles.imageBox}
                             onPress={() => handleDeleteImage(i)}
                         >
                             <Icon name="close-circle" size={20} color="#242424"/>
@@ -75,23 +76,23 @@ export default function PostingImageUploader () {
     }
 
     function handleDeleteImage(index) {
-        if (index < 0 || index >= images.length) { LOG(this, "ERR::Invalid index"); return; }
+        if (index < 0 || index >= imageModels.length) { LOG(this, "ERR::Invalid index"); return; }
 
-        let newImageUrls = images;
-        newImageUrls.splice(index, 1);
-        setImages(() => ([...newImageUrls]));
+        let tImageModels = imageModels;
+        tImageModels.splice(index, 1);
+        setImageModels(() => ([...tImageModels]));
     }
 
 
     return (
-        <Flex direction="row" w="100%" h="100px" style={{justifyContent: 'center', alignItems: 'center'}}>
+        <Flex direction="row" w="100%" h="100px" style={styles.flexCenter}>
             <Box style={{margin: windowWidth * 0.05}}>
                 <TouchableOpacity
                     onPress={asyncGetImageFromUserLibrary}
                     style={[styles.button, styles.buttonOutline]}
                 >
                     <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
-                    <GrayText>{images.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
+                    <GrayText>{imageModels.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
                 </TouchableOpacity>
             </Box>
             <Divider orientation="vertical" height="80%"/>
@@ -102,6 +103,7 @@ export default function PostingImageUploader () {
     )
 }
 const styles = StyleSheet.create({
+    flexCenter: {justifyContent: 'center', alignItems: 'center'},
     button: {
         width: windowWidth * 0.2,
         height: windowWidth * 0.2,
@@ -115,6 +117,8 @@ const styles = StyleSheet.create({
         width: 200,
         height: 200,
     },
+
+    imageBox: {position: 'absolute', left: 40, top: -5}
 })
 
 const UploadImageBox = styled.View`

@@ -32,8 +32,6 @@ export const ScreenType = {
     ERROR:              "errorScreen",
     SETTING:            "settingScreen",
     EDIT_PROFILE:       "editProfileScreen",
-    PASSWORD_RESET:     "passwordResetScreen",
-    EMAIL_VERIFICATION: "emailVerificationScreen",
 }
 
 export const DBCollectionType = {
@@ -41,6 +39,7 @@ export const DBCollectionType = {
     POSTS:      "posts",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
+    IMAGE:      "images",
 }
 
 export const StorageDirectoryType = {

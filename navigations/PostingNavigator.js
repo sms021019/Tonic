@@ -8,12 +8,12 @@ import ContentDetailScreen from "../screens/ContentDetailScreen";
 const Stack = createStackNavigator();
 
 export default function PostingNavigator({route}) {
-    const {docId} = route.params;
-    
+    const {docId, mode} = route.params;
+
     return (
         <Stack.Navigator screenOptions={{headerShown: true}}>
             <Stack.Screen name="ContentDetail">
-                {props => <PostingScreen {...props} mode={route?.params?.mode} docId={docId} /> }
+                {props => <PostingScreen {...props} mode={mode} docId={docId} /> }
             </Stack.Screen>
         </Stack.Navigator>
     )

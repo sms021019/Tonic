@@ -1,6 +1,18 @@
-import {Transaction, addDoc, collection, getDocs, runTransaction, updateDoc, deleteDoc, doc, arrayUnion, getDoc} from "firebase/firestore";
-import {DBCollectionType, LOG_ERROR} from "../utils/utils";
-import {db} from "../firebase";
+import {
+    Transaction,
+    addDoc,
+    collection,
+    getDocs,
+    runTransaction,
+    updateDoc,
+    deleteDoc,
+    doc,
+    arrayUnion,
+    getDoc,
+    setDoc
+} from "firebase/firestore";
+import {createURL, DBCollectionType, LOG_ERROR, StorageDirectoryType} from "../utils/utils";
+import {db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
 export default class DBHelper {
     constructor() {
     }
@@ -48,22 +60,21 @@ export default class DBHelper {
 
     }
 
+
     static async loadDataByRef(ref, dest) {
         try {
-            if(ref) {
+            if (ref) {
                 const snapshot = await getDoc(ref);
-                if(snapshot.exists()){
+                if (snapshot.exists()) {
                     let data = snapshot.data();
                     data["doc_id"] = snapshot.id;
                     data["ref"] = snapshot.ref;
                     dest.push(data);
                     return true;
                 }
-                else {
-                    return false;
-                }
+                else return false;
             }
-            else return false
+            return false
         }
         catch(error) {
             LOG_ERROR(ref?.id , "Error occurs while loading data from the DB.");
@@ -87,18 +98,37 @@ export default class DBHelper {
         }
     }
 
+    static async addDataTemp(collectionType, data, /*OUT*/ ref = []) {
+        try {
+            let _ref = doc(collection(db, collectionType));
+            await setDoc(_ref, data);
+            ref.push(_ref);
+        }
+        catch(error) {
+            LOG_ERROR(collectionType, "Error occurs while adding data to DB.");
+            return false;
+        }
+    }
+
     static async addData(collectionType, data) {
         try {
             if(collectionType === DBCollectionType.POSTS){
                 console.log("Creating a new post...");
                 //당장 계시물 추가하려면 사진이 있어야만 가능함
                 const transactionResult = await runTransaction(db, async(transaction) => {
-                    const newPostRef = doc(collection(db, collectionType));
+
+                    console.log("1");
+                    let newPostRef = doc(collection(db, collectionType));
+                    console.log("2");
+                    console.log(newPostRef)
+                    console.log(data);
                     transaction.set(newPostRef, data);
+                    console.log("3");
                 
                     transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
                         posts: arrayUnion(newPostRef)
                     });
+                    console.log("4");
 
                     console.log("Transaction successfully committed!");
                     return true;
@@ -256,5 +286,41 @@ export default class DBHelper {
             console.error(error);
             return false;
         }
+    }
+
+/*----------------------
+    POSTING-RELATED
+-----------------------*/
+    static async _asyncCreateBlobByImageUri(imageUri) {
+        return await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function () {
+                reject(new TypeError('Network request failed'));
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', imageUri, true);
+            xhr.send(null);
+            return true;
+        }).catch((e) => {
+            LOG_ERROR(e, "Fail to convert imageURI into Blob.");
+            return false;
+        });
+    }
+
+    static async asyncUploadImageToStorage(uri, userEmail) {
+        const blob = await this._asyncCreateBlobByImageUri(uri);
+        if (blob === false) return false;
+
+        let storageURL = createURL(StorageDirectoryType.POST_IMAGES, userEmail, new Date().getTime());
+
+        let storageRef = ref(storage, storageURL);
+        if (storageRef === null) return false;
+
+        await uploadBytesResumable(storageRef, blob);
+
+        return await getDownloadURL(storageRef);
     }
 }

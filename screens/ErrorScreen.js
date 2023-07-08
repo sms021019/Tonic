@@ -7,7 +7,7 @@ export default function ErrorScreen() {
     return (
         <Container>
             <Text>
-                This is ErrorScreen
+                Something went wrong.. Try again.
             </Text>
         </Container>
     )

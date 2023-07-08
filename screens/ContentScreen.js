@@ -18,6 +18,7 @@ import {db} from "../firebase";
 // model
 import PostModel from "../models/PostModel";
 import PostList from "../components/PostList";
+import ErrorScreen from "./ErrorScreen";
 
 const LoadingView = <View><Text>Loading...</Text></View>
 
@@ -26,8 +27,9 @@ export default function ContentScreen({navigation}) {
     const {events} = useContext(GlobalContext);
     const {postModelList} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
-    // Add Event
+
     let onContentChangeEvent = useCallback(() => {
         LoadAllPost();
     }, [])
@@ -45,11 +47,17 @@ export default function ContentScreen({navigation}) {
         LoadAllPost();
     }, []);
 
+    if (hasError) {
+        return <ErrorScreen/>;
+    }
+
+    // Add Event
 
 /* ------------------
        Handlers
  -------------------*/
     function handleContentClick(docId) {
+        if (docId === -1 || !docId) return;
         navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId})
     }
 
@@ -68,6 +76,7 @@ export default function ContentScreen({navigation}) {
             if (await PostModel.loadAllData(/* OUT */ _postModelList) === false) {
                 // ERROR HANDLE
                 console.log("fail to load data");
+                setHasError(true);
                 return false;
             }
 
@@ -76,7 +85,7 @@ export default function ContentScreen({navigation}) {
             return true;
         }
 
-        asyncLoadAllPost();
+        asyncLoadAllPost().then();
     }
 
 /* ------------------

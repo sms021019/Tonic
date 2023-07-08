@@ -1,26 +1,53 @@
-import {DBCollectionType} from "../utils/utils";
+import {createURL, DBCollectionType, LOG_ERROR, PageMode, StorageDirectoryType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
+import {runTransaction} from "firebase/firestore";
+import {db, storage} from "../firebase";
+import ImageModel from './ImageModel';
+
+/*----------DB COLLECTION STRUCT----------------
+{
+    imageRefs: [ref1, ref2, ... ]
+    email: "email@stonybrook,edu"
+    title: ""
+    price: ""
+    info: ""
+}
+----------------------------------------------*/
 
 export default class PostModel {
-    constructor(imageDownloadUrls, title, price, info, email) {
-        this.doc_id = null;
-        this.ref = null;
-        this.collectionType = DBCollectionType.POSTS;
+    constructor(doc_id, ref, imageRefs, imageModels, title, price, info, email) {
+        this._doc_id = doc_id;
+        this._ref = ref;
+        this._collectionType = DBCollectionType.POSTS;
 
-        this.imageDownloadUrls = imageDownloadUrls;
-        this.title = title;
-        this.price = Number(price); // Todo : valid check
-        this.info = info;
-        this.email = email;
+        this._imageRefs = imageRefs;
+        this._imageModels = imageModels;
+        this._newImageModels = [];         // Added in the runtime.
+        this._removedImageModels = [];     // Added in the runtime.
+        this._title = title;
+        this._price = price
+        this._info = info;
+        this._email = email;
+
+    }
+    static newEmpty() {
+        return new PostModel([], "", [], [], "", "", "", "");
     }
 
-    setDocId = (doc_id) => this.doc_id = doc_id;
-    setRef = (ref) => this.ref = ref;
-    setImageDownloadUrls = (setImageDownloadUrls) => this.setImageDownloadUrls = setImageDownloadUrls;
-    setTitle = (title) => this.title = title;
-    setPrice = (price) => this.price = price;
-    setInfo = (info) => this.info = info;
-    setUserEmail = (email) => this.email = email;
+    static newModel(imageModels, title, price, info, email) {
+        return new PostModel(imageModels, title, price, info, email)
+    }
+
+    // ---------------- Get / Set --------------------
+    setDocId = (_doc_id) => this._doc_id = _doc_id;
+    setRef = (ref) => this._ref = ref;
+    setImageRefs = (refs) => this._imageRefs = refs;
+    setTitle = (title) => this._title = title;
+    setPrice = (price) => this._price = price;
+    setInfo = (info) => this._info = info;
+    setEmail = (email) => this._email = email;
+
+    // ------------------------------------------------
 
     static async loadData(doc) {
 
@@ -28,13 +55,10 @@ export default class PostModel {
 
     static async loadAllData(dest) {
         let dataList = []
-        let loadState = await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList);
-        if (loadState === false || dataList.length === 0) {
-            return false;
-        }
+        if (await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList) === false) return false;
 
-        for (let i = 0; i < dataList.length; i++) {
-            let postModel = this.createModelByDBData(dataList[i]);
+        for (let data of dataList) {
+            let postModel = await this._dataToModel(data);
             if (postModel === null) return false;
 
             dest.push(postModel);
@@ -42,17 +66,15 @@ export default class PostModel {
         return true;
     }
 
-    static async loadAllPostsByUser(currentUserRef, dest){
+    static async loadAllPostsByUser(currentUserRef, dest) {
         let userData = []
         if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
             // TO DO:
             return false;
         }
-        else {
-            userData = userData[0];
-        }
+        userData = userData[0];
 
-        if(userData.posts.length === 0){
+        if (userData.posts.length === 0) {
             console.log("No chatrooms")
             return true;
         }
@@ -66,67 +88,129 @@ export default class PostModel {
             dest.push(data[0]);
         }
         return true;
-
-
     }
 
-    static createModelByDBData(data) {
-        if (this.isLoadDataValid(data) === false) {
-            console.log("Data is not valid");
+    static async _dataToModel(data) {
+        if (this._isLoadDataValid(data) === false) {
             return null;
         }
 
-        let postModel = new PostModel(data.imageDownloadUrls, data.title, data.price, data.info, data.email)
-        postModel.setDocId(data.doc_id);
-        postModel.setRef(data.ref);
-        return postModel
+        let imageModels = await ImageModel.refsToModels(data.imageRefs);
+        if (imageModels === null) return null;
+
+        return new PostModel(data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email)
     }
+
     async updateData() {
-        if (this.isValid() === false) return false;
-        if (this.ref === null) return false;
+        if (this.isContentReady() === false) return false;
+        if (this._ref === null) return false;
 
-        return await DBHelper.updateData(this.ref, this.getData());
+        return await DBHelper.updateData(this._ref, this.getData());
     }
 
-    async saveData() {
-        if (this.isValid() === false) return false;
+    // handleDeletedImages() {
+    //     const removeImages = this.prevDownloadUrls.filter((pi) => {
+    //         for (let ni in this._imageRefs) {
+    //             if (this.isImageSame(pi, ni)) {
+    //                 return false;
+    //             }
+    //         }
+    //         return true;
+    //     })
+    //
+    //     let dir = createURL(StorageDirectoryType.POST_IMAGES, this._email);
+    //     let ref = ref(storage, dir);
+    //     ref.getReferenceFromUrl(url);
+    //     storageRef.getReferenceFromUrl(url)
+    // }
 
-        return await DBHelper.addData(this.collectionType, this.getData());
+    async addData() {
+        if (this.isContentReady() === false) return false;
+
+        return await DBHelper.addData(this._collectionType, this.getData());
     }
 
     async deleteData() {
-        if (this.ref === null) return false;
+        if (this._ref === null) return false;
 
-        return await DBHelper.deleteData(this.ref);
+        return await DBHelper.deleteData(this._ref);
     }
 
-    getData() {
-        return {
-            title: this.title,
-            price: Number(this.price),
-            info: this.info,
-            imageDownloadUrls: this.imageDownloadUrls,
-            email: this.email,
+
+    async tSavePost(imageModels) {
+        try {
+            console.log("A")
+            this.preprocessImageModels(imageModels);
+
+            console.log("B")
+            if (await this._uploadImagesToStorage() === false)  return false;
+
+            console.log("C")
+            if (this._ref) return await this.updateData()
+
+            else return await this.addData();
+        }
+        catch (err) {
+            return false;
         }
     }
 
-    isValid() {
+    preprocessImageModels(imageModels) {
+        this._newImageModels = imageModels.filter((model) => model._imageType === ImageModel.TYPE.NEW)
+
+        this._removedImageModels = this._imageModels.filter((_model) => {
+            for (let model of imageModels) {
+                if (_model.isEqual(model))
+                    return false;
+            }
+            return true;
+        })
+
+        this._imageRefs = this._imageRefs.filter((ref) => {
+            for (let model of this._removedImageModels) {
+                if (ref === model._ref) {
+                    return false;
+                }
+            }
+            return true;
+        })
+    }
+
+    async _uploadImagesToStorage() {
+        console.log("e")
+        if (this._email === null) return false;
+        console.log("f")
+        for (let imageModel of this._newImageModels) {
+            console.log("g")
+            if (await imageModel.addData(this._email) === false) return false; // Upload image to Storage.
+            this._imageRefs.push(imageModel._ref);
+        }
+        console.log("h")
+
         return true;
     }
 
-    static isLoadDataValid(data) {
-        if (
-            data.doc_id === null ||
-            data.imageDownloadUrls === null ||
-            data.title === null ||
-            data.price === null ||
-            data.info === null ||
-            data.email === null
-        ) {
-            return false;
+
+    getData() {
+        return {
+            title: this._title,
+            price: this._price,
+            info: this._info,
+            imageRefs: this._imageRefs,
+            email: this._email,
         }
-        else {
-            return true;
-        }
+    }
+
+    isContentReady() {
+        return (
+            this._imageRefs !== null &&
+            this._title !== null &&
+            this._price !== null &&
+            this._info !== null
+        );
+    }
+
+    static _isLoadDataValid(data) {
+        return !!(data.doc_id && data.imageRefs && data.title && data.price && data.info && data.email);
     }
 }
