@@ -49,12 +49,7 @@ export default class PostModel {
     setInfo = (info) => this.info = info;
     setEmail = (email) => this.email = email;
 
-    // ------------------------------------------------
-
-    static async loadData(doc) {
-
-    }
-
+// ---------------- Task -------------------------
     static async loadAllData(dest) {
         let dataList = []
         if (await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList) === false) return false;
@@ -68,6 +63,40 @@ export default class PostModel {
         return true;
     }
 
+    async asyncSave() {
+        this._preprocessImageModels();
+
+        try {
+            let batch = writeBatch(db);
+
+            if (this._type === ModelStatusType.NEW) {
+                if (await this._bAsyncSetData(batch) === false) return false;
+            }
+            else {
+                if (await this._bAsyncUpdateData(batch) === false) return false;
+            }
+
+            await batch.commit();
+        }
+        catch (err) {
+            return false;
+        }
+    }
+
+    async asyncDelete() {
+        try {
+            let batch = writeBatch(db);
+            if (await this._bAsyncDeleteData(batch) === false) return false;
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
+
+// TODO --------------------------------------------
     static async loadAllPostsByUser(currentUserRef, dest) {
         let userData = []
         if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
@@ -90,17 +119,6 @@ export default class PostModel {
             dest.push(data[0]);
         }
         return true;
-    }
-
-    static async _dataToModel(data) {
-        if (this._isLoadDataValid(data) === false) {
-            return null;
-        }
-
-        let imageModels = await ImageModel.refsToModels(data.imageRefs);
-        if (imageModels === null) return null;
-
-        return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
     }
 
 // -------------- BATCH POST --------------------
@@ -154,41 +172,19 @@ export default class PostModel {
         return true;
     }
 
-// ---------------- Task -------------------------
-    async asyncSave() {
-        this._preprocessImageModels();
 
-        try {
-            let batch = writeBatch(db);
-
-            if (this._type === ModelStatusType.NEW) {
-                if (await this._bAsyncSetData(batch) === false) return false;
-            }
-            else {
-                if (await this._bAsyncUpdateData(batch) === false) return false;
-            }
-
-            await batch.commit();
+// ---------------- HELPER -----------------------
+    static async _dataToModel(data) {
+        if (this._isLoadDataValid(data) === false) {
+            return null;
         }
-        catch (err) {
-            return false;
-        }
+
+        let imageModels = await ImageModel.refsToModels(data.imageRefs);
+        if (imageModels === null) return null;
+
+        return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
     }
 
-    async asyncDelete() {
-        try {
-            let batch = writeBatch(db);
-            if (await this._bAsyncDeleteData(batch) === false) return false;
-
-            await batch.commit();
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
-    }
-
-// ------------------------------------------------
     _preprocessImageModels() {
         this.newImageModels = this.imageModels.filter((model) => model._type === ModelStatusType.NEW)
         this.removedImageModels = this.prevImageModels.filter((_model) => {

@@ -29,6 +29,7 @@ export default class ImageModel {
         return new ImageModel(ModelStatusType.NEW,null, null, null, oDownloadUrl, sDownloadUrl);
     }
 
+//-------------------- TASK --------------------------
     static async refsToModels(refs) {
         let imageModels = [];
         for (let ref of refs) {
@@ -50,7 +51,7 @@ export default class ImageModel {
     }
 
 
-// ------------- Batch --------------------
+// ----------------- Batch ---------------------
     async bAsyncSetData(batch, userEmail) {
         if (await this._asyncUploadImageToStorage(userEmail) === false) return false;
         if (this.isReadyToSave() === false) return false;
@@ -94,7 +95,7 @@ export default class ImageModel {
             return false;
         }
     }
-// ------------- Validation --------------------
+// ------------- HELPER --------------------
 
     isReadyToSave() {
         return !!(this.oDownloadUrl && this.sDownloadUrl)
