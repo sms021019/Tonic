@@ -115,7 +115,7 @@ export default function ContentDetailScreen({navigation, docId}) {
         setReportModalOn(true);
     }
     async function handleDeletePost() {
-        if (await postModel.deleteData() === false) {
+        if (await postModel.asyncDelete() === false) {
             console.log("Fail to delete data.");
             return;
         }

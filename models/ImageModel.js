@@ -49,8 +49,10 @@ export default class ImageModel {
         return new ImageModel(ModelStatusType.LOADED, data.ref, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
     }
 
+
+// ------------- Batch --------------------
     async bAsyncSetData(batch, userEmail) {
-        if (await this.asyncUploadImageToStorage(userEmail) === false) return false;
+        if (await this._asyncUploadImageToStorage(userEmail) === false) return false;
         if (this.isReadyToSave() === false) return false;
 
         this.ref = DBHelper.getNewRef(this.collectionType);
@@ -63,18 +65,19 @@ export default class ImageModel {
         if (this._type === ModelStatusType.NEW) return true; // Nothing to delete.
         if (this.ref === null) return false;
 
-        if(await this.asyncDeleteImageFromStorage() === false) return false;
+        if(await this._asyncDeleteImageFromStorage() === false) return false;
 
         batch.delete(this.ref);
     }
 
-    async asyncDeleteImageFromStorage() {
+// ------------- Storage --------------------
+    async _asyncDeleteImageFromStorage() {
         if (await DBHelper.asyncDeleteImageFromStorage(this.oStorageUrl) === false) return false;
         if (await DBHelper.asyncDeleteImageFromStorage(this.sStorageUrl) === false) return false;
         return true;
     }
 
-    async asyncUploadImageToStorage(userEmail) {
+    async _asyncUploadImageToStorage(userEmail) {
         try {
             const oResult = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.oDownloadUrl, userEmail);
             this.oStorageUrl = oResult.storageUrl;
@@ -91,7 +94,7 @@ export default class ImageModel {
             return false;
         }
     }
-    // ------------- Validation --------------------
+// ------------- Validation --------------------
 
     isReadyToSave() {
         return !!(this.oDownloadUrl && this.sDownloadUrl)

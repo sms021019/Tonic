@@ -104,10 +104,10 @@ export default class PostModel {
     }
 
 // -------------- BATCH POST --------------------
-    async bAsyncSetData(batch) {
+    async _bAsyncSetData(batch) {
         if (this.isContentReady() === false) return false;
 
-        if (await this.bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
+        if (await this._bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
 
         this.ref = DBHelper.getNewRef(this.collectionType);
         this.postTime = TimeHelper.getTimeNow();
@@ -116,19 +116,29 @@ export default class PostModel {
         return true;
     }
 
-    async bAsyncUpdateData(batch) {
+    async _bAsyncUpdateData(batch) {
         if (this.isContentReady() === false) return false;
         if (this.ref === null) return false;
 
-        if (await this.bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
-        if (await this.bAsyncRemoveImageModels(batch, this.removedImageModels) === false) return false;
+        if (await this._bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
+        if (await this._bAsyncRemoveImageModels(batch, this.removedImageModels) === false) return false;
 
         batch.update(this.ref, this.getData());
         return true;
     }
 
+    async _bAsyncDeleteData(batch) {
+        if (this.ref === null) return false;
+
+        if (await this._bAsyncRemoveImageModels(batch, this.imageModels) === false) return false;
+        // TODO: remove post ref from the user.
+
+        batch.delete(this.ref);
+        return true;
+    }
+
 // -------------- BATCH IMAGES --------------------
-    async bAsyncSetImageModels(batch, imageModels) {
+    async _bAsyncSetImageModels(batch, imageModels) {
         for (let model of imageModels) {
             if (await model.bAsyncSetData(batch, this.email) === false) return false;
             this.imageRefs.push(model.ref);
@@ -136,7 +146,7 @@ export default class PostModel {
         return true;
     }
 
-    async bAsyncRemoveImageModels(batch, imageModels) {
+    async _bAsyncRemoveImageModels(batch, imageModels) {
         for (let model of imageModels) {
             if (await model.bAsyncDeleteData(batch) === false) return false;
 
@@ -152,10 +162,10 @@ export default class PostModel {
             let batch = writeBatch(db);
 
             if (this._type === ModelStatusType.NEW) {
-                if (await this.bAsyncSetData(batch) === false) return false;
+                if (await this._bAsyncSetData(batch) === false) return false;
             }
             else {
-                if (await this.bAsyncUpdateData(batch) === false) return false;
+                if (await this._bAsyncUpdateData(batch) === false) return false;
             }
 
             await batch.commit();
@@ -166,12 +176,16 @@ export default class PostModel {
     }
 
     async asyncDelete() {
-        // if (this.ref === null) return false;
-        //
-        // if (await this._asyncRemoveImageModels(this.imageModels) === false) return false;
-        //
-        // // TODO: remove post ref from the user.
-        // return await DBHelper.deleteData(this.ref);
+        try {
+            let batch = writeBatch(db);
+            if (await this._bAsyncDeleteData(batch) === false) return false;
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
     }
 
 // ------------------------------------------------
