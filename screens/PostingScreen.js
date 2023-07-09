@@ -101,7 +101,9 @@ export default function PostingScreen({navigation, mode, docId}) {
 
     async function asyncSavePost() {
         postModel.setEmail(user?.email);
-        if (await postModel.tSavePost(imageModels) === false) {
+        postModel.setImageModels(imageModels);
+
+        if (await postModel.asyncSave() === false) {
             setHasError(true);
             return LOG_ERROR("Unknown error occur while posting the images.");
         }

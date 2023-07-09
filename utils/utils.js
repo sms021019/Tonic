@@ -34,6 +34,10 @@ export const ScreenType = {
     EDIT_PROFILE:       "editProfileScreen",
 }
 
+export const ModelStatusType = {
+    NEW: "newModelStatus",
+    LOADED: "loadedModelStatus",
+}
 export const DBCollectionType = {
     USERS:      "users",
     POSTS:      "postsTemp",

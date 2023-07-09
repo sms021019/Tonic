@@ -1,26 +1,24 @@
 import DBHelper from "../helpers/DBHelper";
-import {DBCollectionType} from "../utils/utils";
-
+import {DBCollectionType, ModelStatusType} from "../utils/utils";
+import {doc} from "firebase/firestore";
+import {db} from "../firebase";
 
 
 /*----------DB COLLECTION STRUCT----------------
 {
-    storageUrl: "yong@stonybrook.edu/123123123123.png",
+    oStorageUrl: "yong@stonybrook.edu/123123123123.png",
+    sStorageUrl: "yong@stonybrook.edu/123123123212.png",
     oDownlaodUrl: "...",
     sDownloadUrl: "...",
 }
 ----------------------------------------------*/
 
 export default class ImageModel {
-    static TYPE = {
-        NEW: "newImageType",
-        LOADED: "loadedImageType",
-    }
-    constructor(ref, imageType, oStorageUrl, sStorageUrl, oDownloadUrl, sDownloadUrl) {
+    constructor(_type, ref, oStorageUrl, sStorageUrl, oDownloadUrl, sDownloadUrl) {
         this.collectionType = DBCollectionType.IMAGE;
-        this.ref = ref;
-        this.imageType = imageType;
+        this._type = _type;
 
+        this.ref = ref;
         this.oStorageUrl = oStorageUrl;
         this.sStorageUrl = sStorageUrl;
         this.oDownloadUrl = oDownloadUrl;
@@ -28,25 +26,8 @@ export default class ImageModel {
     }
 
     static newModel(oDownloadUrl, sDownloadUrl) {
-        return new ImageModel(null, ImageModel.TYPE.NEW, null, null, oDownloadUrl, sDownloadUrl);
+        return new ImageModel(ModelStatusType.NEW,null, null, null, oDownloadUrl, sDownloadUrl);
     }
-
-    static newModelByData(data) {
-        try {
-            return new ImageModel(data.ref, this.TYPE.LOADED, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
-        }
-        catch {
-            return null;
-        }
-    }
-
-    // ------------- Get / Set ---------------
-    setOStorageUrl = (oStorageUrl) => this.oStorageUrl = oStorageUrl;
-    setSStorageUrl = (sStorageUrl) => this.sStorageUrl = sStorageUrl;
-    setODownloadUrl = (oDownloadUrl) => this.oDownloadUrl = oDownloadUrl;
-    setSDownloadUrl = (sDownloadUrl) => this.sDownloadUrl = sDownloadUrl;
-
-    // ----------------------------------------
 
     static async refsToModels(refs) {
         let imageModels = [];
@@ -65,37 +46,35 @@ export default class ImageModel {
             return null;
         }
         data = data[0] // Should be only one exists.
-        return new ImageModel(data.ref, this.TYPE.LOADED, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
+        return new ImageModel(ModelStatusType.LOADED, data.ref, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
     }
 
-    async asyncAddData(userEmail) {
-        await this._asyncUploadImageToStorage(userEmail);
-
+    async bAsyncSetData(batch, userEmail) {
+        if (await this.asyncUploadImageToStorage(userEmail) === false) return false;
         if (this.isReadyToSave() === false) return false;
-        let ref = [];
-        if (await DBHelper.addDataTemp(this.collectionType, this.getData(), /*OUT*/ ref) === false) return false;
 
-        this.ref = ref[0];
+        this.ref = DBHelper.getNewRef(this.collectionType);
+        batch.set(this.ref, this.getData());
 
         return true;
     }
 
-    async asyncDeleteData() {
-        if (this.imageType === ImageModel.TYPE.NEW) return true; // Nothing to delete.
+    async bAsyncDeleteData(batch) {
+        if (this._type === ModelStatusType.NEW) return true; // Nothing to delete.
         if (this.ref === null) return false;
 
-        if(await this._asyncDeleteImageFromStorage() === false) return false;
+        if(await this.asyncDeleteImageFromStorage() === false) return false;
 
-        return await DBHelper.deleteData(this.ref);
+        batch.delete(this.ref);
     }
 
-    async _asyncDeleteImageFromStorage() {
+    async asyncDeleteImageFromStorage() {
         if (await DBHelper.asyncDeleteImageFromStorage(this.oStorageUrl) === false) return false;
         if (await DBHelper.asyncDeleteImageFromStorage(this.sStorageUrl) === false) return false;
         return true;
     }
 
-    async _asyncUploadImageToStorage(userEmail) {
+    async asyncUploadImageToStorage(userEmail) {
         try {
             const oResult = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.oDownloadUrl, userEmail);
             this.oStorageUrl = oResult.storageUrl;
@@ -112,7 +91,6 @@ export default class ImageModel {
             return false;
         }
     }
-
     // ------------- Validation --------------------
 
     isReadyToSave() {

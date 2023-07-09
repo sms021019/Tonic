@@ -339,4 +339,8 @@ export default class DBHelper {
             return false;
         }
     }
+
+    static getNewRef(type) {
+        return doc(collection(db, type));
+    }
 }

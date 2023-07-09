@@ -1,9 +1,10 @@
-import {createURL, DBCollectionType, LOG_ERROR, PageMode, StorageDirectoryType} from "../utils/utils";
+import {DBCollectionType, ModelStatusType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
-import {runTransaction} from "firebase/firestore";
-import {db, storage} from "../firebase";
+import {doc} from "firebase/firestore";
+import {db} from "../firebase";
 import ImageModel from './ImageModel';
 import TimeHelper from "../helpers/TimeHelper";
+import { writeBatch } from "firebase/firestore";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -17,11 +18,12 @@ import TimeHelper from "../helpers/TimeHelper";
 ----------------------------------------------*/
 
 export default class PostModel {
-    constructor(doc_id, ref, imageRefs, imageModels, title, price, info, email, postTime) {
+    constructor(_type, doc_id, ref, imageRefs, imageModels, title, price, info, email, postTime) {
+        this.collectionType = DBCollectionType.POSTS;
+        this._type = _type;
+
         this.doc_id = doc_id;
         this.ref = ref;
-        this.collectionType = DBCollectionType.POSTS;
-
         this.imageRefs = imageRefs;
         this.prevImageModels = [...imageModels];
         this.imageModels = imageModels;
@@ -35,17 +37,13 @@ export default class PostModel {
     }
 
     static newEmpty() {
-        return new PostModel("", "", [], [], "", "", "", "", 0);
-    }
-
-    static newModel(imageModels, title, price, info, email) {
-        return new PostModel("", "", [], imageModels, title, price, info, email, 0)
+        return new PostModel(ModelStatusType.NEW, "", "", [], [], "", "", "", "", 0);
     }
 
     // ---------------- Get / Set --------------------
     setDocId = (doc_id) => this.doc_id = doc_id;
     setRef = (ref) => this.ref = ref;
-    setImageRefs = (refs) => this.imageRefs = refs;
+    setImageModels = (imageModels) => this.imageModels = imageModels;
     setTitle = (title) => this.title = title;
     setPrice = (price) => this.price = price;
     setInfo = (info) => this.info = info;
@@ -102,79 +100,93 @@ export default class PostModel {
         let imageModels = await ImageModel.refsToModels(data.imageRefs);
         if (imageModels === null) return null;
 
-        return new PostModel(data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
+        return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
     }
 
-    async updateData() {
+// -------------- BATCH POST --------------------
+    async bAsyncSetData(batch) {
+        if (this.isContentReady() === false) return false;
+
+        if (await this.bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
+
+        this.ref = DBHelper.getNewRef(this.collectionType);
+        this.postTime = TimeHelper.getTimeNow();
+
+        batch.set(this.ref, this.getData());
+        return true;
+    }
+
+    async bAsyncUpdateData(batch) {
         if (this.isContentReady() === false) return false;
         if (this.ref === null) return false;
 
-        if (await this._asyncRemoveImageModels(this.removedImageModels) === false) return false;
+        if (await this.bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
+        if (await this.bAsyncRemoveImageModels(batch, this.removedImageModels) === false) return false;
 
-        return await DBHelper.updateData(this.ref, this.getData());
+        batch.update(this.ref, this.getData());
+        return true;
     }
 
-    async _asyncRemoveImageModels(imageModels) {
+// -------------- BATCH IMAGES --------------------
+    async bAsyncSetImageModels(batch, imageModels) {
         for (let model of imageModels) {
-            if (await model.asyncDeleteData() === false) return false;
+            if (await model.bAsyncSetData(batch, this.email) === false) return false;
+            this.imageRefs.push(model.ref);
         }
         return true;
     }
 
-    async addData() {
-        if (this.isContentReady() === false) return false;
-        this.postTime = TimeHelper.getTimeNow();
-        return await DBHelper.addData(this.collectionType, this.getData());
+    async bAsyncRemoveImageModels(batch, imageModels) {
+        for (let model of imageModels) {
+            if (await model.bAsyncDeleteData(batch) === false) return false;
+
+        }
+        return true;
     }
 
-    async deleteData() {
-        if (this.ref === null) return false;
+// ---------------- Task -------------------------
+    async asyncSave() {
+        this._preprocessImageModels();
 
-        if (await this._asyncRemoveImageModels(this.imageModels) === false) return false;
-
-        // TODO: remove post ref from the user.
-        return await DBHelper.deleteData(this.ref);
-    }
-
-    // ---------------- Task -------------------------
-    async tSavePost(imageModels) {
         try {
-            this._preprocessImageModels(imageModels);
+            let batch = writeBatch(db);
 
-            if (await this._uploadImagesToStorage() === false)  return false;
+            if (this._type === ModelStatusType.NEW) {
+                if (await this.bAsyncSetData(batch) === false) return false;
+            }
+            else {
+                if (await this.bAsyncUpdateData(batch) === false) return false;
+            }
 
-            if (this.ref) return await this.updateData()
-
-            else return await this.addData();
+            await batch.commit();
         }
         catch (err) {
             return false;
         }
     }
-    // ------------------------------------------------
-    _preprocessImageModels(imageModels) {
-        this.imageModels = imageModels;
-        this.newImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.NEW)
+
+    async asyncDelete() {
+        // if (this.ref === null) return false;
+        //
+        // if (await this._asyncRemoveImageModels(this.imageModels) === false) return false;
+        //
+        // // TODO: remove post ref from the user.
+        // return await DBHelper.deleteData(this.ref);
+    }
+
+// ------------------------------------------------
+    _preprocessImageModels() {
+        this.newImageModels = this.imageModels.filter((model) => model._type === ModelStatusType.NEW)
         this.removedImageModels = this.prevImageModels.filter((_model) => {
-            for (let model of imageModels) {
+            for (let model of this.imageModels) {
                 if (_model.isEqual(model))
                     return false;
             }
             return true;
         })
 
-        let loadedImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.LOADED)
+        let loadedImageModels = this.imageModels.filter((model) => model._type === ModelStatusType.LOADED)
         this.imageRefs = loadedImageModels.map((model) => model.ref);
-    }
-
-    async _uploadImagesToStorage() {
-        if (this.email === null) return false;
-
-        for (let imageModel of this.newImageModels) {
-            if (await imageModel.asyncAddData(this.email) === false) return false; // Upload image to Storage.
-            this.imageRefs.push(imageModel.ref);
-        }
-        return true;
     }
 
     getElapsedString() {
