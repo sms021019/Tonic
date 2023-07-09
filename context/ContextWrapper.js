@@ -10,6 +10,9 @@ export default function ContextWrapper(props) {
     });
 
     const [postModelList, setPostModelList] = useState([]);
+    const [status, setStatus] = useState({
+        postModelList: false,
+    })
 
 
     events.addOnContentUpdate = (callback) => {
@@ -34,7 +37,7 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, events, postModelList}}>
+        <Context.Provider value={{user, setUser, events, postModelList, status}}>
             {[props.children]}
         </Context.Provider>
     )

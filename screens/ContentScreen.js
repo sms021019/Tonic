@@ -51,8 +51,6 @@ export default function ContentScreen({navigation}) {
         return <ErrorScreen/>;
     }
 
-    // Add Event
-
 /* ------------------
        Handlers
  -------------------*/
@@ -105,12 +103,10 @@ export default function ContentScreen({navigation}) {
     return (
         <Container>
             <ContentArea>
-                {!user ? LoadingView : ContentView}
+                {(!user || !postModelList) ? LoadingView : ContentView}
             </ContentArea>
             <CreateButtonArea>
-                <TouchableOpacity
-                    onPress={handleCreateButtonClick}
-                >
+                <TouchableOpacity onPress={handleCreateButtonClick}>
                     <CreateButton>
                         <BasicText>+</BasicText>
                     </CreateButton>
