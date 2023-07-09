@@ -1,7 +1,7 @@
 import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from "firebase/auth";
 
 
 export default class UserModel {
@@ -87,7 +87,7 @@ export default class UserModel {
         return await DBHelper.updateData(this.ref, this.getData());
     }
 
-    async saveData() {
+    async asyncCreateUser() {
         if (this.isValid() === false) return false;
         try{
             createUserWithEmailAndPassword(auth, this.email, this.password)
@@ -105,20 +105,6 @@ export default class UserModel {
                     return false;
                 }
 
-                // const userRef = [];
-                // if(await DBHelper.getCollectionRefByName(user.email, userRef) === false){
-                //     // TO DO
-                //     return false;
-                // }else{
-                //     userRef = userRef[0];
-                // }
-
-                // if(await DBHelper.updateData(userRef, {displayName: this.username}) === false){
-                //     // TO DO
-                //     console.log("Couldn't update a document to DB")
-                //     return false;
-                // }
-
                 await updateProfile(user, {displayName: this.username}).catch(
                     (err) => {
                         console.log(err);
@@ -126,18 +112,6 @@ export default class UserModel {
                     }
                 );
                 
-                // await setDoc(doc(usersCollectionRef, user.email), {
-                //     username: username,
-                //     uid: user.uid,
-                //     email: user.email,
-                // });
-
-                // const userCollection = await getDocs(collection(db, DBCollectionType.USERS));
-                // userCollection.forEach((doc) => {
-                //     if (doc.data().uid === user.uid) {
-                //         console.log(doc.data().username)
-                //     }
-                // });
                 console.log('Registered in with: ', user.email);
                 return true;
             }).catch((e) => {
@@ -145,10 +119,26 @@ export default class UserModel {
                 return false;
             })
         }catch(e){
+            console.log(e);
             return false;
         }
+    }
 
-        return await DBHelper.addData(this.collectionType, this.getData());
+    static passwordReset(email) {
+        sendPasswordResetEmail(auth, email)
+        .then(() => {
+            // Password reset email sent!
+            return true;
+        })
+        .catch(error => {
+            // TO DO 여기서 에러 메세지를 받음 (error)
+            console.log(error);
+            return false;
+        })
+    }
+
+    static login() {
+        
     }
 
     getData() {

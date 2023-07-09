@@ -1,30 +1,34 @@
 import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
+import ErrorScreen from './ErrorScreen';
+import UserModel from '../models/UserModel';
 
-import { auth } from '../firebase';
-import { sendPasswordResetEmail } from "firebase/auth";
-import errorHandler from '../errors/index';
 
 
 
 export default PasswordResetScreen = () => {
     const [email, setEmail] = useState('');
     const [emailSent, setEmailSent] = useState('none');
+    const [hasError, setHasError] = useState(false);
 
     const handleReset = () => {
-        sendPasswordResetEmail(auth, email)
-        .then(() => {
-            // Password reset email sent!
-            console.log("Password reset email sent!")
-            setEmail('');
-            setEmailSent('block');
-        })
-        .catch(error => alert(errorHandler(error)))
+        if( UserModel.passwordReset(email) === false ){
+            // TO DO
+            setHasError(true);
+            return;
+        }
+        setEmail('');
+        setEmailSent('block');
+        
     }
+
+    /* ------------------
+        Error Screen
+    -------------------*/
+    if (hasError) return <ErrorScreen/>
 
     return (
         <Container>
