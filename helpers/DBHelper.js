@@ -9,10 +9,11 @@ import {
     doc,
     arrayUnion,
     getDoc,
-    setDoc
+    setDoc,
 } from "firebase/firestore";
 import {createURL, DBCollectionType, LOG_ERROR, StorageDirectoryType} from "../utils/utils";
-import {db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
+import {db, getDownloadURL, storage, uploadBytesResumable} from "../firebase";
+import {ref, deleteObject} from "firebase/storage";
 import TimeHelper from "./TimeHelper";
 export default class DBHelper {
     constructor() {
@@ -117,19 +118,13 @@ export default class DBHelper {
                 console.log("Creating a new post...");
                 //당장 계시물 추가하려면 사진이 있어야만 가능함
                 const transactionResult = await runTransaction(db, async(transaction) => {
-
-                    console.log("1");
                     let newPostRef = doc(collection(db, collectionType));
-                    console.log("2");
-                    console.log(newPostRef)
-                    console.log(data);
+
                     transaction.set(newPostRef, data);
-                    console.log("3");
                 
                     transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
                         posts: arrayUnion(newPostRef)
                     });
-                    console.log("4");
 
                     console.log("Transaction successfully committed!");
                     return true;
@@ -330,6 +325,18 @@ export default class DBHelper {
         catch(error) {
             console.log("Error occurs while upload Image to Storage.");
             return null;
+        }
+    }
+
+    static async asyncDeleteImageFromStorage(url) {
+        try {
+            let _ref = ref(storage, url);
+            await deleteObject(_ref);
+            return true;
+        }
+        catch(error) {
+            console.log("Error occurs while delete image from Storage.");
+            return false;
         }
     }
 }

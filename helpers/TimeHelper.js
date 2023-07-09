@@ -34,7 +34,7 @@ export default class TimeHelper {
         let mins = this.getElapsedMinutes(startTime, endTime);
         if (mins !== 0) return mins + "m";
 
-        return "just now";
+        return "1m";
     }
 
     static getTopElapsedStringUntilNow(startTime)  {

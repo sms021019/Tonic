@@ -143,7 +143,7 @@ export default function ContentDetailScreen({navigation, docId}) {
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
                         <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
-                        <Text style={{color:'gray'}}>1 day ago</Text>
+                        <Text style={{color:'gray'}}>{postModel.getElapsedString()} ago</Text>
                     </Flex>
                     <Text style={styles.contentText}>{postModel.info}</Text>
                 </View>

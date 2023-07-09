@@ -80,10 +80,19 @@ export default class ImageModel {
         return true;
     }
 
-    async deleteData() {
+    async asyncDeleteData() {
+        if (this.imageType === ImageModel.TYPE.NEW) return true; // Nothing to delete.
         if (this.ref === null) return false;
 
+        if(await this._asyncDeleteImageFromStorage() === false) return false;
+
         return await DBHelper.deleteData(this.ref);
+    }
+
+    async _asyncDeleteImageFromStorage() {
+        if (await DBHelper.asyncDeleteImageFromStorage(this.oStorageUrl) === false) return false;
+        if (await DBHelper.asyncDeleteImageFromStorage(this.sStorageUrl) === false) return false;
+        return true;
     }
 
     async _asyncUploadImageToStorage(userEmail) {

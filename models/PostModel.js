@@ -8,11 +8,11 @@ import TimeHelper from "../helpers/TimeHelper";
 /*----------DB COLLECTION STRUCT----------------
 {
     imageRefs: [ref1, ref2, ... ]
-    postTime: Time
     email: "email@stonybrook,edu"
     title: ""
     price: ""
     info: ""
+    postTime: Time
 }
 ----------------------------------------------*/
 
@@ -109,7 +109,16 @@ export default class PostModel {
         if (this.isContentReady() === false) return false;
         if (this.ref === null) return false;
 
+        if (await this._asyncRemoveImageModels(this.removedImageModels) === false) return false;
+
         return await DBHelper.updateData(this.ref, this.getData());
+    }
+
+    async _asyncRemoveImageModels(imageModels) {
+        for (let model of imageModels) {
+            if (await model.asyncDeleteData() === false) return false;
+        }
+        return true;
     }
 
     async addData() {
@@ -121,6 +130,9 @@ export default class PostModel {
     async deleteData() {
         if (this.ref === null) return false;
 
+        if (await this._asyncRemoveImageModels(this.imageModels) === false) return false;
+
+        // TODO: remove post ref from the user.
         return await DBHelper.deleteData(this.ref);
     }
 
@@ -141,8 +153,8 @@ export default class PostModel {
     }
     // ------------------------------------------------
     _preprocessImageModels(imageModels) {
+        this.imageModels = imageModels;
         this.newImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.NEW)
-        let loadedImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.LOADED)
         this.removedImageModels = this.prevImageModels.filter((_model) => {
             for (let model of imageModels) {
                 if (_model.isEqual(model))
@@ -151,6 +163,7 @@ export default class PostModel {
             return true;
         })
 
+        let loadedImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.LOADED)
         this.imageRefs = loadedImageModels.map((model) => model.ref);
     }
 

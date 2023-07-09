@@ -29,6 +29,7 @@ export default function Post(props) {
     const title = postModel.title;
     const price = postModel.price;
     const bannerImageUrl = postModel.imageModels[0].sDownloadUrl;
+    const elapsedTime = postModel.getElapsedString();
 
     function handlePostClick() {
         props.onClickHandler();
@@ -57,7 +58,7 @@ export default function Post(props) {
                                         ${price}
                                     </Text>
                                     <Text flex="0.5" fontSize="sm" color="coolGray.800" numberOfLines={1}>
-                                        1d
+                                        {elapsedTime} ago
                                     </Text>
                                 </Flex>
                             </Flex>
