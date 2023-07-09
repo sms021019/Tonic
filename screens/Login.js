@@ -5,23 +5,29 @@ import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {ScreenType, windowWidth} from "../utils/utils";
 
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged} from 'firebase/auth';
-import {auth} from '../firebase';
 import errorHandler from '../errors/index';
-
+import UserModel from '../models/UserModel';
+import ErrorScreen from './ErrorScreen';
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [hasError, setHasError] = useState(false);
 
-    const handleLogin = () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(userCredentials => {
-                const user = userCredentials.user;
-                console.log('Logged in with: ', user.email);
-            })
-            .catch(error => alert(errorHandler(error)))
+    const asyncHandleLogin = async () => {
+
+        if( await UserModel.asyncLogin(email, password) === false){
+            setHasError(true);
+            console.log('set error');
+            return;
+        }
+       
     }
+
+    /* ------------------
+        Error Screen
+    -------------------*/
+    if (hasError) return <ErrorScreen/>    
 
     return (
         <Container>
@@ -45,7 +51,7 @@ export default function Login({navigation}) {
                     </Text>
                 </TouchableOpacity>
             </View>
-            <StartButton onPress={handleLogin}>
+            <StartButton onPress={asyncHandleLogin}>
                 <StartText>로그인</StartText>
             </StartButton>
         </Container>
