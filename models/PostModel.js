@@ -3,10 +3,12 @@ import DBHelper from "../helpers/DBHelper";
 import {runTransaction} from "firebase/firestore";
 import {db, storage} from "../firebase";
 import ImageModel from './ImageModel';
+import TimeHelper from "../helpers/TimeHelper";
 
 /*----------DB COLLECTION STRUCT----------------
 {
     imageRefs: [ref1, ref2, ... ]
+    postTime: Time
     email: "email@stonybrook,edu"
     title: ""
     price: ""
@@ -15,12 +17,13 @@ import ImageModel from './ImageModel';
 ----------------------------------------------*/
 
 export default class PostModel {
-    constructor(doc_id, ref, imageRefs, imageModels, title, price, info, email) {
+    constructor(doc_id, ref, imageRefs, imageModels, title, price, info, email, postTime) {
         this.doc_id = doc_id;
         this.ref = ref;
         this.collectionType = DBCollectionType.POSTS;
 
         this.imageRefs = imageRefs;
+        this.prevImageModels = [...imageModels];
         this.imageModels = imageModels;
         this.newImageModels = [];         // Added in the runtime.
         this.removedImageModels = [];     // Added in the runtime.
@@ -28,14 +31,15 @@ export default class PostModel {
         this.price = price
         this.info = info;
         this.email = email;
+        this.postTime = postTime;
     }
 
     static newEmpty() {
-        return new PostModel([], "", [], [], "", "", "", "");
+        return new PostModel("", "", [], [], "", "", "", "", 0);
     }
 
     static newModel(imageModels, title, price, info, email) {
-        return new PostModel(imageModels, title, price, info, email)
+        return new PostModel("", "", [], imageModels, title, price, info, email, 0)
     }
 
     // ---------------- Get / Set --------------------
@@ -98,7 +102,7 @@ export default class PostModel {
         let imageModels = await ImageModel.refsToModels(data.imageRefs);
         if (imageModels === null) return null;
 
-        return new PostModel(data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email)
+        return new PostModel(data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
     }
 
     async updateData() {
@@ -108,25 +112,9 @@ export default class PostModel {
         return await DBHelper.updateData(this.ref, this.getData());
     }
 
-    // handleDeletedImages() {
-    //     const removeImages = this.prevDownloadUrls.filter((pi) => {
-    //         for (let ni in this.imageRefs) {
-    //             if (this.isImageSame(pi, ni)) {
-    //                 return false;
-    //             }
-    //         }
-    //         return true;
-    //     })
-    //
-    //     let dir = createURL(StorageDirectoryType.POST_IMAGES, this.email);
-    //     let ref = ref(storage, dir);
-    //     ref.getReferenceFromUrl(url);
-    //     storageRef.getReferenceFromUrl(url)
-    // }
-
     async addData() {
         if (this.isContentReady() === false) return false;
-
+        this.postTime = TimeHelper.getTimeNow();
         return await DBHelper.addData(this.collectionType, this.getData());
     }
 
@@ -136,10 +124,10 @@ export default class PostModel {
         return await DBHelper.deleteData(this.ref);
     }
 
-
+    // ---------------- Task -------------------------
     async tSavePost(imageModels) {
         try {
-            this.preprocessImageModels(imageModels);
+            this._preprocessImageModels(imageModels);
 
             if (await this._uploadImagesToStorage() === false)  return false;
 
@@ -151,11 +139,11 @@ export default class PostModel {
             return false;
         }
     }
-
-    preprocessImageModels(imageModels) {
+    // ------------------------------------------------
+    _preprocessImageModels(imageModels) {
         this.newImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.NEW)
-
-        this.removedImageModels = this.imageModels.filter((_model) => {
+        let loadedImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.LOADED)
+        this.removedImageModels = this.prevImageModels.filter((_model) => {
             for (let model of imageModels) {
                 if (_model.isEqual(model))
                     return false;
@@ -163,14 +151,7 @@ export default class PostModel {
             return true;
         })
 
-        this.imageRefs = this.imageRefs.filter((ref) => {
-            for (let model of this.removedImageModels) {
-                if (ref === model.ref) {
-                    return false;
-                }
-            }
-            return true;
-        })
+        this.imageRefs = loadedImageModels.map((model) => model.ref);
     }
 
     async _uploadImagesToStorage() {
@@ -183,6 +164,10 @@ export default class PostModel {
         return true;
     }
 
+    getElapsedString() {
+        return TimeHelper.getTopElapsedStringUntilNow(this.postTime);
+    }
+
     getData() {
         return {
             title: this.title,
@@ -190,6 +175,7 @@ export default class PostModel {
             info: this.info,
             imageRefs: this.imageRefs,
             email: this.email,
+            postTime: this.postTime,
         }
     }
 
@@ -203,6 +189,6 @@ export default class PostModel {
     }
 
     static _isLoadDataValid(data) {
-        return !!(data.doc_id && data.imageRefs && data.title && data.price && data.info && data.email);
+        return !!(data.doc_id && data.imageRefs && data.title && data.price && data.info && data.email && data.postTime);
     }
 }

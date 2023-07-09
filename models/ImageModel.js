@@ -16,23 +16,24 @@ export default class ImageModel {
         NEW: "newImageType",
         LOADED: "loadedImageType",
     }
-    constructor(ref, imageType, storageUrl, oDownloadUrl, sDownloadUrl) {
+    constructor(ref, imageType, oStorageUrl, sStorageUrl, oDownloadUrl, sDownloadUrl) {
         this.collectionType = DBCollectionType.IMAGE;
         this.ref = ref;
         this.imageType = imageType;
 
-        this.storageUrl = storageUrl;
+        this.oStorageUrl = oStorageUrl;
+        this.sStorageUrl = sStorageUrl;
         this.oDownloadUrl = oDownloadUrl;
         this.sDownloadUrl = sDownloadUrl;
     }
 
     static newModel(oDownloadUrl, sDownloadUrl) {
-        return new ImageModel(null, ImageModel.TYPE.NEW, null, oDownloadUrl, sDownloadUrl);
+        return new ImageModel(null, ImageModel.TYPE.NEW, null, null, oDownloadUrl, sDownloadUrl);
     }
 
     static newModelByData(data) {
         try {
-            return new ImageModel(data.ref, data.storageUrl, data.oDownloadUrl, data.sDownloadUrl);
+            return new ImageModel(data.ref, this.TYPE.LOADED, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
         }
         catch {
             return null;
@@ -40,7 +41,8 @@ export default class ImageModel {
     }
 
     // ------------- Get / Set ---------------
-    setStorageUrl = (storageUrl) => this.storageUrl = storageUrl;
+    setOStorageUrl = (oStorageUrl) => this.oStorageUrl = oStorageUrl;
+    setSStorageUrl = (sStorageUrl) => this.sStorageUrl = sStorageUrl;
     setODownloadUrl = (oDownloadUrl) => this.oDownloadUrl = oDownloadUrl;
     setSDownloadUrl = (sDownloadUrl) => this.sDownloadUrl = sDownloadUrl;
 
@@ -58,16 +60,16 @@ export default class ImageModel {
     }
 
     static async asyncLoadData(ref) {
-        let result = [];
-        if (await DBHelper.loadDataByRef(ref, result) === false) {
+        let data = [];
+        if (await DBHelper.loadDataByRef(ref, data) === false) {
             return null;
         }
-        result = result[0] // Should be only one exists.
-        return new ImageModel(result.ref, this.TYPE.LOADED, result.storageUrl, result.oDownloadUrl, result.sDownloadUrl);
+        data = data[0] // Should be only one exists.
+        return new ImageModel(data.ref, this.TYPE.LOADED, data.oStorageUrl, data.sStorageUrl, data.oDownloadUrl, data.sDownloadUrl);
     }
 
     async asyncAddData(userEmail) {
-        await this._uploadImageToStorage(userEmail);
+        await this._asyncUploadImageToStorage(userEmail);
 
         if (this.isReadyToSave() === false) return false;
         let ref = [];
@@ -84,10 +86,15 @@ export default class ImageModel {
         return await DBHelper.deleteData(this.ref);
     }
 
-    async _uploadImageToStorage(userEmail) {
+    async _asyncUploadImageToStorage(userEmail) {
         try {
-            this.oDownloadUrl = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.oDownloadUrl, userEmail);
-            this.sDownloadUrl = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.sDownloadUrl, userEmail);
+            const oResult = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.oDownloadUrl, userEmail);
+            this.oStorageUrl = oResult.storageUrl;
+            this.oDownloadUrl = oResult.downloadUrl;
+
+            const sResult = await DBHelper.asyncUploadImageToStorage(/*pickerURL*/ this.sDownloadUrl, userEmail);
+            this.sStorageUrl = sResult.storageUrl;
+            this.sDownloadUrl = sResult.downloadUrl;
 
             return true;
         }
@@ -105,7 +112,8 @@ export default class ImageModel {
 
     getData() {
         return ({
-            storageUrl: this.storageUrl,
+            oStorageUrl: this.oStorageUrl,
+            sStorageUrl: this.sStorageUrl,
             oDownloadUrl: this.oDownloadUrl,
             sDownloadUrl: this.sDownloadUrl,
         })
@@ -114,7 +122,8 @@ export default class ImageModel {
     isEqual(model) {
         return (
             this.ref === model.ref &&
-            this.storageUrl === model.storageUrl &&
+            this.oStorageUrl === model.oStorageUrl &&
+            this.sStorageUrl === model.sStorageUrl &&
             this.oDownloadUrl === model.oDownloadUrl &&
             this.sDownloadUrl === model.sDownloadUrl
         )

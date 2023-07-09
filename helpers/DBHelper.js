@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import {createURL, DBCollectionType, LOG_ERROR, StorageDirectoryType} from "../utils/utils";
 import {db, getDownloadURL, ref, storage, uploadBytesResumable} from "../firebase";
+import TimeHelper from "./TimeHelper";
 export default class DBHelper {
     constructor() {
     }
@@ -311,16 +312,24 @@ export default class DBHelper {
     }
 
     static async asyncUploadImageToStorage(uri, userEmail) {
-        const blob = await this._asyncCreateBlobByImageUri(uri);
-        if (blob === false) return false;
+        try {
+            const blob = await this._asyncCreateBlobByImageUri(uri);
+            if (blob === false) return false;
 
-        let storageURL = createURL(StorageDirectoryType.POST_IMAGES, userEmail, new Date().getTime());
+            const storageUrl = createURL(StorageDirectoryType.POST_IMAGES, userEmail, TimeHelper.getTimeNow());
 
-        let storageRef = ref(storage, storageURL);
-        if (storageRef === null) return false;
+            const storageRef = ref(storage, storageUrl);
+            if (storageRef === null) return false;
 
-        await uploadBytesResumable(storageRef, blob);
+            await uploadBytesResumable(storageRef, blob);
 
-        return await getDownloadURL(storageRef);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            return {storageUrl: storageUrl, downloadUrl: downloadUrl};
+        }
+        catch(error) {
+            console.log("Error occurs while upload Image to Storage.");
+            return null;
+        }
     }
 }
