@@ -27,20 +27,21 @@ import ImageSwiper from "../components/ImageSwiper";
 export default function ContentDetailScreen({navigation, docId}) {
     const {events} = useContext(GlobalContext);
     const {postModelList} = useContext(GlobalContext);
+    const { user } = useContext(GlobalContext);
+
+    const [postModel, setPostModel] = useState(null);
     const [owner, setPostOwner] = useState(null);
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportModalOn, setReportModalOn] = useState(false);
-    const postModel = postModelList.getOneByDocId(docId);
-
-    const { user } = useContext(GlobalContext);
-
-    if (postModel === null) {
-        return (
-            <Text>Loading..</Text>
-        )
-    }
+    const [ready, setReady] = useState(false);
 
     useEffect(() => {
+        setPostModel(() => postModelList.getOneByDocId(docId));
+    },[])
+
+    useEffect(() => {
+        if (postModel === null) return;
+
         let userRef = doc(collection(db, DBCollectionType.USERS), postModel.email);
 
         getDoc(userRef).then((doc) => {
@@ -52,9 +53,11 @@ export default function ContentDetailScreen({navigation, docId}) {
 
             setPostOwner(doc.data());
         })
-    },[])
+    }, [postModel])
 
     useLayoutEffect(() => {
+        if (postModel === null) return;
+
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
@@ -74,7 +77,13 @@ export default function ContentDetailScreen({navigation, docId}) {
                 />
             )
         });
-    }, [navigation]);
+    }, [navigation, postModel]);
+
+    if (postModel === null) {
+        return (
+            <Text>Loading..</Text>
+        )
+    }
 
     function isMyPost() {
         return user.email === postModel.email;
@@ -127,7 +136,7 @@ export default function ContentDetailScreen({navigation, docId}) {
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
             <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={handleReportPost}/>
             <ScrollView>
-                <ImageSwiper  urls={postModel.imageDownloadUrls.map((url) => url.oUri)} />
+                <ImageSwiper imageModels={postModel.imageModels} />
                 <View style={styles.contentArea}>
                     <Box style={styles.titleBox}>
                         <Text style={styles.titleText}>{postModel.title}</Text>

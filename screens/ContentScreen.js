@@ -69,8 +69,7 @@ export default function ContentScreen({navigation}) {
         setRefreshing(true)
         LoadAllPost();
     }
-
-     function LoadAllPost() {
+    function LoadAllPost() {
         async function asyncLoadAllPost() {
             let _postModelList = [];
             if (await PostModel.loadAllData(/* OUT */ _postModelList) === false) {

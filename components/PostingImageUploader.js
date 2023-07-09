@@ -58,7 +58,7 @@ export default function PostingImageUploader ({imageModels, setImageModels}) {
                 component.push(
                     <Box key={i}>
                         <UploadImageBox>
-                            <UploadImage source={{uri: imageModels[i]._sDownloadUrl}}/>
+                            <UploadImage source={{uri: imageModels[i].sDownloadUrl}}/>
                         </UploadImageBox>
                         <TouchableOpacity
                             style={styles.imageBox}

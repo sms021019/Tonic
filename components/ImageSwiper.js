@@ -4,8 +4,7 @@ import Swiper from "react-native-swiper";
 import React from "react";
 
 
-export default function ImageSwiper(props) {
-    const urls = props.urls? props.urls : []
+export default function ImageSwiper({imageModels}) {
 
     return (
         <Swiper
@@ -14,10 +13,10 @@ export default function ImageSwiper(props) {
             activeDot={<View style={styles.activeDot} />}
             loop={false}
         >
-            {urls.map((url, index) => (
-                <View key={url + index}>
+            {imageModels.map((model, index) => (
+                <View key={index}>
                     <Image style={{width: windowWidth, height: windowWidth}}
-                           source={{uri: url}}
+                           source={{uri: model.oDownloadUrl}}
                     />
                     {/*<LinearGradient*/}
                     {/*    // Background Linear Gradient*/}

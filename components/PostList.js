@@ -31,9 +31,9 @@ export default function PostList(props) {
                 data={props.modelList}
                 renderItem={(data) => {
                     return (
-                        <View key={data.item._doc_id}>
+                        <View key={data.item.doc_id}>
                             <View style={{margin: margin}}>
-                                <Post onClickHandler={() => handleClick(data.item._doc_id)} key={data.item._doc_id} model={data.item}/>
+                                <Post onClickHandler={() => handleClick(data.item.doc_id)} key={data.item.doc_id} model={data.item}/>
                             </View>
                             <Divider/>
                         </View>

@@ -42,10 +42,10 @@ export default function PostingScreen({navigation, mode, docId}) {
         if (mode === PageMode.EDIT) {
             const postModel = postModelList.getOneByDocId(docId);
             setPostModel(postModel)
-            setTitle(postModel._title)
-            setPrice(postModel._price.toString())
-            setInfo(postModel._info)
-            setImageModels(postModel._imageModels);
+            setTitle(postModel.title)
+            setPrice(postModel.price.toString())
+            setInfo(postModel.info)
+            setImageModels(postModel.imageModels);
         }
         if (mode === PageMode.CREATE) {
             let model = PostModel.newEmpty()

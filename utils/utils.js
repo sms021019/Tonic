@@ -36,7 +36,7 @@ export const ScreenType = {
 
 export const DBCollectionType = {
     USERS:      "users",
-    POSTS:      "posts",
+    POSTS:      "postsTemp",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
     IMAGE:      "images",

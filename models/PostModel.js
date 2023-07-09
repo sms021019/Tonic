@@ -16,20 +16,20 @@ import ImageModel from './ImageModel';
 
 export default class PostModel {
     constructor(doc_id, ref, imageRefs, imageModels, title, price, info, email) {
-        this._doc_id = doc_id;
-        this._ref = ref;
-        this._collectionType = DBCollectionType.POSTS;
+        this.doc_id = doc_id;
+        this.ref = ref;
+        this.collectionType = DBCollectionType.POSTS;
 
-        this._imageRefs = imageRefs;
-        this._imageModels = imageModels;
-        this._newImageModels = [];         // Added in the runtime.
-        this._removedImageModels = [];     // Added in the runtime.
-        this._title = title;
-        this._price = price
-        this._info = info;
-        this._email = email;
-
+        this.imageRefs = imageRefs;
+        this.imageModels = imageModels;
+        this.newImageModels = [];         // Added in the runtime.
+        this.removedImageModels = [];     // Added in the runtime.
+        this.title = title;
+        this.price = price
+        this.info = info;
+        this.email = email;
     }
+
     static newEmpty() {
         return new PostModel([], "", [], [], "", "", "", "");
     }
@@ -39,13 +39,13 @@ export default class PostModel {
     }
 
     // ---------------- Get / Set --------------------
-    setDocId = (_doc_id) => this._doc_id = _doc_id;
-    setRef = (ref) => this._ref = ref;
-    setImageRefs = (refs) => this._imageRefs = refs;
-    setTitle = (title) => this._title = title;
-    setPrice = (price) => this._price = price;
-    setInfo = (info) => this._info = info;
-    setEmail = (email) => this._email = email;
+    setDocId = (doc_id) => this.doc_id = doc_id;
+    setRef = (ref) => this.ref = ref;
+    setImageRefs = (refs) => this.imageRefs = refs;
+    setTitle = (title) => this.title = title;
+    setPrice = (price) => this.price = price;
+    setInfo = (info) => this.info = info;
+    setEmail = (email) => this.email = email;
 
     // ------------------------------------------------
 
@@ -103,14 +103,14 @@ export default class PostModel {
 
     async updateData() {
         if (this.isContentReady() === false) return false;
-        if (this._ref === null) return false;
+        if (this.ref === null) return false;
 
-        return await DBHelper.updateData(this._ref, this.getData());
+        return await DBHelper.updateData(this.ref, this.getData());
     }
 
     // handleDeletedImages() {
     //     const removeImages = this.prevDownloadUrls.filter((pi) => {
-    //         for (let ni in this._imageRefs) {
+    //         for (let ni in this.imageRefs) {
     //             if (this.isImageSame(pi, ni)) {
     //                 return false;
     //             }
@@ -118,7 +118,7 @@ export default class PostModel {
     //         return true;
     //     })
     //
-    //     let dir = createURL(StorageDirectoryType.POST_IMAGES, this._email);
+    //     let dir = createURL(StorageDirectoryType.POST_IMAGES, this.email);
     //     let ref = ref(storage, dir);
     //     ref.getReferenceFromUrl(url);
     //     storageRef.getReferenceFromUrl(url)
@@ -127,26 +127,23 @@ export default class PostModel {
     async addData() {
         if (this.isContentReady() === false) return false;
 
-        return await DBHelper.addData(this._collectionType, this.getData());
+        return await DBHelper.addData(this.collectionType, this.getData());
     }
 
     async deleteData() {
-        if (this._ref === null) return false;
+        if (this.ref === null) return false;
 
-        return await DBHelper.deleteData(this._ref);
+        return await DBHelper.deleteData(this.ref);
     }
 
 
     async tSavePost(imageModels) {
         try {
-            console.log("A")
             this.preprocessImageModels(imageModels);
 
-            console.log("B")
             if (await this._uploadImagesToStorage() === false)  return false;
 
-            console.log("C")
-            if (this._ref) return await this.updateData()
+            if (this.ref) return await this.updateData()
 
             else return await this.addData();
         }
@@ -156,9 +153,9 @@ export default class PostModel {
     }
 
     preprocessImageModels(imageModels) {
-        this._newImageModels = imageModels.filter((model) => model._imageType === ImageModel.TYPE.NEW)
+        this.newImageModels = imageModels.filter((model) => model.imageType === ImageModel.TYPE.NEW)
 
-        this._removedImageModels = this._imageModels.filter((_model) => {
+        this.removedImageModels = this.imageModels.filter((_model) => {
             for (let model of imageModels) {
                 if (_model.isEqual(model))
                     return false;
@@ -166,9 +163,9 @@ export default class PostModel {
             return true;
         })
 
-        this._imageRefs = this._imageRefs.filter((ref) => {
-            for (let model of this._removedImageModels) {
-                if (ref === model._ref) {
+        this.imageRefs = this.imageRefs.filter((ref) => {
+            for (let model of this.removedImageModels) {
+                if (ref === model.ref) {
                     return false;
                 }
             }
@@ -177,36 +174,31 @@ export default class PostModel {
     }
 
     async _uploadImagesToStorage() {
-        console.log("e")
-        if (this._email === null) return false;
-        console.log("f")
-        for (let imageModel of this._newImageModels) {
-            console.log("g")
-            if (await imageModel.addData(this._email) === false) return false; // Upload image to Storage.
-            this._imageRefs.push(imageModel._ref);
-        }
-        console.log("h")
+        if (this.email === null) return false;
 
+        for (let imageModel of this.newImageModels) {
+            if (await imageModel.asyncAddData(this.email) === false) return false; // Upload image to Storage.
+            this.imageRefs.push(imageModel.ref);
+        }
         return true;
     }
 
-
     getData() {
         return {
-            title: this._title,
-            price: this._price,
-            info: this._info,
-            imageRefs: this._imageRefs,
-            email: this._email,
+            title: this.title,
+            price: this.price,
+            info: this.info,
+            imageRefs: this.imageRefs,
+            email: this.email,
         }
     }
 
     isContentReady() {
         return (
-            this._imageRefs !== null &&
-            this._title !== null &&
-            this._price !== null &&
-            this._info !== null
+            this.imageRefs !== null &&
+            this.title !== null &&
+            this.price !== null &&
+            this.info !== null
         );
     }
 

@@ -26,9 +26,9 @@ export default function Post(props) {
     }
 
     const postModel = props.model;
-    const title = postModel._title;
-    const price = postModel._price;
-    const bannerImageUrl = postModel._imageModels[0]._sDownloadUrl;
+    const title = postModel.title;
+    const price = postModel.price;
+    const bannerImageUrl = postModel.imageModels[0].sDownloadUrl;
 
     function handlePostClick() {
         props.onClickHandler();
