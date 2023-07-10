@@ -1,26 +1,11 @@
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    updateProfile
-} from 'firebase/auth';
+
 import React, {useState, useEffect} from 'react'
 import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {DBCollectionType, windowWidth} from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 
-
-import {auth, db} from '../firebase';
-import errorHandler from '../errors/index';
-import {
-  addDoc, 
-  collection, 
-  getDocs,
-  setDoc,
-  doc,
-} from 'firebase/firestore';
 
 import { EMAIL_DOMAIN } from '../utils/utils';
 import ErrorScreen from './ErrorScreen';
@@ -37,7 +22,7 @@ const LoginScreen = () => {
     const handleSignUp = async () => {
 
         const userModel = new UserModel(username, email, password);
-        if(await userModel.saveData() === false){
+        if(await userModel.asyncCreateUser() === false){
             //TO DO
             setHasError(true);
             return;
