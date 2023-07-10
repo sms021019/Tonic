@@ -74,7 +74,7 @@ export default function Chat(props) {
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {TimeHelper.getTopElapsedStringUntilNow(timestamp.toDate())}
+                                {TimeHelper.getTopElapsedStringUntilNow(timestamp/*.toDate() 오류고치기 */)}
                             </Text>
                         </HStack>
                     </Box>
