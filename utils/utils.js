@@ -40,7 +40,7 @@ export const ModelStatusType = {
 }
 export const DBCollectionType = {
     USERS:      "users",
-    POSTS:      "postsTemp",
+    POSTS:      "posts",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
     IMAGE:      "images",
