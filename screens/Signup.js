@@ -20,8 +20,8 @@ const LoginScreen = () => {
 
 
     const handleSignUp = async () => {
-
-        const userModel = new UserModel(username, email, password);
+        // const userModel = new UserModel(username, email, password);
+        const userModel = UserModel.newSignup(username, email, password);
         if(await userModel.asyncCreateUser() === false){
             //TO DO
             setHasError(true);

@@ -1,26 +1,30 @@
+// React
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, Button, StyleSheet} from 'react-native'
+import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView} from 'react-native'
 import styled from "styled-components/native";
 import {Feather} from "@expo/vector-icons";
+import {Box, Center, ScrollView} from "native-base";
+// Util
 import {flexCenter} from "../utils/styleComponents";
+import {NavigatorType, windowWidth} from "../utils/utils";
+import theme from "../utils/theme";
+// Firebase
 import {auth, db} from '../firebase';
 import { signOut } from 'firebase/auth';
-import errorHandler from '../errors';
+// Context
 import GlobalContext from '../context/Context';
-import {DBCollectionType, NavigatorType, PageMode, windowWidth} from "../utils/utils";
-import {Box, Center, Divider, ScrollView} from "native-base";
-import theme from "../utils/theme";
-import Post from "../components/Post";
-import {collection, getDocs, getDoc, doc} from "firebase/firestore";
-import DBHelper from '../helpers/DBHelper';
+// Component
+import PostList from '../components/PostList';
+import ErrorScreen from "./ErrorScreen";
+// Model
 import PostModel from '../models/PostModel';
 
 
-export default function MyPage({navigation, events}) {
-    const { user } = useContext(GlobalContext);
-    const [postDataList, setPostDataList] = useState([]);
 
-    const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
+export default function MyPage({navigation, events}) {
+    const { gUserModel } = useContext(GlobalContext);
+    const [postModelList, setPostModelList] = useState(null);
+    const [pageReady, setPageReady] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -32,46 +36,31 @@ export default function MyPage({navigation, events}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (postDataList.length === 0) {
-            LoadAndSetAllPostDataFromDB();
-        }
+        asyncLoadMyPosts().then();
     }, []);
 
-    async function LoadAndSetAllPostDataFromDB() {
-        // let counter = 0;
-        // getDoc(currentUserRef).then((querySnapshot) => {
-        //     let dataList = [];
-        //     querySnapshot.data().posts.forEach(async (ref) => {
-        //         const tempPost = await DBHelper.loadData({ref: ref});
-        //         let data = tempPost;
-                
-        //         data["docId"] = ref.id;
-        //         dataList.push(data);
-        //         counter++;
-
-                
-        //         if(querySnapshot.data().posts.length === counter){
-        //             setPostDataList(dataList);
-        //         }
-        //     });
-            
-        // }).catch((err) => {
-        //     console.log(err);
-        // });
-        let postData = [];
-        if (await PostModel.loadAllPostsByUser(currentUserRef, /* OUT */ postData) === false) {
-            // TO DO
-            return;
+    useEffect(() => {
+        if (gUserModel && postModelList) {
+            setPageReady(true);
         }
+    }, [gUserModel, postModelList])
 
-        setPostDataList(postData);
+    if (pageReady === false) {
+        return <Text>Loading...</Text>;
+    }
+
+    async function asyncLoadMyPosts() {
+        let models = await PostModel.loadAllByRefs(gUserModel.model?.postRefs);
+        if (models === null) return <ErrorScreen/>
+
+        setPostModelList(models);
     }
 
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(postModel) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postModel: postModel});
+    function handleContentClick(docId) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId});
     }
 
     function handleEditProfileClick() {
@@ -83,20 +72,23 @@ export default function MyPage({navigation, events}) {
         // navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
 
+/* ------------------
+       Render
+ -------------------*/
     return (
         <Container>
             <ScrollView>
-                <View>
+                <SafeAreaView>
                     <Center style={styles.profileImageBox}>
                         <Box style={styles.profileImageArea}/>
 
                     </Center>
                     <Center style={styles.infoBox}>
                         <Text style={styles.nameText}>
-                            UserName
+                            {gUserModel.model?.username}
                         </Text>
                         <Text style={styles.emailText}>
-                            {user?.email}
+                            {gUserModel.model?.email}
                         </Text>
                         <TouchableOpacity onPress={handleEditProfileClick}>
                             <Text style={styles.editText}>
@@ -104,7 +96,7 @@ export default function MyPage({navigation, events}) {
                             </Text>
                         </TouchableOpacity>
                     </Center>
-                </View>
+                </SafeAreaView>
                 <View style={styles.myPostView}>
                     <Box>
                         <Text style={styles.myPostHeader}>
@@ -112,15 +104,10 @@ export default function MyPage({navigation, events}) {
                         </Text>
                     </Box>
                     <Center>
-                        {postDataList.map((data) =>
-                                <View key={data.doc_id}>
-                                    <View style={{margin: 20}}>
-                                        {/* <Post onClickHandler={() => handleContentClick(data)}  data={data}/> */}
-                                        <Post onClickHandler={() => handleContentClick(data)}  model={data}/>
-                                    </View>
-                                    <Divider/>
-                                </View>)
-                        }
+                        <PostList
+                            modelList={postModelList}
+                            handleClick={handleContentClick}
+                        />
                     </Center>
                 </View>
             </ScrollView>

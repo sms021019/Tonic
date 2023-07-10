@@ -9,16 +9,26 @@ import {
     signOut, 
     sendEmailVerification } from "firebase/auth";
 
+/*----------DB COLLECTION STRUCT----------------
+{
+    chatrooms: [ref1, ref2 ...]
+    posts: [ref1, ref2 ...]
+    email: ""
+    uid: ""
+    username: ""
+}
+----------------------------------------------*/
 
 export default class UserModel {
-    constructor(username, email, password) {
-        this.doc_id = null;
-        this.ref = null;
+    constructor(doc_id, ref, username, email, password, postRefs) {
+        this.doc_id = doc_id;
+        this.ref = ref;
         this.collectionType = DBCollectionType.USERS;
 
         this.username = username;
         this.email = email;
         this.password = password;
+        this.postRefs = postRefs;
     }
 
     setDocId = (doc_id) => this.doc_id = doc_id;
@@ -26,11 +36,25 @@ export default class UserModel {
     setUsername = (username) => this.username = username;
     setPassword = (password) => this.password = password;
     setUserEmail = (email) => this.email = email;
+    setPostRefs = (refs) => this.postRefs = refs;
 
+    static newEmpty() {
+        return new UserModel(null, null, null, null, null, []);
+    }
 
-    // static async loadData(doc) {
+    static newSignup(username, email, password) {
+        return new UserModel(null, null, username, email, password, []);
+    }
 
-    // }
+    static async loadDataByAuth(auth) {
+        const ref = DBHelper.getRef(DBCollectionType.USERS, auth.email);
+
+        let data = []
+        if (await DBHelper.loadDataByRef(ref, data) === false) return null;
+        data = data[0]
+
+        return new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts);
+    }
 
     // static async loadAllData(dest) {
     //     let dataList = []

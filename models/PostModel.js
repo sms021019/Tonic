@@ -55,12 +55,23 @@ export default class PostModel {
         if (await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList) === false) return false;
 
         for (let data of dataList) {
-            let postModel = await this._dataToModel(data);
+            let postModel = await this._asyncDataToModel(data);
             if (postModel === null) return false;
 
             dest.push(postModel);
         }
         return true;
+    }
+
+    static async loadAllByRefs(refs) {
+        let models = [];
+        for (const ref of refs) {
+            let data = []
+            if (await DBHelper.loadDataByRef(ref, /*OUT*/ data) === false) return null;
+            data = data[0];
+            models.push(await this._asyncDataToModel(data));
+        }
+        return models;
     }
 
     async asyncSave() {
@@ -97,29 +108,6 @@ export default class PostModel {
     }
 
 // TODO --------------------------------------------
-    static async loadAllPostsByUser(currentUserRef, dest) {
-        let userData = []
-        if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
-            // TO DO:
-            return false;
-        }
-        userData = userData[0];
-
-        if (userData.posts.length === 0) {
-            console.log("No chatrooms")
-            return true;
-        }
-
-        for (let i = 0; i < userData.posts.length; i++) {
-            let data = [];
-            if (await DBHelper.loadDataByRef(userData.posts[i], data) === false) {
-                // TO DO:
-                return false;
-            }
-            dest.push(data[0]);
-        }
-        return true;
-    }
 
 // -------------- BATCH POST --------------------
     async _bAsyncSetData(batch) {
@@ -153,7 +141,6 @@ export default class PostModel {
         if (this.ref === null) return false;
 
         if (await this._bAsyncRemoveImageModels(batch, this.imageModels) === false) return false;
-        // TODO: remove post ref from the user.
 
         batch.delete(this.ref);
 
@@ -182,7 +169,7 @@ export default class PostModel {
 
 
 // ---------------- HELPER -----------------------
-    static async _dataToModel(data) {
+    static async _asyncDataToModel(data) {
         if (this._isLoadDataValid(data) === false) {
             return null;
         }
