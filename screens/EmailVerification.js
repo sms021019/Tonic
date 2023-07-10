@@ -1,23 +1,19 @@
-import {
-    sendEmailVerification,
-    signOut
-} from 'firebase/auth';
+
 import React, {useState, useContext, useLayoutEffect} from 'react'
-import { Text } from 'react-native'
 import { flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {ScreenType, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
-
-import {auth} from '../firebase';
 import GlobalContext from '../context/Context';
+import UserModel from '../models/UserModel';
 
 
 
 const EmailVerification = ({navigation}) => {
     const {user} = useContext(GlobalContext);
     const [emailSent, setEmailSent] = useState('none');
+    const [hasError, setHasError] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -26,34 +22,38 @@ const EmailVerification = ({navigation}) => {
             headerLeft: () => <GoBackButton
                 color={theme.colors.lightGray}
                 ml={10}
-                callback={handleSignOut}
+                callback={asyncHandleSignOut}
             />
         });
     }, [navigation]);
 
-    const handleSignOut = () => {
-        signOut(auth)
-        .then(() => {
-            console.log(`${user?.email} logged out`);
-            navigation.navigate(ScreenType.LOGIN);
-        })
-        .catch(error => console.log(error))
+    const asyncHandleSignOut = async () => {
+
+        if( await UserModel.asyncSignOut() === false){
+            setHasError(true);
+            return;
+        }
+        console.log(`${user?.email} logged out`);
+        navigation.navigate(ScreenType.LOGIN);
+
     }
 
 
-    const handleVerify = async () => {
-        sendEmailVerification(user)
-            .then( userCredentials => {
-                console.log('Email verification sent');
-                setEmailSent('block');
-            })
-            .catch(error => console.log(error));
+    const asyncHandleVerify = async () => {
+        if(await UserModel.asyncEmailVerify(user) === false){
+            setHasError(true);
+            return;
+        }
+        console.log('Email verification sent');
+        setEmailSent('block');
+
+
     }
 
     return (
         <Container>
             <PasswordResetText>{`Please verify your email\nEmail address: ${user?.email}`}</PasswordResetText>
-            <StartButton onPress={handleVerify}>
+            <StartButton onPress={asyncHandleVerify}>
                 <StartText>VERIFY EMAIL</StartText>
             </StartButton>
             <ConfirmTextContainer style = {{display: emailSent}}>
@@ -61,7 +61,7 @@ const EmailVerification = ({navigation}) => {
                     The verification is sent to current email address.{"\n"}
                     Please follow the instruction.
                 </ConfirmText>
-                <StartButton onPress={handleSignOut}>
+                <StartButton onPress={asyncHandleSignOut}>
                     <StartText>FINISH VERIFY</StartText>
                 </StartButton>
             </ConfirmTextContainer>
