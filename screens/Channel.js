@@ -29,12 +29,16 @@ import DBHelper from '../helpers/DBHelper';
 import { useIsFocused } from '@react-navigation/native'
 // Model
 import ChatroomModel from '../models/ChatroomModel';
+import ChatList from '../components/ChatList';
+
+
 
 export default function Channel({ navigation: {navigate}}) {
     const { user } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
     const [chatroomsData, setChatroomsData] = useState([]);
+    const {chatroomModelList} = useContext(GlobalContext);
     const [loading, setLoading] = useState("true");
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -105,57 +109,30 @@ export default function Channel({ navigation: {navigate}}) {
             setHasError(true);
             return;
         }
-        setChatroomsData(chatroomData);
+        // setChatroomsData(chatroomData);
+        chatroomModelList.set(chatroomData);
         setLoading("false");
         setRefreshing(false);
+    }
+
+    function handleContentClick(doc_id) {
+        if (doc_id === -1 || !doc_id) return;
+        navigate(ScreenType.CHAT, {doc_id: doc_id})
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
     const LoadingView = <View><Text>Loading...</Text></View>
 
-    const ChatList2 = (
-        <Box flex={1} px="0">
-            <FlatList data={chatroomsData} renderItem={({
-            item
-            }) => 
-            <TouchableOpacity onPress={() => navigate(ScreenType.CHAT, {ref: item.ref})}>
-            <Box borderBottomWidth="1" _dark={{
-            borderColor: "muted.50"
-            }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m="2">
-                    <HStack space={[2, 3]} justifyContent="space-between">
-                    <Avatar size="48px" source={{
-                uri: item.avatarUrl
-                }} />
-                    <VStack>
-                        <Text _dark={{
-                    color: "warmGray.50"
-                }} color="coolGray.800" bold>
-                        {item.participants[0] === user?.email ? item.participants[1] : item.participants[0]}
-                        </Text>
-                        <Text color="coolGray.600" _dark={{
-                    color: "warmGray.200"
-                }}>
-                        {item.recentText}
-                        </Text>
-                    </VStack>
-                    <Spacer />
-                    <Text fontSize="xs" _dark={{
-                color: "warmGray.50"
-                }} color="coolGray.800" alignSelf="flex-start">
-                        {item.timeStamp}
-                    </Text>
-                    </HStack>
-                </Box>
-                </TouchableOpacity>
-                } 
-                keyExtractor={(item, index) => 'key'+index}
+        const ContentView = (
+            <ChatList
+                modelList={chatroomModelList}
+                handleClick={handleContentClick}
+                handleRefresh={handleRefresh}
                 refreshing={refreshing}
-                onRefresh={handleRefresh}
-                />
-        </Box>
-        );
+            />
+        )
             
-        const Content = !user ? LoadingView : ChatList2;
+        const Content = !user ? LoadingView : ContentView;
 
 /* ------------------
     Error Screen

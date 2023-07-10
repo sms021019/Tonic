@@ -1,5 +1,6 @@
 import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
 export default class ChatroomModel {
     constructor(opponentRef, user) {
@@ -37,7 +38,7 @@ export default class ChatroomModel {
             userData = userData[0];
         }
 
-        if(userData.chatrooms.length === 0){
+        if(userData.chatrooms?.length === 0 || !(userData.chatrooms)){
             console.log("No chatrooms")
             return true;
         }
@@ -49,9 +50,26 @@ export default class ChatroomModel {
                 console.log(`Failed to load chatrooms[${i}] data!`);
                 return false;
             }
-            dest.push(data[0]);
+            data = data[0];
+            
+            dest.push(data);
         }
         return true;
+    }
+
+    static getRecentText(chatroomRef, setRecentText, setTimestamp) {
+        try{
+            const q = query(collection(chatroomRef, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                setRecentText(snapshot.docs[0].data().text);
+                setTimestamp(snapshot.docs[0].data().createdAt);
+            })
+            return true;
+        }catch(e){
+            //TO DO
+            console.log(e);
+            return false;
+        }
     }
 
     static async exitChatroom(ref, user) {

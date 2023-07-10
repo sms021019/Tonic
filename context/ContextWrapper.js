@@ -9,10 +9,24 @@ export default function ContextWrapper(props) {
         onContentChange: [],
     });
 
+    const [chatroomModelList, setChatroomModelList] = useState([]);
     const [postModelList, setPostModelList] = useState([]);
     const [status, setStatus] = useState({
         postModelList: false,
     })
+
+    chatroomModelList.set = (list) => {
+        setChatroomModelList(list);
+    }
+
+    chatroomModelList.addOne = (model) => {
+        if (model === null) return;
+        setChatroomModelList((prev) => ([...prev, model]));
+    }
+
+    chatroomModelList.getOneByDocId = (id) => {
+        return chatroomModelList.find((model) => model.doc_id === id);
+    }
 
 
     events.addOnContentUpdate = (callback) => {
@@ -37,7 +51,7 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, events, postModelList, status}}>
+        <Context.Provider value={{user, setUser, events, postModelList, status, chatroomModelList}}>
             {[props.children]}
         </Context.Provider>
     )
