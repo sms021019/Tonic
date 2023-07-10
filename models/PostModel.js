@@ -1,10 +1,10 @@
 import {DBCollectionType, ModelStatusType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
-import {doc} from "firebase/firestore";
 import {db} from "../firebase";
 import ImageModel from './ImageModel';
 import TimeHelper from "../helpers/TimeHelper";
-import { writeBatch } from "firebase/firestore";
+import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
+import {arrayRemove} from "@firebase/firestore";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -129,8 +129,11 @@ export default class PostModel {
 
         this.ref = DBHelper.getNewRef(this.collectionType);
         this.postTime = TimeHelper.getTimeNow();
-
         batch.set(this.ref, this.getData());
+
+        const userRef = DBHelper.getRef(DBCollectionType.USERS, this.email)
+        batch.update(userRef, {posts: arrayUnion(this.ref)});
+
         return true;
     }
 
@@ -142,6 +145,7 @@ export default class PostModel {
         if (await this._bAsyncRemoveImageModels(batch, this.removedImageModels) === false) return false;
 
         batch.update(this.ref, this.getData());
+
         return true;
     }
 
@@ -152,6 +156,10 @@ export default class PostModel {
         // TODO: remove post ref from the user.
 
         batch.delete(this.ref);
+
+        const userRef = DBHelper.getRef(DBCollectionType.USERS, this.email)
+        batch.update(userRef, {posts: arrayRemove(this.ref)});
+
         return true;
     }
 

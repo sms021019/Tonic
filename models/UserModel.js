@@ -27,6 +27,7 @@ export default class UserModel {
     setPassword = (password) => this.password = password;
     setUserEmail = (email) => this.email = email;
 
+
     // static async loadData(doc) {
 
     // }

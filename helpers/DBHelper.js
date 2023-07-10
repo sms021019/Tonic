@@ -58,11 +58,6 @@ export default class DBHelper {
         }
     }
 
-    static async loadData() {
-
-    }
-
-
     static async loadDataByRef(ref, dest) {
         try {
             if (ref) {
@@ -114,24 +109,7 @@ export default class DBHelper {
 
     static async addData(collectionType, data) {
         try {
-            if(collectionType === DBCollectionType.POSTS){
-                console.log("Creating a new post...");
-                //당장 계시물 추가하려면 사진이 있어야만 가능함
-                const transactionResult = await runTransaction(db, async(transaction) => {
-                    let newPostRef = doc(collection(db, collectionType));
-
-                    transaction.set(newPostRef, data);
-                
-                    transaction.update(doc(collection(db, DBCollectionType.USERS), data.email), {
-                        posts: arrayUnion(newPostRef)
-                    });
-
-                    console.log("Transaction successfully committed!");
-                    return true;
-                });
-                return transactionResult;
-
-            }else if(collectionType === DBCollectionType.CHATROOMS){
+            if(collectionType === DBCollectionType.CHATROOMS){
                 console.log("Creating a new chatroom...");
                 const transactionResult = await runTransaction(db, async(transaction) => {
                     const oppUserDoc = await transaction.get(data.opponentRef);
@@ -342,5 +320,9 @@ export default class DBHelper {
 
     static getNewRef(type) {
         return doc(collection(db, type));
+    }
+
+    static getRef(type, docId) {
+        return doc(collection(db, type), docId);
     }
 }
