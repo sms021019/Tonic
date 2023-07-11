@@ -32,7 +32,7 @@ export default function HomeNavigator({route}) {
             <Tab.Screen name={NavigatorType.CHAT} options={{headerShown: false, title: "Chat"}}>
                 {props => <ChatNavigator {...props}/>}
             </Tab.Screen>
-            <Tab.Screen name={ScreenType.MYPAGE} options={{headerShown: false, title: "Chat"}}>
+            <Tab.Screen name={ScreenType.MYPAGE} options={{headerTransparent: true, title: "My", headerTitle: ""}}>
                 {props => <MyPage {...props} />}
             </Tab.Screen>
         </Tab.Navigator>

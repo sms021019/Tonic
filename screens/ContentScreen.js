@@ -6,10 +6,9 @@ import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import {DBCollectionType, NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 // components
-import Post from "../components/Post";
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
 import SearchIcon from "../components/SearchIcon";
-
+import PostFlatList from "../components/PostFlatList";
 import {errorHandler} from '../errors';
 import GlobalContext from '../context/Context';
 // firebase
@@ -17,7 +16,6 @@ import {getDocs, collection} from 'firebase/firestore';
 import {db} from "../firebase";
 // model
 import PostModel from "../models/PostModel";
-import PostList from "../components/PostList";
 import ErrorScreen from "./ErrorScreen";
 
 const LoadingView = <View><Text>Loading...</Text></View>
@@ -89,7 +87,7 @@ export default function ContentScreen({navigation}) {
       Components
  -------------------*/
     const ContentView = (
-        <PostList
+        <PostFlatList
             modelList={postModelList}
             handleClick={handleContentClick}
             handleRefresh={handleRefresh}

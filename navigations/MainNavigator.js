@@ -18,18 +18,25 @@ import GlobalContext from '../context/Context';
 import ContentDetailScreen from "../screens/ContentDetailScreen";
 import SettingNavigator from "./SettingNavigator";
 import EditProfileNavigator from "./EditProfileNavigator";
+import UserModel from "../models/UserModel";
 
 
 const Stack = createStackNavigator();
 
 export default function MainNavigator() {
-    const {user, setUser} = useContext(GlobalContext);
+    const {user, setUser, gUserModel} = useContext(GlobalContext);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth,
             async authenticatedUser => {
-                authenticatedUser ? setUser(authenticatedUser) : setUser(null);
+                if (authenticatedUser) {
+                    setUser(authenticatedUser)
+                    gUserModel.set(await UserModel.loadDataByAuth(authenticatedUser));
+                }
+                else {
+                    setUser(null);
+                }
                 setLoading(false);
             }
         );
