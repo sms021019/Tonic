@@ -57,7 +57,7 @@ export default class PostModel {
         for (let data of dataList) {
             let postModel = await this._asyncDataToModel(data);
             if (postModel === null) return false;
-
+            
             dest.push(postModel);
         }
         return true;
