@@ -91,7 +91,7 @@ export default function ContentDetailScreen({navigation, docId}) {
 
     async function handleChatClick() {
         const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), postModel.email), user);
-        await chatroomModel.saveData().then( ref => {
+        await chatroomModel.asyncSaveData().then( ref => {
             if(ref){
                 chatroomModel.setRef(ref);
                 navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });

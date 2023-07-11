@@ -79,7 +79,7 @@ export default function Channel({ navigation: {navigate}}) {
             const chatroomModel = new ChatroomModel(opponentRef, user);
 
 
-            await chatroomModel.saveData().then( ref => {
+            await chatroomModel.asyncSaveData().then( ref => {
                 if(ref){
                     console.log(ref)
                     setEmail('');

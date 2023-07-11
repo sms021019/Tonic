@@ -20,11 +20,13 @@ import theme from '../utils/theme'
 import {TouchableOpacity, View} from "react-native";
 import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
+import { setHours } from "date-fns";
 
 export default function Chat(props) {
     const { user } = useContext(GlobalContext);
     const [recentText, setRecentText] = useState(null);
     const [timestamp, setTimestamp] = useState();
+    const [opponentUsername, setOpponentUsername] = useState();
 
     if (props.model === null) {
         return (
@@ -41,6 +43,12 @@ export default function Chat(props) {
             setHasError(true);
             return;
         }            
+
+        if( ChatroomModel.asyncGetDisplayName(opponent, setOpponentUsername) === false){
+            // TO DO
+            setHasError(true);
+            return;
+        }
     },[])
 
 
@@ -62,7 +70,7 @@ export default function Chat(props) {
                                 <Text _dark={{
                                     color: "warmGray.50"
                                 }} color="coolGray.800" bold>
-                                    {opponent}
+                                    {opponentUsername}
                                 </Text>
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
@@ -74,7 +82,7 @@ export default function Chat(props) {
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {TimeHelper.getTopElapsedStringUntilNow(timestamp/*.toDate() 오류고치기 */)}
+                                {TimeHelper.getTopElapsedStringUntilNow(timestamp?.toDate())}
                             </Text>
                         </HStack>
                     </Box>

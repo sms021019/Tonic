@@ -147,7 +147,9 @@ export default class DBHelper {
                     // const chatroomId = chatroomRef.id;
                     const chatroom = {
                         ref: chatroomRef,
-                        participants: [oppUserDoc.data().email, data.user.email]
+                        participants: [oppUserDoc.data().email, data.user.email],
+                        users: [oppUserDoc.data(), data.user],
+                        
                     }
     
                     transaction.set(chatroomRef, chatroom);

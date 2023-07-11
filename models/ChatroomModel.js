@@ -3,28 +3,33 @@ import DBHelper from "../helpers/DBHelper";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
 export default class ChatroomModel {
-    constructor(opponentRef, user) {
-        this.id = null;
-        this.ref = null;
+    constructor(doc_id, ref, opponentRef, user, recentText, displayName ) {
+        this.id = doc_id;
+        this.ref = ref;
         this.collectionType = DBCollectionType.CHATROOMS;
 
         this.opponentRef = opponentRef;
         this.user = user;
-    }
-    setRef(ref) {
-        this.ref = ref;
-    }
-
-    isValid() {
-        return true;
-    }
-    
-    static async loadData(currentUserRef) {
-        await DBHelper.loadData({ref: currentUserRef}).then((data) => {
-
-        })
+        this.recentText = recentText;
+        this.displayName = displayName;
 
     }
+
+    static newEmpty() {
+        return new ChatroomModel("", "", "", "", "", "");
+    }
+
+    // ---------------- Get / Set --------------------
+    setDocId = (doc_id) => this.doc_id = doc_id;
+    setRef = (ref) => this.ref = ref;
+    setOpponentRef = (opponentRef) => this.opponentRef = opponentRef;
+    setUser = (user) => this.user = user;
+    setRecentText = (recentText) => this.recentText = recentText;
+    setDisplayName = (displayName) => this.displayName = displayName;
+
+
+    // ---------------- Task -------------------------
+
 
     static async loadAllData(currentUserRef, dest) {
 
@@ -52,10 +57,19 @@ export default class ChatroomModel {
             }
             data = data[0];
             
+
+            
             dest.push(data);
         }
         return true;
     }
+    
+    async asyncSaveData() {
+        if (this.isValid() === false) return false;
+
+        return (await DBHelper.addData(this.collectionType, this.getData()));
+    }
+
 
     static getRecentText(chatroomRef, setRecentText, setTimestamp) {
         try{
@@ -72,7 +86,25 @@ export default class ChatroomModel {
         }
     }
 
-    static async exitChatroom(ref, user) {
+    static async asyncGetDisplayName(opponentId, setDisplayName) {
+        let dest = [];
+        if(await DBHelper.getDocRefById(DBCollectionType.USERS, opponentId, dest) === false){
+            // TO DO
+            return false;
+        }
+        dest = dest[0];
+        let data = [];
+        if(await DBHelper.loadDataByRef(dest, data) === false){
+            //TO DO
+            return false;
+        }
+        data = data[0];
+
+        setDisplayName(data.username);
+        return true;
+    }
+
+    static async asyncExitChatroom(ref, user) {
         if(await DBHelper.deleteChatroom(ref, user) === false){
             // TO DO:
             return false;
@@ -87,11 +119,19 @@ export default class ChatroomModel {
         return await DBHelper.updateData(this.ref, this.getData());
     }
 
-    async saveData() {
-        if (this.isValid() === false) return false;
+    static async _dataToModel(data) {
+        if (this.isValid(data) === false) {
+            return null;
+        }
 
-        return (await DBHelper.addData(this.collectionType, this.getData()));
+
+        return new ChatroomModel(data.doc_id, data.ref, data.opponentRef, data.user, data.displayName);
     }
+
+    static isValid(data) {
+        return !!(data.doc_id && data.ref && data.opponentRef && data.user && data.displayName);
+    }
+
 
     getData() {
         return {

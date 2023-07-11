@@ -91,7 +91,7 @@ export default function Chat({navigation, route}) {
         });
 
         const handleExitChatroom = async () => {
-            if(await ChatroomModel.exitChatroom(chatroomRef, user) === false){
+            if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
                 // TO DO: handle error
                 setHasError(true);
                 return;
