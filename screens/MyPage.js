@@ -65,12 +65,7 @@ export default function MyPage({navigation}) {
     }
 
     function handleEditProfileClick() {
-        signOut(auth).then(() => {
-            console.log('signed out')
-        }).catch((error) => {
-            console.log(error);
-        })
-        // navigation.navigate(NavigatorType.EDIT_PROFILE);
+        navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
 
 /* ------------------
@@ -83,7 +78,6 @@ export default function MyPage({navigation}) {
                     <View>
                         <Center style={styles.profileImageBox}>
                             <Box style={styles.profileImageArea}/>
-
                         </Center>
                         <Center style={styles.infoBox}>
                             <Text style={styles.nameText}>
@@ -134,8 +128,6 @@ const styles = StyleSheet.create({
     myPostView:         { shadowColor: 'black', shadowRadius: 7, shadowOpacity: 0.04, shadowOffset: { width: 0, height: -7 }, backgroundColor: 'white' },
     myPostHeader:       { fontWeight: '600', fontSize: 20, marginTop: 20, marginLeft: 20, marginBottom: 10 }
 })
-
-
 
 const Container = styled.View`
     ${flexCenter};

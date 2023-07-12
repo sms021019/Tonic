@@ -49,6 +49,12 @@ const styles = StyleSheet.create({
         color: theme.colors.foreground,
     }
 });
+const Container = styled.View`
+    ${flexCenter};
+    background-color: ${theme.colors.primary};
+    align-items: center;
+    justify-content: center;
+`;
 
 const StartButton = styled.Pressable`
     ${TonicButtonWhite};
@@ -57,12 +63,6 @@ const StartButton = styled.Pressable`
     border-radius: 8px;
 `;
 
-const Container = styled.View`
-    ${flexCenter};
-    background-color: ${theme.colors.primary};
-    align-items: center;
-    justify-content: center;
-`;
 
 const StartText = styled.Text`
     color: ${theme.colors.primary};

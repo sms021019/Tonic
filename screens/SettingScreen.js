@@ -1,44 +1,25 @@
 import React from 'react'
 import {Text, StyleSheet, View} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import {signOut} from "firebase/auth";
+import {auth} from "../firebase";
 
-const SettingScreen = ({navigation}) => {
+export default function SettingScreen({navigation}) {
+    function handleEditProfileClick() {
+        signOut(auth).then(() => {
+            console.log('signed out')
+        }).catch((error) => {
+            console.log(error);
+        })
+        // navigation.navigate(NavigatorType.EDIT_PROFILE);
+    }
+
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.button} onPress={() => {
                 // 계정 설정 / 알람 등
             }}>
                 <Text style={styles.buttonText}>Account/Privacy Setting</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button} onPress={() => {
-                // 이 앱에 대한 기초적 설명
-            }}>
-                <Text style={styles.buttonText}>About</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button} onPress={() => {
-                // 언어 세팅 (만약 있다면)
-            }}>
-                <Text style={styles.buttonText}>Language</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button} onPress={() => {
-                // 로그아웃
-            }}>
-                <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button} onPress={() => {
-                // 계정 삭제
-            }}>
-                <Text style={styles.buttonText}>Delete Account</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button} onPress={() => {
-                navigation.navigate('ContactPage');
-            }}>
-                <Text style={styles.buttonText}>Contact</Text>
             </TouchableOpacity>
         </View>
     )
@@ -68,5 +49,3 @@ const styles = StyleSheet.create({
         color: 'white'
     },
 });
-
-export default SettingScreen;
