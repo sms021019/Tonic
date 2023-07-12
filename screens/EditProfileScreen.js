@@ -8,7 +8,7 @@ import {flexCenter, TonicButtonWhite} from "../utils/styleComponents";
 import GlobalContext from "../context/Context";
 import {Feather} from "@expo/vector-icons";
 import ImageHelper from "../helpers/ImageHelper";
-import AnimatedLoader from "react-native-animated-loader";
+import LoadingAnimation from '../components/LoadingAnimation'
 
 export default function EditProfileScreen({navigation}) {
     const {gUserModel} = useContext(GlobalContext);
@@ -61,13 +61,7 @@ export default function EditProfileScreen({navigation}) {
 
     return (
         <ScrollView style={styles.container}>
-            <AnimatedLoader
-                visible={loading}
-                overlayColor="rgba(255,255,255,0.75)"
-                animationStyle={styles.lottie}
-                source={require("../assets/loading.json")}
-                speed={1}
-            />
+            <LoadingAnimation visible={loading}/>
             <View marginTop={10}>
                 <Center style={styles.profileImageBox}>
                     <Image source={myProfileImageUrl} style={styles.profileImageBig}/>
@@ -144,8 +138,4 @@ const styles = StyleSheet.create({
         width: '70%',
     },
     boldText:          { fontWeight: '700', fontSize: 16, margin: 7, color:theme.colors.text},
-    lottie: {
-        width: 100,
-        height: 100,
-    },
 })

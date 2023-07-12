@@ -18,7 +18,7 @@ import PostList from '../components/PostList';
 import ErrorScreen from "./ErrorScreen";
 // Model
 import PostModel from '../models/PostModel';
-
+import LoadingScreen from "./LoadingScreen";
 
 
 export default function MyPage({navigation}) {
@@ -46,7 +46,7 @@ export default function MyPage({navigation}) {
     }, [gUserModel, postModelList])
 
     if (pageReady === false) {
-        return <Text>Loading...</Text>;
+        return <LoadingScreen/>;
     }
 
     async function asyncLoadMyPosts() {
@@ -119,7 +119,7 @@ export default function MyPage({navigation}) {
 const styles = StyleSheet.create({
     container:          { display: 'flex', justifyContent:'center', alignItems:'center', minWidth: windowWidth, backgroundColor:'white'},
     profileImageBox:    { width: windowWidth, height: 150 },
-    profileImage:   { width: 120, height: 120, borderRadius: 100, borderWidth: 0.5},
+    profileImage:       { width: 120, height: 120, borderRadius: 100, borderWidth: 0.5},
     nameBox:            { width: windowWidth, height: 30 },
     infoBox:            { width: windowWidth, height: 100, marginBottom: 20 },
     nameText:           { fontWeight: '700', fontSize: 20, margin: 7 },
