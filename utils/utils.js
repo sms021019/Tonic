@@ -55,6 +55,17 @@ export const PageMode = {
     CREATE:   "create",
 }
 
+export const ProfileImageType = {
+    A: "profileImageA",
+    B: "profileImageB",
+    C: "profileImageC",
+    D: "profileImageD",
+    E: "profileImageE",
+    F: "profileImageF",
+    G: "profileImageG",
+    H: "profileImageH",
+}
+
 export const windowWidth = Dimensions.get("window").width;
 export const windowHeight = Dimensions.get("window").height;
 export const IMAGE_SIZE = {
@@ -63,13 +74,8 @@ export const IMAGE_SIZE = {
     itemDetailWidth: windowWidth,
     itemDetailHeight: windowHeight * 0.5,
 };
-export const FIXED_FOOTER_HEIGHT = "120px";
-export const FOOTER_BUTTON = windowWidth * 0.4;
 
-export const POST_SIZE = {
-    width: windowWidth * 0.9,
-    height: 200,
-}
+
 
 export function LOG(message) {
     console.log(message);

@@ -5,20 +5,18 @@ import {signOut} from "firebase/auth";
 import {auth} from "../firebase";
 
 export default function SettingScreen({navigation}) {
-    function handleEditProfileClick() {
+    function logout() {
         signOut(auth).then(() => {
             console.log('signed out')
         }).catch((error) => {
             console.log(error);
         })
-        // navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
+
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => {
-                // 계정 설정 / 알람 등
-            }}>
+            <TouchableOpacity style={styles.button} onPress={logout}>
                 <Text style={styles.buttonText}>Account/Privacy Setting</Text>
             </TouchableOpacity>
         </View>

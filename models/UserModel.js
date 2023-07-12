@@ -1,6 +1,6 @@
 import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
-import { auth } from "../firebase";
+import {auth, db} from "../firebase";
 import { 
     createUserWithEmailAndPassword, 
     sendPasswordResetEmail, 
@@ -8,6 +8,8 @@ import {
     signInWithEmailAndPassword, 
     signOut, 
     sendEmailVerification } from "firebase/auth";
+import ImageHelper from "../helpers/ImageHelper";
+import {collection, doc} from "firebase/firestore";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -20,7 +22,7 @@ import {
 ----------------------------------------------*/
 
 export default class UserModel {
-    constructor(doc_id, ref, username, email, password, postRefs) {
+    constructor(doc_id, ref, username, email, password, postRefs, profileImageType) {
         this.doc_id = doc_id;
         this.ref = ref;
         this.collectionType = DBCollectionType.USERS;
@@ -29,21 +31,20 @@ export default class UserModel {
         this.email = email;
         this.password = password;
         this.postRefs = postRefs;
+        this.profileImageType = profileImageType;
+        this.profileImageUrl = ImageHelper.getProfileImageUrl(this.profileImageType);
     }
 
-    setDocId = (doc_id) => this.doc_id = doc_id;
-    setRef = (ref) => this.ref = ref;
-    setUsername = (username) => this.username = username;
-    setPassword = (password) => this.password = password;
-    setUserEmail = (email) => this.email = email;
-    setPostRefs = (refs) => this.postRefs = refs;
+    copy() {
+        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType);
+    }
 
     static newEmpty() {
-        return new UserModel(null, null, null, null, null, []);
+        return new UserModel(null, null, null, null, null, [], ImageHelper.getRandomProfileImageType());
     }
 
     static newSignup(username, email, password) {
-        return new UserModel(null, null, username, email, password, []);
+        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType());
     }
 
     static async loadDataByAuth(auth) {
@@ -53,71 +54,22 @@ export default class UserModel {
         if (await DBHelper.loadDataByRef(ref, data) === false) return null;
         data = data[0]
 
-        return new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts);
+        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts, data.profileImageType);
+
+        console.log(data.profileImageType);
+        if (model.profileImageType === undefined || model.profileImageType === null) {
+            console.log("Set new pi")
+            model.profileImageType = ImageHelper.getRandomProfileImageType();
+            model.asyncUpdateProfile().then();
+        }
+        console.log("loadDataByAuth");
+        return model;
     }
 
-    // static async loadAllData(dest) {
-    //     let dataList = []
-    //     let loadState = await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList);
-    //     if (loadState === false || dataList.length === 0) {
-    //         return false;
-    //     }
-
-    //     for (let i = 0; i < dataList.length; i++) {
-    //         let postModel = this.createModelByDBData(dataList[i]);
-    //         if (postModel === null) return false;
-
-    //         dest.push(postModel);
-    //     }
-    //     return true;
-    // }
-
-    // static async loadAllPostsByUser(currentUserRef, dest){
-    //     let userData = []
-    //     if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
-    //         // TO DO:
-    //         return false;
-    //     }
-    //     else {
-    //         userData = userData[0];
-    //     }
-
-    //     if(userData.posts.length === 0){
-    //         console.log("No chatrooms")
-    //         return true;
-    //     }
-
-    //     for (let i = 0; i < userData.posts.length; i++) {
-    //         let data = [];
-    //         if (await DBHelper.loadDataByRef(userData.posts[i], data) === false) {
-    //             // TO DO:
-    //             return false;
-    //         }
-    //         dest.push(data[0]);
-    //     }
-    //     return true;
-
-
-    // }
-
-    // static createModelByDBData(data) {
-    //     if (this.isLoadDataValid(data) === false) {
-    //         console.log("Data is not valid");
-    //         return null;
-    //     }
-
-    //     let postModel = new PostModel(data.imageDownloadUrls, data.title, data.price, data.info, data.email)
-    //     postModel.setDocId(data.doc_id);
-    //     postModel.setRef(data.ref);
-    //     return postModel
-    // }
-
-    // async updateData() {
-    //     if (this.isValid() === false) return false;
-    //     if (this.ref == null) return false;
-
-    //     return await DBHelper.updateData(this.ref, this.getData());
-    // }
+    async asyncUpdateProfile() {
+        if (await DBHelper.updateData(this.ref, {profileImageType: this.profileImageType}) === false) return false;
+        return true;
+    }
 
     async asyncCreateUser() {
         if (this.isValid() === false) return false;

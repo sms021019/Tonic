@@ -1,6 +1,6 @@
 // React
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView} from 'react-native'
+import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView, Image} from 'react-native'
 import styled from "styled-components/native";
 import {Feather, Ionicons} from "@expo/vector-icons";
 import {Box, Center, Flex, ScrollView} from "native-base";
@@ -77,7 +77,7 @@ export default function MyPage({navigation}) {
                 <ScrollView>
                     <View>
                         <Center style={styles.profileImageBox}>
-                            <Box style={styles.profileImageArea}/>
+                            <Image source={gUserModel.model.profileImageUrl} style={styles.profileImage}/>
                         </Center>
                         <Center style={styles.infoBox}>
                             <Text style={styles.nameText}>
@@ -119,7 +119,7 @@ export default function MyPage({navigation}) {
 const styles = StyleSheet.create({
     container:          { display: 'flex', justifyContent:'center', alignItems:'center', minWidth: windowWidth, backgroundColor:'white'},
     profileImageBox:    { width: windowWidth, height: 150 },
-    profileImageArea:   { width: 120, height: 120, borderRadius: 100, backgroundColor: 'gray' },
+    profileImage:   { width: 120, height: 120, borderRadius: 100, borderWidth: 0.5},
     nameBox:            { width: windowWidth, height: 30 },
     infoBox:            { width: windowWidth, height: 100, marginBottom: 20 },
     nameText:           { fontWeight: '700', fontSize: 20, margin: 7 },

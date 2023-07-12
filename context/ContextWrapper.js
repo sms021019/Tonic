@@ -25,6 +25,23 @@ export default function ContextWrapper(props) {
             ready: true,
         });
     }
+
+    gUserModel.commit = (model) => {
+        setGUserModel({
+            model: model.copy(),
+            ready: true,
+        })
+    }
+
+    gUserModel.updateProfile = (username, profileImageType) => {
+        gUserModel.model.username = username;
+        gUserModel.model.profileImageType = profileImageType;
+
+        setGUserModel({
+            model: gUserModel.model,
+            ready: true,
+        })
+    }
 // ----------------- POST MODEL LIST --------------------
     postModelList.set = (list) => {
         setPostModelList(list);
