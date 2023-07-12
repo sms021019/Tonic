@@ -37,14 +37,36 @@ import ErrorScreen from "./ErrorScreen";
 
 export default function Chat({navigation, route}) {
     const { user } = useContext(GlobalContext);
+    const {chatroomModelList} = useContext(GlobalContext);
+
 
     const [messages, setMessages] = useState([]);
     const [hasError, setHasError] = useState(false);
+    const [chatModel, setChatModel] = useState(null);
+    const [chatroomRef, setChatroomRef] = useState(null);
+    const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
 
-    const chatroomRef = route.params.ref;
-    const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
+    // const chatroomRef = chatModel.ref;
+    // const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
+
+
+    useEffect(() => {
+        setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
+        
+    },[])
+
+    useEffect(() => {
+        if (chatModel === null) return;
+
+        setChatroomRef(chatModel.ref);
+        
+        setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
+        
+
+    }, [chatModel])
     
     useLayoutEffect(() => {
+        if(chatModel === null || chatroomMessagesRef === null) return;
         navigation.setOptions({
             headerRight: () =>
             <Menu w="120px" trigger={triggerProps => {
@@ -69,7 +91,7 @@ export default function Chat({navigation, route}) {
         });
 
         const handleExitChatroom = async () => {
-            if(await ChatroomModel.exitChatroom(chatroomRef, user) === false){
+            if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
                 // TO DO: handle error
                 setHasError(true);
                 return;
@@ -92,7 +114,7 @@ export default function Chat({navigation, route}) {
             )
         });
         return () => unsubscribe();
-    }, []);
+    }, [chatModel, chatroomMessagesRef]);
     
 
     const onSend = useCallback((messages = []) => {
@@ -105,7 +127,7 @@ export default function Chat({navigation, route}) {
             text,
             user
         });
-    }, []);
+    }, [chatroomMessagesRef]);
 
     const pickImageasync = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -198,6 +220,12 @@ export default function Chat({navigation, route}) {
     Error Screen
 -------------------*/
 if (hasError) return <ErrorScreen/>
+
+if (chatModel === null) {
+    return (
+        <Text>Loading..</Text>
+    )
+}
    
     return (
         <SafeAreaView style={{flex: 1,}}>

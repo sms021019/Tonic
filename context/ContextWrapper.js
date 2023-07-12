@@ -6,10 +6,14 @@ import UserModel from "../models/UserModel";
 
 export default function ContextWrapper(props) {
     const [user, setUser] = useState(null);
+
+    const [chatroomModelList, setChatroomModelList] = useState([]);
+
     const [gUserModel, setGUserModel] = useState({
         model: null,
         ready: false,
     })
+
     const [postModelList, setPostModelList] = useState([]);
     const [status, setStatus] = useState({
         postModelList: false,
@@ -18,12 +22,28 @@ export default function ContextWrapper(props) {
         onContentChange: [],
     });
 
+
+    chatroomModelList.set = (list) => {
+        setChatroomModelList(list);
+    }
+
+    chatroomModelList.addOne = (model) => {
+        if (model === null) return;
+        setChatroomModelList((prev) => ([...prev, model]));
+    }
+
+    chatroomModelList.getOneByDocId = (id) => {
+        return chatroomModelList.find((model) => model.doc_id === id);
+    }
+
+
 // ----------------- CURRENT USER MODEL --------------------
     gUserModel.set = (model) => {
         setGUserModel({
             model: model,
             ready: true,
         });
+
     }
 
     gUserModel.commit = (model) => {
@@ -66,7 +86,8 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, gUserModel, events, postModelList, status}}>
+        <Context.Provider value={{user, setUser, gUserModel, events, postModelList, status, chatroomModelList}}>
+
             {[props.children]}
         </Context.Provider>
     )
