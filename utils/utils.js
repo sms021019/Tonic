@@ -32,6 +32,7 @@ export const ScreenType = {
     ERROR:              "errorScreen",
     SETTING:            "settingScreen",
     EDIT_PROFILE:       "editProfileScreen",
+    MANAGE_BLOCKED_USER: "manageBlockedUserScreen",
 }
 
 export const ModelStatusType = {

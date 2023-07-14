@@ -1,11 +1,21 @@
-import React from 'react'
+import React, {useLayoutEffect} from 'react'
 import {Text, StyleSheet, View} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {signOut} from "firebase/auth";
 import {auth} from "../firebase";
+import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
+import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
+import theme from "../utils/theme";
 
 export default function SettingScreen({navigation}) {
-    function logout() {
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTitle:'Setting',
+        });
+    }, [navigation]);
+
+    function handleSignOut() {
         signOut(auth).then(() => {
             console.log('signed out')
         }).catch((error) => {
@@ -13,12 +23,47 @@ export default function SettingScreen({navigation}) {
         })
     }
 
+    function handleManageBlockedUserClick() {
+        navigation.navigate(ScreenType.MANAGE_BLOCKED_USER);
+    }
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={logout}>
-                <Text style={styles.buttonText}>Account/Privacy Setting</Text>
-            </TouchableOpacity>
+            <ScrollView>
+                <TouchableOpacity onPress={handleManageBlockedUserClick}>
+                    <Box style={styles.menu}>
+                        <Flex direction={'row'}>
+                            <Text style={styles.menuText}>Manage blocked users</Text>
+                        </Flex>
+                    </Box>
+                </TouchableOpacity>
+                <Box style={styles.menu}>
+                    <Flex direction={'row'}>
+                        <Text style={styles.menuText}>Version</Text>
+                        <Text style={styles.menuTextRight}>1.0</Text>
+                    </Flex>
+                </Box>
+                <Divider/>
+                <TouchableOpacity onPress={handleSignOut}>
+                    <Box style={styles.menu}>
+                        <Flex direction={'row'}>
+                            <Text style={styles.menuText}>Sign Out</Text>
+                        </Flex>
+                    </Box>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                    <Box style={styles.menu}>
+                        <Flex direction={'row'}>
+                            <Text style={styles.menuTextRed}>Delete Account</Text>
+                        </Flex>
+                    </Box>
+                </TouchableOpacity>
+                <Divider/>
+                <Center mt={10} >
+                    <Text style={styles.bold}>Contact</Text>
+                    <Text style={styles.grayText}>admin@admin.com</Text>
+                </Center>
+            </ScrollView>
         </View>
     )
 }
@@ -26,24 +71,13 @@ export default function SettingScreen({navigation}) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-        backgroundColor: '#f0f8ff', //걍 연한 파랑
+        backgroundColor: theme.colors.white,
     },
-    button: {
-        alignItems: 'center',
-        backgroundColor: '#00BFFF', //좀 연하지만 진한 파랑
-        padding: 15,
-        borderRadius: 10, // 둥글이
-        marginVertical: 10,
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5
-    },
-    buttonText: {
-        fontSize: 20,
-        color: 'white'
-    },
+    menu: {width: windowWidth, height: 60, justifyContent:'center', paddingLeft: 20, paddingRight: 20},
+    menuText: {flex:1, fontWeight: "600", fontSize:16, color: theme.colors.text},
+    menuTextRight: {flex:1, textAlign:'right', fontWeight: "600", fontSize:16, color: theme.colors.text},
+    menuTextBlue: {fontWeight: "600", fontSize:16, color: theme.colors.primary},
+    menuTextRed: {fontWeight: "600", fontSize:16, color: theme.colors.alert},
+    bold: {fontWeight: "600"},
+    grayText: {color: 'gray'},
 });

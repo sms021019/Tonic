@@ -54,7 +54,6 @@ export default function MyPage({navigation}) {
         if (models === null) return;
 
         setPostModelList(models);
-        console.log("try load");
     }
 
 /* ------------------

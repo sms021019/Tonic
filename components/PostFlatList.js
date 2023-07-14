@@ -4,21 +4,11 @@ import Post from "./Post";
 import React from "react";
 import ImageModel from "../models/ImageModel";
 import PostModel from "../models/PostModel";
+import {ModelStatusType} from "../utils/utils";
 
 export default function PostFlatList(props) {
 
     if (props.modelList === null) return (<></>)
-    if (props.modelList.length === 0) {
-        props.modelList.push(new PostModel(
-            -1,
-            null,
-            ImageModel.newModel(require("../assets/AppStartLogo.png"), require("../assets/AppStartLogo.png")),
-            "첫번째 게시물을 생성해보세요!",
-            "첫번째 게시물을 생성해보세요!",
-            "1",
-            "admin@admin.com",
-        ))
-    }
 
     const handleClick = props.handleClick? props.handleClick : null;
     const margin = props.margin? props.margin : 20;

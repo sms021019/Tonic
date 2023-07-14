@@ -27,7 +27,6 @@ export default function ContentScreen({navigation}) {
     const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-
     let onContentChangeEvent = useCallback(() => {
         LoadAllPost();
     }, [])
