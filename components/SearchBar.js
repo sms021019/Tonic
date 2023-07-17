@@ -5,10 +5,11 @@ import theme from '../utils/theme'
 
 export default function SearchBar(props) {
     let bg = props.bg? props.bg : "white"
+    let placeholder = props.placeholder? props.placeholder : "Search";
 
     return(
         <Input
-            placeholder="Search"
+            placeholder={placeholder}
             variant="filled"
             width="80%"
             borderRadius="5"

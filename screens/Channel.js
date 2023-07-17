@@ -37,11 +37,13 @@ export default function Channel({ navigation: {navigate}}) {
     const { user } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
-    const [chatroomsData, setChatroomsData] = useState([]);
     const {chatroomModelList} = useContext(GlobalContext);
     const [loading, setLoading] = useState("true");
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [newChatroomModel, setNewChatroomModel] = useState();
+    const [displayName, setDisplayName] = useState();
 
     state = {
         isModalVisible: modalVisible,
@@ -63,20 +65,21 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     const handleCreateChatroom = async () => {
-        if(email.length === 0){
-            alert('Email can\'t be empty!');
-        }else if(email === user?.email){
-            alert('You can\'t type your email!');
-        }else{
-            let opponentRef = [];
-            if(await DBHelper.getDocRefById(DBCollectionType.USERS, email, opponentRef) === false){
+        
+            if(!displayName || !user) {
                 //TO DO
-                setHasError(true);
-                return;
-            }else{
-                opponentRef = opponentRef[0];
+                console.log("Not proper user or Empty name");
+                return false;
             }
-            const chatroomModel = new ChatroomModel(opponentRef, user);
+
+        
+            const newRoom = ChatroomModel.newEmpty();
+            newRoom.setDisplayName(displayName);
+            newRoom.setUser(prev => [...prev, user]); // 무튼 유저 추가..?
+
+            newRoom.asyncSaveData();
+
+
 
 
             await chatroomModel.asyncSaveData().then( ref => {
@@ -91,7 +94,7 @@ export default function Channel({ navigation: {navigate}}) {
                     return;
                 }
             })
-        }
+    
     }
 
     async function loadChatrooms() {

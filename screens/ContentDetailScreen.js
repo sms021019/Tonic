@@ -27,6 +27,7 @@ import ImageSwiper from "../components/ImageSwiper";
 export default function ContentDetailScreen({navigation, docId}) {
     const {events} = useContext(GlobalContext);
     const {postModelList} = useContext(GlobalContext);
+    const {chatroomModelList} = useContext(GlobalContext);
     const { user } = useContext(GlobalContext);
 
     const [postModel, setPostModel] = useState(null);
@@ -90,17 +91,34 @@ export default function ContentDetailScreen({navigation, docId}) {
     }
 
     async function handleChatClick() {
-        const chatroomModel = new ChatroomModel(doc(collection(db, DBCollectionType.USERS), postModel.email), user);
-        await chatroomModel.asyncSaveData().then( ref => {
-            if(ref){
-                chatroomModel.setRef(ref);
-                navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
-            }
-            else{
-                // TO DO: error handle
-                return;
-            }
-        })
+        if(postModel === false || isMyPost()) return;
+
+        const chatroomModel = ChatroomModel.newEmpty();
+        if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postModel.doc_id, owner, user) === false) return;
+
+        chatroomModelList.addOne(chatroomModel);
+        
+
+
+        if( await chatroomModel.asyncSaveData() === false) {
+            // TO DO
+            console.log("Failed to create chatroom")
+            return false;
+        }
+
+        navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
+
+        return true;
+        // await chatroomModel.asyncSaveData().then( ref => {
+        //     if(ref){
+        //         chatroomModel.setRef(ref);
+        //         navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
+        //     }
+        //     else{
+        //         // TO DO: error handle
+        //         return;
+        //     }
+        // })
     }
 
     function handleEditPost() {

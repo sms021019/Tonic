@@ -28,17 +28,17 @@ import Icon from 'react-native-vector-icons/Octicons';
 import Icon2 from 'react-native-vector-icons/Feather';
 import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
+import GoBackButton from "../components/GoBackButton";
+import MenuButton from '../components/MenuButton'
 
-
-
-
+import PostModel from '../models/PostModel';
+import DBHelper from '../helpers/DBHelper';
 
 
 
 export default function Chat({navigation, route}) {
     const { user } = useContext(GlobalContext);
-    const {chatroomModelList} = useContext(GlobalContext);
-
+    const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
     const [messages, setMessages] = useState([]);
     const [hasError, setHasError] = useState(false);
@@ -46,17 +46,18 @@ export default function Chat({navigation, route}) {
     const [chatroomRef, setChatroomRef] = useState(null);
     const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
 
-    // const chatroomRef = chatModel.ref;
-    // const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
+    const [postModel, setPostModel] = useState(null);
 
 
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
         
+        
     },[])
 
     useEffect(() => {
         if (chatModel === null) return;
+        setPostModel(() => postModelList.getOneByDocId(chatModel.postModelId));
 
         setChatroomRef(chatModel.ref);
         
@@ -66,39 +67,25 @@ export default function Chat({navigation, route}) {
     }, [chatModel])
     
     useLayoutEffect(() => {
-        if(chatModel === null || chatroomMessagesRef === null) return;
+        if(chatModel === null || chatroomMessagesRef === null || postModel === null) return;
+
         navigation.setOptions({
-            headerRight: () =>
-            <Menu w="120px" trigger={triggerProps => {
-                return (
-                    <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                        <HamburgerIcon size={6} color="black" mr={5}/>
-                    </Pressable>
-                );
-            }}>
-        
-                    <>
-                        <Menu.Item onPress={handleExitChatroom}>
-                            <Text style={{color: theme.colors.primary}}>Exit</Text>
-                        </Menu.Item>
-                        <Menu.Item onPress={() => {}}>
-                            <Text style={{color: theme.colors.alert}}>Delete</Text>
-                        </Menu.Item>
-                    </>
+            
+            headerTitle: chatModel.displayName ? chatModel.displayName : "Chatroom",
+            headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
+            headerRight: () => (
+                <MenuButton mr={5} size={6} color={'black'}
+                    items={
+                            [
+                                {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
+                                {name: "Invite", color: theme.colors.primary, callback: handleInvite},
+                                {name: "Report", color: theme.colors.alert, callback: (() => {})},
+                            ]
+                    }
+                />
+            )
 
-                
-            </Menu>
         });
-
-        const handleExitChatroom = async () => {
-            if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
-                // TO DO: handle error
-                setHasError(true);
-                return;
-            }else{
-                navigation.navigate(ScreenType.CHANNEL);
-            }
-        }
 
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
 
@@ -113,8 +100,9 @@ export default function Chat({navigation, route}) {
                 }))
             )
         });
+        
         return () => unsubscribe();
-    }, [chatModel, chatroomMessagesRef]);
+    }, [navigation, chatModel, chatroomMessagesRef, postModel]);
     
 
     const onSend = useCallback((messages = []) => {
@@ -129,92 +117,19 @@ export default function Chat({navigation, route}) {
         });
     }, [chatroomMessagesRef]);
 
-    const pickImageasync = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        let imgURI = null;
-        const hasStoragePermissionGranted = status === "granted";
-
-        if (!hasStoragePermissionGranted) return null;
-
-
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 4],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            imgURI = result.uri;
-        }
-
-        return imgURI;
-    };
-
-    const uploadImageToStorage = async (imgURI) => {
-        const ref = `messages/${[FILE_REFERENCE_HERE]}`
-
-        const imgRef = firebase.storage().ref(ref);
-
-        const metadata = { contentType: "image/jpg" };
-
-
-        // Fetch image data as BLOB from device file manager 
-
-        const blob = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                resolve(xhr.response);
-            };
-            xhr.onerror = function (e) {
-                reject(new TypeError("Network request failed"));
-            };
-            xhr.responseType = "blob";
-            xhr.open("GET", imgURI, true);
-            xhr.send(null);
-        });
-
-        // Put image Blob data to firebase servers
-        await imgRef.put(blob, metadata);
-
-        // We're done with the blob, close and release it
-        blob.close();
-
-        // Image permanent URL
-        const url = await imgRef.getDownloadURL();
-
-
-        return url
-    };
-       
-
-    const handleSendImage = () => {
-        try{
-            pickImageasync().then((imgURI) => {
-                uploadImageToStorage(imgURI);
-            })
-
-        }catch(e){
-            console.log(e);
+    const handleInvite = () => {
+        navigation.navigate(ScreenType.USER_SEARCH);
+    }
+    
+    const handleExitChatroom = async () => {
+        if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
+            // TO DO: handle error
+            setHasError(true);
+            return;
+        }else{
+            navigation.navigate(ScreenType.CHANNEL);
         }
     }
-
-    
-    renderSend = props => {      
-        if (!props.text.trim()) { // text box empty
-            return  (
-                <TouchableOpacity onPress={handleSendImage}>
-                    <Icon name="image" size={40}/>
-                </TouchableOpacity>
-            );
-          }
-        return (
-            <Send {...props}>
-                <Icon2 name='send' size={40}/>     
-            </Send>
-        );
-      }
 
 /* ------------------
     Error Screen
@@ -228,7 +143,7 @@ if (chatModel === null) {
 }
    
     return (
-        <SafeAreaView style={{flex: 1,}}>
+        <SafeAreaView style={{flex: 1,}} >
             <GiftedChat
                 messages={messages}
                 onSend={messages => onSend(messages)}
@@ -240,7 +155,6 @@ if (chatModel === null) {
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
-                renderSend={this.renderSend}
                 
             />
         </SafeAreaView>
