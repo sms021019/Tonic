@@ -68,6 +68,8 @@ export default class UserModel {
 
     async asyncUpdateProfile() {
         if (await DBHelper.updateData(this.ref, {profileImageType: this.profileImageType}) === false) return false;
+
+
         return true;
     }
 

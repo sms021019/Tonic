@@ -9,9 +9,10 @@ import GlobalContext from "../context/Context";
 import {Feather} from "@expo/vector-icons";
 import ImageHelper from "../helpers/ImageHelper";
 import LoadingAnimation from '../components/LoadingAnimation'
+import {updateProfile} from "firebase/auth";
 
 export default function EditProfileScreen({navigation}) {
-    const {gUserModel} = useContext(GlobalContext);
+    const {user, gUserModel} = useContext(GlobalContext);
     const [username, setUsername] = useState(gUserModel.model.username);
     const [profileImageType, setProfileImageType] = useState(gUserModel.model.profileImageType);
     const [save, setSave] = useState(false);
@@ -30,25 +31,30 @@ export default function EditProfileScreen({navigation}) {
 
     useEffect(() => {
         if (save) {
-            updateProfile();
+            asyncUpdateProfile();
         }
     }, [save])
 
     let myProfileImageUrl = ImageHelper.getProfileImageUrl(profileImageType);
 
-    function updateProfile() {
+    async function asyncUpdateProfile() {
         if (isProfileChanged()) {
             navigation.navigate(ScreenType.MYPAGE);
             return;
         }
 
         setLoading(true);
+
+        await updateProfile(user, {displayName: username})
+
+        gUserModel.model.username = username;
         gUserModel.model.profileImageType = profileImageType;
-        gUserModel.model.asyncUpdateProfile().then((result) => {
-            setLoading(false);
-            gUserModel.commit(gUserModel.model);
-            navigation.navigate(ScreenType.MYPAGE)
-        });
+        await gUserModel.model.asyncUpdateProfile();
+
+        gUserModel.commit(gUserModel.model);
+
+        setLoading(false);
+        navigation.navigate(ScreenType.MYPAGE)
     }
 
     function isProfileChanged() {
