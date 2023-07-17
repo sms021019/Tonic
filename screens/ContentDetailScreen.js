@@ -126,7 +126,8 @@ export default function ContentDetailScreen({navigation, docId}) {
         navigation.navigate(ScreenType.CONTENT);
     }
 
-    function handleReportPost() {
+    async function asyncHandleReportPost() {
+        await postModel.asyncReportPost(user.email);
         setReportModalOn(false);
         alert("Successfully report the post.");
     }
@@ -134,7 +135,7 @@ export default function ContentDetailScreen({navigation, docId}) {
     return (
         <Container>
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
-            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={handleReportPost}/>
+            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={asyncHandleReportPost}/>
             <ScrollView>
                 <ImageSwiper imageModels={postModel.imageModels} />
                 <View style={styles.contentArea}>

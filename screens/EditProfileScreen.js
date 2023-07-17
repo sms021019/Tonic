@@ -31,7 +31,7 @@ export default function EditProfileScreen({navigation}) {
 
     useEffect(() => {
         if (save) {
-            asyncUpdateProfile();
+            asyncUpdateProfile().then();
         }
     }, [save])
 

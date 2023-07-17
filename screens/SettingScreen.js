@@ -21,10 +21,16 @@ export default function SettingScreen({navigation}) {
         }).catch((error) => {
             console.log(error);
         })
+
+        navigation.navigate(NavigatorType.HOME);
     }
 
     function handleManageBlockedUserClick() {
         navigation.navigate(ScreenType.MANAGE_BLOCKED_USER);
+    }
+
+    function handleManageBlockedPostClick() {
+        navigation.navigate(ScreenType.MANAGE_BLOCKED_POST);
     }
 
     return (
@@ -34,6 +40,13 @@ export default function SettingScreen({navigation}) {
                     <Box style={styles.menu}>
                         <Flex direction={'row'}>
                             <Text style={styles.menuText}>Manage blocked users</Text>
+                        </Flex>
+                    </Box>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleManageBlockedPostClick}>
+                    <Box style={styles.menu}>
+                        <Flex direction={'row'}>
+                            <Text style={styles.menuText}>Manage blocked posts</Text>
                         </Flex>
                     </Box>
                 </TouchableOpacity>

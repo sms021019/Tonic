@@ -18,33 +18,43 @@ import {collection, doc} from "firebase/firestore";
     email: ""
     uid: ""
     username: ""
+    userReports: [ref]
+    postReports: [ref]
+    blocked: bool
 }
 ----------------------------------------------*/
 
 export default class UserModel {
-    constructor(doc_id, ref, username, email, password, postRefs, profileImageType) {
+    constructor(doc_id, ref, username, email, password, postRefs, profileImageType, userReports, postReports, blocked) {
+        // Document info
         this.doc_id = doc_id;
         this.ref = ref;
         this.collectionType = DBCollectionType.USERS;
 
+        // Field
         this.username = username;
         this.email = email;
-        this.password = password;
         this.postRefs = postRefs;
         this.profileImageType = profileImageType;
+        this.userReports = userReports;
+        this.postReports = postReports;
+        this.blocked = blocked;
+
+        // Other
+        this.password = password;
         this.profileImageUrl = ImageHelper.getProfileImageUrl(this.profileImageType);
     }
 
     copy() {
-        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType);
+        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType, this.userReports, this.postReports, this.blocked);
     }
 
     static newEmpty() {
-        return new UserModel(null, null, null, null, null, [], ImageHelper.getRandomProfileImageType());
+        return new UserModel(null, null, null, null, null, [], ImageHelper.getRandomProfileImageType(), [], [], false);
     }
 
     static newSignup(username, email, password) {
-        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType());
+        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType(), [], [], false);
     }
 
     static async loadDataByAuth(auth) {
@@ -54,7 +64,7 @@ export default class UserModel {
         if (await DBHelper.loadDataByRef(ref, data) === false) return null;
         data = data[0]
 
-        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts, data.profileImageType);
+        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked);
 
         console.log(data.profileImageType);
         if (model.profileImageType === undefined || model.profileImageType === null) {
@@ -68,8 +78,6 @@ export default class UserModel {
 
     async asyncUpdateProfile() {
         if (await DBHelper.updateData(this.ref, {profileImageType: this.profileImageType}) === false) return false;
-
-
         return true;
     }
 
@@ -83,6 +91,11 @@ export default class UserModel {
                     username: this.username,
                     uid: user.uid,
                     email: user.email,
+                    posts: [],
+                    profileImageType: ImageHelper.getRandomProfileImageType(),
+                    postReports: [],
+                    userReports: [],
+                    blocked: false,
                 }
          
                 if(await DBHelper.addData(this.collectionType, userData) === false){

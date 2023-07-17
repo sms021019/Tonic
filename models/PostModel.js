@@ -18,7 +18,7 @@ import {arrayRemove} from "@firebase/firestore";
 ----------------------------------------------*/
 
 export default class PostModel {
-    constructor(_type, doc_id, ref, imageRefs, imageModels, title, price, info, email, postTime) {
+    constructor(_type, doc_id, ref, imageRefs, imageModels, title, price, info, email, postTime, reportCount, reporters, blocked) {
         this.collectionType = DBCollectionType.POSTS;
         this._type = _type;
 
@@ -34,15 +34,16 @@ export default class PostModel {
         this.info = info;
         this.email = email;
         this.postTime = postTime;
+        this.reportCount = reportCount;
+        this.reporters = reporters;
+        this.blocked = blocked;
     }
 
     static newEmpty() {
-        return new PostModel(ModelStatusType.NEW, "", "", [], [], "", "", "", "", 0);
+        return new PostModel(ModelStatusType.NEW, "", "", [], [], "", "", "", "", 0, 0, [], false);
     }
 
     // ---------------- Get / Set --------------------
-    setDocId = (doc_id) => this.doc_id = doc_id;
-    setRef = (ref) => this.ref = ref;
     setImageModels = (imageModels) => this.imageModels = imageModels;
     setTitle = (title) => this.title = title;
     setPrice = (price) => this.price = price;
@@ -56,14 +57,25 @@ export default class PostModel {
 
         for (let data of dataList) {
             let postModel = await this._asyncDataToModel(data);
-            if (postModel === null) return false;
-            
-            dest.push(postModel);
+            if (postModel !== null)
+                dest.push(postModel);
         }
         return true;
     }
 
+    static async loadAllUnblocked(userEmail) {
+        let models = [];
+        if (await this.loadAllData(models) === false) return null;
+
+        for (let model of models) {
+            console.log(model.reporters);
+        }
+        return models.filter((model) => model.reporters.includes(userEmail) === false);
+    }
+
     static async loadAllByRefs(refs) {
+        if (!refs) return [];
+
         let models = [];
         for (const ref of refs) {
             let data = []
@@ -107,7 +119,21 @@ export default class PostModel {
         }
     }
 
-// TODO --------------------------------------------
+    async asyncReportPost(reporterEmail) {
+        try {
+            let batch = writeBatch(db);
+
+            const reporterRef = DBHelper.getRef(DBCollectionType.USERS, reporterEmail);
+            batch.update(reporterRef, {postReports: arrayUnion(this.ref)})
+            batch.update(this.ref, {reportCount: this.reportCount + 1, reporters: arrayUnion(reporterEmail)});
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
 
 // -------------- BATCH POST --------------------
     async _bAsyncSetData(batch) {
@@ -177,7 +203,7 @@ export default class PostModel {
         let imageModels = await ImageModel.refsToModels(data.imageRefs);
         if (imageModels === null) return null;
 
-        return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime)
+        return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime, data.reportCount, data.reporters, data.blocked)
     }
 
     _preprocessImageModels() {
@@ -206,6 +232,9 @@ export default class PostModel {
             imageRefs: this.imageRefs,
             email: this.email,
             postTime: this.postTime,
+            reportCount: this.reportCount,
+            reporters: this.reporters,
+            blocked: this.blocked,
         }
     }
 

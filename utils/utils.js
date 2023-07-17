@@ -33,6 +33,7 @@ export const ScreenType = {
     SETTING:            "settingScreen",
     EDIT_PROFILE:       "editProfileScreen",
     MANAGE_BLOCKED_USER: "manageBlockedUserScreen",
+    MANAGE_BLOCKED_POST: "manageBlockedPostScreen",
 }
 
 export const ModelStatusType = {

@@ -6,7 +6,7 @@ import {Feather, Ionicons} from "@expo/vector-icons";
 import {Box, Center, Flex, ScrollView} from "native-base";
 // Util
 import {flexCenter} from "../utils/styleComponents";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import {NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 // Firebase
 import {auth, db} from '../firebase';
@@ -19,6 +19,7 @@ import ErrorScreen from "./ErrorScreen";
 // Model
 import PostModel from '../models/PostModel';
 import LoadingScreen from "./LoadingScreen";
+import CreatePostButton from "../components/CreatePostButton";
 
 
 export default function MyPage({navigation}) {
@@ -67,6 +68,10 @@ export default function MyPage({navigation}) {
         navigation.navigate(NavigatorType.EDIT_PROFILE);
     }
 
+    function handleCreatePost() {
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
+    }
+
 /* ------------------
        Render
  -------------------*/
@@ -108,6 +113,9 @@ export default function MyPage({navigation}) {
                     </View>
                 </ScrollView>
             </SafeAreaView>
+            <CreateButtonArea>
+                <CreatePostButton onPress={handleCreatePost}/>
+            </CreateButtonArea>
         </Container>
     )
 }
@@ -134,3 +142,10 @@ const Container = styled.View`
     align-items: center;
     justify-content: center;
 `;
+
+
+const CreateButtonArea = styled.View`
+  position: absolute;
+  top: ${windowHeight - 156}px;
+  left: ${windowWidth - 80}px;
+`
