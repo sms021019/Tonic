@@ -24,7 +24,16 @@ export default function ContextWrapper(props) {
 
 
     chatroomModelList.set = (list) => {
-        setChatroomModelList(list);
+        console.log(list);
+        const sorted = list.sort(function async (x,y){
+            console.log(y);
+            console.log(x);
+            let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
+            console.log(result);
+            return result;
+        })
+        setChatroomModelList(sorted);
+        // setChatroomModelList(list);
     }
 
     chatroomModelList.addOne = (model) => {
@@ -35,6 +44,23 @@ export default function ContextWrapper(props) {
     chatroomModelList.getOneByDocId = (id) => {
         return chatroomModelList.find((model) => model.doc_id === id);
     }
+
+    chatroomModelList.liftChatroom = (index) => {
+        let arrCopy = chatroomModelList;
+        arrCopy.unshift(chatroomModelList.splice(index,1)[0]);
+        setChatroomModelList(arrCopy);
+
+    }
+
+    // chatroomModelList.sortByRecentText = () => {
+    //     const sorted = chatroomModelList.sort(function async (x,y){
+    //         let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
+    //         console.log(result);
+    //         return result;
+    //     })
+    //     console.log(sorted);
+    //     setChatroomModelList(sorted);
+    // }
 
 
 // ----------------- CURRENT USER MODEL --------------------

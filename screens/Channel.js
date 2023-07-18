@@ -54,10 +54,10 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
-        if(isFocused){
-            loadChatrooms();
-        }
-    }, [isFocused]);
+    
+        loadChatrooms();
+        
+    }, []);
 
     function handleRefresh() {
         setRefreshing(true)
@@ -113,14 +113,16 @@ export default function Channel({ navigation: {navigate}}) {
             return;
         }
         // setChatroomsData(chatroomData);
-        chatroomModelList.set(chatroomData);
+        chatroomModelList.set(chatroomData)
+        // chatroomModelList.sortByRecentText();
+        // console.log(chatroomModelList);
         setLoading("false");
         setRefreshing(false);
     }
 
-    function handleContentClick(doc_id) {
+    function handleContentClick(doc_id, index) {
         if (doc_id === -1 || !doc_id) return;
-        navigate(ScreenType.CHAT, {doc_id: doc_id})
+        navigate(ScreenType.CHAT, {doc_id: doc_id, index: index});
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤

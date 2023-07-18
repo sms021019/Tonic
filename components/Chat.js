@@ -34,9 +34,10 @@ export default function Chat(props) {
     }
 
     const chatroomModel = props.model;
+    const index = props.index;
 
     useEffect(() => {
-        if( ChatroomModel.getRecentText(chatroomModel.ref, setRecentText, setTimestamp) === false){
+        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp) === false){
             //TO DO
             console.log("Error when getting a recent text")
             return;

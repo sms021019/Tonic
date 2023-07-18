@@ -6,7 +6,7 @@ import React, {
     useContext
 } from 'react'
 import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat, Composer, Send } from 'react-native-gifted-chat'
+import { GiftedChat, Composer, Send, MessageStatusIndicator } from 'react-native-gifted-chat'
 import {
     collection,
     addDoc,
@@ -48,6 +48,7 @@ export default function Chat({navigation, route}) {
 
     const [postModel, setPostModel] = useState(null);
 
+    const index = route.params.index;
 
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
@@ -115,6 +116,9 @@ export default function Chat({navigation, route}) {
             text,
             user
         });
+
+        chatroomModelList.liftChatroom(index);
+
     }, [chatroomMessagesRef]);
 
     const handleInvite = () => {
@@ -141,6 +145,17 @@ if (chatModel === null) {
         <Text>Loading..</Text>
     )
 }
+
+    renderBubble = (props) => {
+        return (
+            <View style={{paddingRight: 12}}>
+            <View style={{position: 'absolute', right: -1, bottom: 0}}>
+                <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
+            </View>
+            <Bubble {...props} />
+            </View>
+        )
+    }
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -155,6 +170,8 @@ if (chatModel === null) {
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
+                renderBubble={renderBubble}
+                
                 
             />
         </SafeAreaView>

@@ -1,8 +1,9 @@
 import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
-import { collection, query, orderBy, onSnapshot, runTransaction, writeBatch, limit } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, runTransaction, writeBatch, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { arrayUnion } from "firebase/firestore";
+import { useCallback } from "react";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -48,7 +49,10 @@ export default class ChatroomModel {
     setPostModelId = (postModelId) => this.postModelId = postModelId;
     setDisplayName = (displayName) => this.displayName = displayName;
     setRecentText = (recentText) => this.recentText = recentText;
-
+    
+    // setRecentText = useCallback((recentText = {}) => {
+    //     this.recentText = recentText;
+    // })
 
     // ---------------- Task -------------------------
 
@@ -72,7 +76,7 @@ export default class ChatroomModel {
             return true;
         }
 
-        //---Reading all chatrooms that are in user's db document---
+        //---Reading all chatrooms that are in user's db document one by one---
         for (let i = 0; i < userData.chatrooms.length; i++) {
             let data = [];
             if (await DBHelper.loadDataByRef(userData.chatrooms[i], data) === false) {
@@ -81,12 +85,14 @@ export default class ChatroomModel {
                 return false;
             }
             data = data[0];
-            data = await this._dataToModel(data);
 
-            this.getRecentText();
-
-            dest.push(data);
+            let modelTemp = await this._dataToModel(data);
+            this.getRecentText(modelTemp);
+            // await this.findRecentText(modelTemp);
+            dest.push(modelTemp);
         }
+
+        // this.sortByNewestChat(modelTemp);
 
         return true;
     }
@@ -109,9 +115,6 @@ export default class ChatroomModel {
 
 
             await batch.commit();
-
-
-
 
             return true;
 
@@ -165,20 +168,44 @@ export default class ChatroomModel {
     //     return (snap.empty);
     // }
 
+    // static async findRecentText(model) {
+    //     const q = query(collection(model.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
+        
+    //     const querySnapshot = await getDocs(q);
+    //     querySnapshot.forEach((doc) => {
+    //         model.setRecentText({
+    //             text: doc.data().text,
+    //             timestamp: doc.data().createdAt,
+    //         })
+    //     })
 
-    static getRecentText(chatroomRef, setRecentText, setTimestamp) {
+    // }
+
+
+
+    static getRecentText(chatroomModel, setRecentText, setTimestamp) {
         try{
-            // if(this.isCollectionEmpty(chatroomRef, DBCollectionType.MESSAGES)){
-            //     console.log("no recent text");
-            //     return true;
-            // }
-            console.log(chatroomRef?.id)
-            const q = query(collection(chatroomRef, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"));
+            let recentText = {};
+            const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
            
-            onSnapshot(q, (snapshot) => {
-                setRecentText(snapshot.docs[0]?.data().text);
-                setTimestamp(snapshot.docs[0]?.data().createdAt);
-            })
+            onSnapshot(q, 
+                (snapshot) => {
+                if(setRecentText && setTimestamp){
+                    setRecentText(snapshot.docs[0]?.data().text);
+                    setTimestamp(snapshot.docs[0]?.data().createdAt);
+                }
+                recentText = {
+                    text: snapshot.docs[0]?.data().text,
+                    timestamp: snapshot.docs[0]?.data().createdAt
+                }
+                chatroomModel.setRecentText(recentText);
+            },
+                (error) => {
+                    console.log(error);
+                    return false;
+                }
+            )
+
             return true;
         }catch(e){
             //TO DO
