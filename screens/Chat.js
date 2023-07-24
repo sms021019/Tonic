@@ -6,7 +6,7 @@ import React, {
     useContext
 } from 'react'
 import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat, Composer, Send } from 'react-native-gifted-chat'
+import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator } from 'react-native-gifted-chat'
 import {
     collection,
     addDoc,
@@ -28,27 +28,29 @@ import Icon from 'react-native-vector-icons/Octicons';
 import Icon2 from 'react-native-vector-icons/Feather';
 import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
+import GoBackButton from "../components/GoBackButton";
+import MenuButton from '../components/MenuButton'
 
-
-
-
+import PostModel from '../models/PostModel';
+import DBHelper from '../helpers/DBHelper';
+import Loading from '../components/Loading';
 
 
 
 export default function Chat({navigation, route}) {
     const { user } = useContext(GlobalContext);
-    const {chatroomModelList} = useContext(GlobalContext);
-
+    const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
     const [messages, setMessages] = useState([]);
     const [hasError, setHasError] = useState(false);
     const [chatModel, setChatModel] = useState(null);
     const [chatroomRef, setChatroomRef] = useState(null);
     const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
+    const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
 
-    // const chatroomRef = chatModel.ref;
-    // const chatroomMessagesRef = collection(chatroomRef, DBCollectionType.MESSAGES);
+    const [postModel, setPostModel] = useState(null);
 
+    const index = route.params.index;
 
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
@@ -57,48 +59,38 @@ export default function Chat({navigation, route}) {
 
     useEffect(() => {
         if (chatModel === null) return;
+        setPostModel(() => postModelList.getOneByDocId(chatModel.postModelId));
 
         setChatroomRef(chatModel.ref);
         
         setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
+
+        setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
+
         
 
     }, [chatModel])
     
     useLayoutEffect(() => {
-        if(chatModel === null || chatroomMessagesRef === null) return;
+        if(chatModel === null || chatroomMessagesRef === null || postModel === null) return;
+
         navigation.setOptions({
-            headerRight: () =>
-            <Menu w="120px" trigger={triggerProps => {
-                return (
-                    <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                        <HamburgerIcon size={6} color="black" mr={5}/>
-                    </Pressable>
-                );
-            }}>
-        
-                    <>
-                        <Menu.Item onPress={handleExitChatroom}>
-                            <Text style={{color: theme.colors.primary}}>Exit</Text>
-                        </Menu.Item>
-                        <Menu.Item onPress={() => {}}>
-                            <Text style={{color: theme.colors.alert}}>Delete</Text>
-                        </Menu.Item>
-                    </>
+            
+            headerTitle: chatroomTitle,
+            headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
+            headerRight: () => (
+                <MenuButton mr={5} size={6} color={'black'}
+                    items={
+                            [
+                                {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
+                                {name: "Invite", color: theme.colors.primary, callback: handleInvite},
+                                {name: "Report", color: theme.colors.alert, callback: (() => {})},
+                            ]
+                    }
+                />
+            )
 
-                
-            </Menu>
         });
-
-        const handleExitChatroom = async () => {
-            if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
-                // TO DO: handle error
-                setHasError(true);
-                return;
-            }else{
-                navigation.navigate(ScreenType.CHANNEL);
-            }
-        }
 
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
 
@@ -113,8 +105,10 @@ export default function Chat({navigation, route}) {
                 }))
             )
         });
+
+        
         return () => unsubscribe();
-    }, [chatModel, chatroomMessagesRef]);
+    }, [navigation, chatModel, chatroomMessagesRef, postModel]);
     
 
     const onSend = useCallback((messages = []) => {
@@ -127,108 +121,60 @@ export default function Chat({navigation, route}) {
             text,
             user
         });
+
+        chatroomModelList.liftChatroom(index);
+
     }, [chatroomMessagesRef]);
 
-    const pickImageasync = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        let imgURI = null;
-        const hasStoragePermissionGranted = status === "granted";
-
-        if (!hasStoragePermissionGranted) return null;
-
-
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 4],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            imgURI = result.uri;
-        }
-
-        return imgURI;
-    };
-
-    const uploadImageToStorage = async (imgURI) => {
-        const ref = `messages/${[FILE_REFERENCE_HERE]}`
-
-        const imgRef = firebase.storage().ref(ref);
-
-        const metadata = { contentType: "image/jpg" };
-
-
-        // Fetch image data as BLOB from device file manager 
-
-        const blob = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                resolve(xhr.response);
-            };
-            xhr.onerror = function (e) {
-                reject(new TypeError("Network request failed"));
-            };
-            xhr.responseType = "blob";
-            xhr.open("GET", imgURI, true);
-            xhr.send(null);
-        });
-
-        // Put image Blob data to firebase servers
-        await imgRef.put(blob, metadata);
-
-        // We're done with the blob, close and release it
-        blob.close();
-
-        // Image permanent URL
-        const url = await imgRef.getDownloadURL();
-
-
-        return url
-    };
-       
-
-    const handleSendImage = () => {
-        try{
-            pickImageasync().then((imgURI) => {
-                uploadImageToStorage(imgURI);
-            })
-
-        }catch(e){
-            console.log(e);
+    const handleInvite = () => {
+        navigation.navigate(ScreenType.USER_SEARCH);
+    }
+    
+    const handleExitChatroom = async () => {
+        if(await ChatroomModel.asyncExitChatroom(chatModel, user) === false){
+            // TO DO: handle error
+            setHasError(true);
+            return;
+        }else{
+            navigation.navigate(ScreenType.CHANNEL);
         }
     }
 
-    
-    renderSend = props => {      
-        if (!props.text.trim()) { // text box empty
-            return  (
-                <TouchableOpacity onPress={handleSendImage}>
-                    <Icon name="image" size={40}/>
-                </TouchableOpacity>
-            );
-          }
+    /* ------------------
+        Error Screen
+    -------------------*/
+    if (hasError) return <ErrorScreen/>
+
+
+
+    renderBubble = (props) => {
         return (
-            <Send {...props}>
-                <Icon2 name='send' size={40}/>     
-            </Send>
-        );
-      }
+            <View style={{paddingRight: 12}}>
+            <View style={{position: 'absolute', right: -1, bottom: 0}}>
+                <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
+            </View>
+            <Bubble {...props} />
+            </View>
+        )
+    }
 
-/* ------------------
-    Error Screen
--------------------*/
-if (hasError) return <ErrorScreen/>
+    renderTicks = currentMessage => {
+        const tickedUser = currentMessage.user._id
+        return (
 
-if (chatModel === null) {
-    return (
-        <Text>Loading..</Text>
-    )
-}
+            <View>
+                {!!currentMessage.sent && !!currentMessage.received && tickedUser === this.props.user.userId && this.props.user.userId && (<Text style={{ color: 'gold', paddingRight: 10 }}>✓✓</Text>)}
+            </View>
+        )
+    }
+
+    renderFooter = () => {
+        return;
+    }
+    
    
     return (
-        <SafeAreaView style={{flex: 1,}}>
+        <SafeAreaView style={{flex: 1,}} >
             <GiftedChat
                 messages={messages}
                 onSend={messages => onSend(messages)}
@@ -240,7 +186,10 @@ if (chatModel === null) {
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
-                renderSend={this.renderSend}
+                renderTicks={this.renderTicks}
+                
+                renderFooter={renderFooter}
+                
                 
             />
         </SafeAreaView>

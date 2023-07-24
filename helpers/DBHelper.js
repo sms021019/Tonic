@@ -74,6 +74,32 @@ export default class DBHelper {
             return false
         }
         catch(error) {
+            console.log(error)
+            LOG_ERROR(ref?.id , "Error occurs while loading data from the DB.");
+            return false
+        }
+    }
+
+    static async loadDataByQuery(query, dest) {
+        try {
+            if (query) {
+                const querySnapshot = await getDocs(query);
+              
+                querySnapshot.forEach((doc) => {
+                    if (doc.exists()) {
+                        let data = doc.data();
+                        data["doc_id"] = doc.id;
+                        data["ref"] = doc.ref;
+                        dest.push(data);
+                    }
+                    else return false;
+                })
+                return true;
+            }
+            return false
+        }
+        catch(error) {
+            console.log(error)
             LOG_ERROR(ref?.id , "Error occurs while loading data from the DB.");
             return false
         }

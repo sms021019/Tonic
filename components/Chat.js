@@ -20,7 +20,6 @@ import theme from '../utils/theme'
 import {TouchableOpacity, View} from "react-native";
 import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
-import { setHours } from "date-fns";
 
 export default function Chat(props) {
     const { user } = useContext(GlobalContext);
@@ -34,21 +33,22 @@ export default function Chat(props) {
         )
     }
 
-    const postModel = props.model;
-    // const opponent = postModel.participants[0] === user?.email ? postModel.participants[1] : postModel.participants[0];
+
+    const chatroomModel = props.model;
+    const index = props.index;
+
 
     useEffect(() => {
-        if( ChatroomModel.getRecentText(postModel.ref, setRecentText, setTimestamp) === false){
+        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp) === false){
             //TO DO
-            setHasError(true);
+            console.log("Error when getting a recent text")
             return;
         }            
 
-        // if( ChatroomModel.asyncGetDisplayName(opponent, setOpponentUsername) === false){
-        //     // TO DO
-        //     setHasError(true);
-        //     return;
-        // }
+        setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
+        
+        
+
     },[])
 
 
@@ -82,7 +82,7 @@ export default function Chat(props) {
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {TimeHelper.getTopElapsedStringUntilNow(timestamp?.toDate())}
+                                {timestamp ? `${TimeHelper.getTopElapsedStringUntilNow(timestamp?.toDate())} ago` : ``}
                             </Text>
                         </HStack>
                     </Box>

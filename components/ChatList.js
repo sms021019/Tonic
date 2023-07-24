@@ -20,11 +20,11 @@ export default function ChatList(props) {
         <Box flex={1} px="0">
             <FlatList
                 data={props.modelList}
-                renderItem={(data) => {
+                renderItem={({item, index}) => {
                     return (
-                        <View key={data.item.doc_id}>
+                        <View key={item.doc_id}>
                             <View style={{margin: margin}}>
-                                <Chat onClickHandler={() => handleClick(data.item.doc_id)} key={data.item.doc_id} model={data.item}/>
+                                <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item}/>
                             </View>
                             
                         </View>
