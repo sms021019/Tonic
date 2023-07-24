@@ -1,12 +1,12 @@
 // React
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView} from 'react-native'
+import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView, Image} from 'react-native'
 import styled from "styled-components/native";
 import {Feather, Ionicons} from "@expo/vector-icons";
 import {Box, Center, Flex, ScrollView} from "native-base";
 // Util
 import {flexCenter} from "../utils/styleComponents";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import {NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 // Firebase
 import {auth, db} from '../firebase';
@@ -18,7 +18,8 @@ import PostList from '../components/PostList';
 import ErrorScreen from "./ErrorScreen";
 // Model
 import PostModel from '../models/PostModel';
-
+import LoadingScreen from "./LoadingScreen";
+import CreatePostButton from "../components/CreatePostButton";
 
 
 export default function MyPage({navigation}) {
@@ -46,7 +47,7 @@ export default function MyPage({navigation}) {
     }, [gUserModel, postModelList])
 
     if (pageReady === false) {
-        return <Text>Loading...</Text>;
+        return <LoadingScreen/>;
     }
 
     async function asyncLoadMyPosts() {
@@ -54,7 +55,6 @@ export default function MyPage({navigation}) {
         if (models === null) return;
 
         setPostModelList(models);
-        console.log("try load");
     }
 
 /* ------------------
@@ -65,12 +65,11 @@ export default function MyPage({navigation}) {
     }
 
     function handleEditProfileClick() {
-        signOut(auth).then(() => {
-            console.log('signed out')
-        }).catch((error) => {
-            console.log(error);
-        })
-        // navigation.navigate(NavigatorType.EDIT_PROFILE);
+        navigation.navigate(NavigatorType.EDIT_PROFILE);
+    }
+
+    function handleCreatePost() {
+        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
     }
 
 /* ------------------
@@ -82,8 +81,7 @@ export default function MyPage({navigation}) {
                 <ScrollView>
                     <View>
                         <Center style={styles.profileImageBox}>
-                            <Box style={styles.profileImageArea}/>
-
+                            <Image source={gUserModel.model.profileImageUrl} style={styles.profileImage}/>
                         </Center>
                         <Center style={styles.infoBox}>
                             <Text style={styles.nameText}>
@@ -115,6 +113,9 @@ export default function MyPage({navigation}) {
                     </View>
                 </ScrollView>
             </SafeAreaView>
+            <CreateButtonArea>
+                <CreatePostButton onPress={handleCreatePost}/>
+            </CreateButtonArea>
         </Container>
     )
 }
@@ -125,7 +126,7 @@ export default function MyPage({navigation}) {
 const styles = StyleSheet.create({
     container:          { display: 'flex', justifyContent:'center', alignItems:'center', minWidth: windowWidth, backgroundColor:'white'},
     profileImageBox:    { width: windowWidth, height: 150 },
-    profileImageArea:   { width: 120, height: 120, borderRadius: 100, backgroundColor: 'gray' },
+    profileImage:       { width: 120, height: 120, borderRadius: 100, borderWidth: 0.5},
     nameBox:            { width: windowWidth, height: 30 },
     infoBox:            { width: windowWidth, height: 100, marginBottom: 20 },
     nameText:           { fontWeight: '700', fontSize: 20, margin: 7 },
@@ -135,11 +136,16 @@ const styles = StyleSheet.create({
     myPostHeader:       { fontWeight: '600', fontSize: 20, marginTop: 20, marginLeft: 20, marginBottom: 10 }
 })
 
-
-
 const Container = styled.View`
     ${flexCenter};
     background-color: #fff;
     align-items: center;
     justify-content: center;
 `;
+
+
+const CreateButtonArea = styled.View`
+  position: absolute;
+  top: ${windowHeight - 156}px;
+  left: ${windowWidth - 80}px;
+`

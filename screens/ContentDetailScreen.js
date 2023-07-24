@@ -140,19 +140,23 @@ export default function ContentDetailScreen({navigation, docId}) {
 
         setDeleteModalOn(false);
         events.invokeOnContentUpdate();
-        alert("Successfully delete the post.");
+        alert("The post is deleted.");
         navigation.navigate(ScreenType.CONTENT);
     }
 
-    function handleReportPost() {
+    async function asyncHandleReportPost() {
+        await postModel.asyncReportPost(user.email);
         setReportModalOn(false);
-        alert("Successfully report the post.");
+        events.invokeOnPostReport();
+        alert("The post is reported and blocked. You can unblock it in the setting.");
+        events.invokeOnContentUpdate();
+        navigation.navigate(ScreenType.CONTENT);
     }
 
     return (
         <Container>
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
-            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={handleReportPost}/>
+            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={asyncHandleReportPost}/>
             <ScrollView>
                 <ImageSwiper imageModels={postModel.imageModels} />
                 <View style={styles.contentArea}>

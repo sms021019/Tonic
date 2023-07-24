@@ -33,8 +33,10 @@ export default function Chat(props) {
         )
     }
 
+
     const chatroomModel = props.model;
     const index = props.index;
+
 
     useEffect(() => {
         if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp) === false){
@@ -42,9 +44,11 @@ export default function Chat(props) {
             console.log("Error when getting a recent text")
             return;
         }            
+
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
         
         
+
     },[])
 
 

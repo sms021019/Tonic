@@ -17,6 +17,7 @@ import {db} from "../firebase";
 // model
 import PostModel from "../models/PostModel";
 import ErrorScreen from "./ErrorScreen";
+import CreatePostButton from "../components/CreatePostButton";
 
 const LoadingView = <View><Text>Loading...</Text></View>
 
@@ -27,9 +28,8 @@ export default function ContentScreen({navigation}) {
     const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-
     let onContentChangeEvent = useCallback(() => {
-        LoadAllPost();
+        asyncLoadAllPost().then();
     }, [])
 
     useLayoutEffect(() => {
@@ -42,7 +42,7 @@ export default function ContentScreen({navigation}) {
 
     useEffect(() => {
         events.addOnContentUpdate(onContentChangeEvent);
-        LoadAllPost();
+        asyncLoadAllPost().then();
     }, []);
 
     if (hasError) {
@@ -57,30 +57,24 @@ export default function ContentScreen({navigation}) {
         navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId})
     }
 
-    function handleCreateButtonClick() {
+    function handleCreatePost() {
         navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
     }
 
     function handleRefresh() {
         setRefreshing(true)
-        LoadAllPost();
+        asyncLoadAllPost().then();
     }
-    function LoadAllPost() {
-        async function asyncLoadAllPost() {
-            let _postModelList = [];
-            if (await PostModel.loadAllData(/* OUT */ _postModelList) === false) {
-                // ERROR HANDLE
-                console.log("fail to load data");
-                setHasError(true);
-                return false;
-            }
+    async function asyncLoadAllPost() {
+        let models = await PostModel.loadAllUnblocked(user.email)
 
-            postModelList.set(_postModelList);
-            setRefreshing(false);
-            return true;
+        if (models === null) {
+            console.log("fail to load data");
+            setHasError(true);
         }
 
-        asyncLoadAllPost().then();
+        postModelList.set(models);
+        setRefreshing(false);
     }
 
 /* ------------------
@@ -104,11 +98,7 @@ export default function ContentScreen({navigation}) {
                 {(!user || !postModelList) ? LoadingView : ContentView}
             </ContentArea>
             <CreateButtonArea>
-                <TouchableOpacity onPress={handleCreateButtonClick}>
-                    <CreateButton>
-                        <BasicText>+</BasicText>
-                    </CreateButton>
-                </TouchableOpacity>
+                <CreatePostButton onPress={handleCreatePost}/>
             </CreateButtonArea>
         </Container>
     )
@@ -123,26 +113,14 @@ const Container = styled.View`
   background-color: #fff;
 `;
 
-const CreateButtonArea = styled.View`
-  position: absolute;
-  top: ${windowHeight - 250}px;
-  left: ${windowWidth - 80}px;
-`
-const CreateButton = styled.View`
-  ${TonicButton};
-  border-radius: 100px;
-  width: 60px;
-  height: 60px;
-`;
-
 const ContentArea = styled.View`
   display: flex;
   flex: 1;
   background-color: #fff;
 `;
 
-const BasicText = styled.Text`
-  color: white;
-  font-size: 18px;
-  font-weight: 600;
-`;
+const CreateButtonArea = styled.View`
+  position: absolute;
+  top: ${windowHeight - 250}px;
+  left: ${windowWidth - 80}px;
+`

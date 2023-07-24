@@ -5,11 +5,11 @@ import React from "react";
 import theme from "../utils/theme";
 
 
-export default function ReportPostModal(props) {
+export default function UnblockPostModal(props) {
 
     const state = props.state? props.state : false;
     const setState = props.setState? props.setState : ()=>{};
-    const handleDeleteClick = props.handleDeleteClick? props.handleDeleteClick : ()=>{};
+    const handleUnblockClick = props.handleUnblockClick? props.handleUnblockClick : ()=>{};
 
     return (
         <Modal
@@ -18,14 +18,14 @@ export default function ReportPostModal(props) {
         >
             <View style={styles.modalView}>
                 <Text style={styles.deleteModalText}>
-                    Do you want to report and block the post?
+                    Do you want to unblock the post?
                 </Text>
                 <Flex direction="row" style={{marginTop: 20}}>
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextGray}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleDeleteClick}>
-                        <Text style={styles.tonicTextRed}>Report</Text>
+                    <TouchableOpacity onPress={handleUnblockClick}>
+                        <Text style={styles.tonicTextRed}>Unblock</Text>
                     </TouchableOpacity>
                 </Flex>
             </View>
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     modalView: {
         backgroundColor: 'white',
         borderRadius: 20,
-        padding: 25,
+        padding: 35,
 
         alignItems: 'center',
         shadowColor: '#000',
