@@ -24,16 +24,14 @@ export default function ContextWrapper(props) {
 
 
     chatroomModelList.set = (list) => {
-        console.log(list);
-        const sorted = list.sort(function async (x,y){
-            console.log(y);
-            console.log(x);
-            let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
-            console.log(result);
+        
+        list.sort(function (x,y){
+            x = x.recentText?.timestamp.toDate();
+            y = y.recentText?.timestamp.toDate();
+            let result = y - x;
             return result;
         })
-        setChatroomModelList(sorted);
-        // setChatroomModelList(list);
+        setChatroomModelList(list);
     }
 
     chatroomModelList.addOne = (model) => {
@@ -52,15 +50,15 @@ export default function ContextWrapper(props) {
 
     }
 
-    // chatroomModelList.sortByRecentText = () => {
-    //     const sorted = chatroomModelList.sort(function async (x,y){
-    //         let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
-    //         console.log(result);
-    //         return result;
-    //     })
-    //     console.log(sorted);
-    //     setChatroomModelList(sorted);
-    // }
+    chatroomModelList.sortByRecentText = () => {
+        const sorted = chatroomModelList.sort(function async (x,y){
+            let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
+            console.log(result);
+            return result;
+        })
+        console.log(sorted);
+        setChatroomModelList(sorted);
+    }
 
 
 // ----------------- CURRENT USER MODEL --------------------

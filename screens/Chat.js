@@ -6,7 +6,7 @@ import React, {
     useContext
 } from 'react'
 import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat, Composer, Send, MessageStatusIndicator } from 'react-native-gifted-chat'
+import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator } from 'react-native-gifted-chat'
 import {
     collection,
     addDoc,
@@ -33,6 +33,7 @@ import MenuButton from '../components/MenuButton'
 
 import PostModel from '../models/PostModel';
 import DBHelper from '../helpers/DBHelper';
+import Loading from '../components/Loading';
 
 
 
@@ -45,6 +46,7 @@ export default function Chat({navigation, route}) {
     const [chatModel, setChatModel] = useState(null);
     const [chatroomRef, setChatroomRef] = useState(null);
     const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
+    const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
 
     const [postModel, setPostModel] = useState(null);
 
@@ -52,7 +54,6 @@ export default function Chat({navigation, route}) {
 
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
-        
         
     },[])
 
@@ -63,6 +64,9 @@ export default function Chat({navigation, route}) {
         setChatroomRef(chatModel.ref);
         
         setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
+
+        setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
+
         
 
     }, [chatModel])
@@ -72,7 +76,7 @@ export default function Chat({navigation, route}) {
 
         navigation.setOptions({
             
-            headerTitle: chatModel.displayName ? chatModel.displayName : "Chatroom",
+            headerTitle: chatroomTitle,
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
             headerRight: () => (
                 <MenuButton mr={5} size={6} color={'black'}
@@ -101,6 +105,7 @@ export default function Chat({navigation, route}) {
                 }))
             )
         });
+
         
         return () => unsubscribe();
     }, [navigation, chatModel, chatroomMessagesRef, postModel]);
@@ -126,7 +131,7 @@ export default function Chat({navigation, route}) {
     }
     
     const handleExitChatroom = async () => {
-        if(await ChatroomModel.asyncExitChatroom(chatroomRef, user) === false){
+        if(await ChatroomModel.asyncExitChatroom(chatModel, user) === false){
             // TO DO: handle error
             setHasError(true);
             return;
@@ -135,16 +140,12 @@ export default function Chat({navigation, route}) {
         }
     }
 
-/* ------------------
-    Error Screen
--------------------*/
-if (hasError) return <ErrorScreen/>
+    /* ------------------
+        Error Screen
+    -------------------*/
+    if (hasError) return <ErrorScreen/>
 
-if (chatModel === null) {
-    return (
-        <Text>Loading..</Text>
-    )
-}
+
 
     renderBubble = (props) => {
         return (
@@ -156,6 +157,21 @@ if (chatModel === null) {
             </View>
         )
     }
+
+    renderTicks = currentMessage => {
+        const tickedUser = currentMessage.user._id
+        return (
+
+            <View>
+                {!!currentMessage.sent && !!currentMessage.received && tickedUser === this.props.user.userId && this.props.user.userId && (<Text style={{ color: 'gold', paddingRight: 10 }}>✓✓</Text>)}
+            </View>
+        )
+    }
+
+    renderFooter = () => {
+        return;
+    }
+    
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -170,7 +186,9 @@ if (chatModel === null) {
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
-                renderBubble={renderBubble}
+                renderTicks={this.renderTicks}
+                
+                renderFooter={renderFooter}
                 
                 
             />

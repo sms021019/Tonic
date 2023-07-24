@@ -30,6 +30,7 @@ import { useIsFocused } from '@react-navigation/native'
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ChatList from '../components/ChatList';
+import Loading from '../components/Loading';
 
 
 
@@ -38,7 +39,7 @@ export default function Channel({ navigation: {navigate}}) {
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
     const {chatroomModelList} = useContext(GlobalContext);
-    const [loading, setLoading] = useState("true");
+    const [loading, setLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -113,10 +114,11 @@ export default function Channel({ navigation: {navigate}}) {
             return;
         }
         // setChatroomsData(chatroomData);
+        // console.log(chatroomData);
         chatroomModelList.set(chatroomData)
         // chatroomModelList.sortByRecentText();
         // console.log(chatroomModelList);
-        setLoading("false");
+        setLoading(false);
         setRefreshing(false);
     }
 
@@ -143,6 +145,7 @@ export default function Channel({ navigation: {navigate}}) {
     Error Screen
 -------------------*/
 if (hasError) return <ErrorScreen/>
+if (loading) return <Loading/>
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>

@@ -87,7 +87,7 @@ export default class ChatroomModel {
             data = data[0];
 
             let modelTemp = await this._dataToModel(data);
-            this.getRecentText(modelTemp);
+            if(await this.setRecentText(modelTemp) === false) return false;
             // await this.findRecentText(modelTemp);
             dest.push(modelTemp);
         }
@@ -180,30 +180,45 @@ export default class ChatroomModel {
     //     })
 
     // }
+    static async setRecentText(chatroomModel){
+        let recentText = [];
+        const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
+
+        if(await DBHelper.loadDataByQuery(q, recentText) === false){
+            //TODO
+            console.log("asdfa")
+            return false;
+        }
+        recentText = {
+            text: recentText[0].text,
+            timestamp: recentText[0].createdAt,
+        }
+        
+        chatroomModel.setRecentText(recentText);
+        return true;
+    }
 
 
 
-    static getRecentText(chatroomModel, setRecentText, setTimestamp) {
+    static async getRecentText(chatroomModel, setRecentText, setTimestamp) {
         try{
-            let recentText = {};
             const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
-           
             onSnapshot(q, 
                 (snapshot) => {
+                let tempText = snapshot.docs[0]?.data().text;
+                let tempTime = snapshot.docs[0]?.data().createdAt;
                 if(setRecentText && setTimestamp){
-                    setRecentText(snapshot.docs[0]?.data().text);
-                    setTimestamp(snapshot.docs[0]?.data().createdAt);
+                    setRecentText(tempText);
+                    setTimestamp(tempTime);
                 }
-                recentText = {
-                    text: snapshot.docs[0]?.data().text,
-                    timestamp: snapshot.docs[0]?.data().createdAt
+
+                let recentText = {
+                    text: tempText,
+                    timestamp: tempTime,
                 }
+
                 chatroomModel.setRecentText(recentText);
-            },
-                (error) => {
-                    console.log(error);
-                    return false;
-                }
+            }
             )
 
             return true;
@@ -232,8 +247,8 @@ export default class ChatroomModel {
         return true;
     }
 
-    static async asyncExitChatroom(ref, user) {
-        if(await DBHelper.deleteChatroom(ref, user) === false){
+    static async asyncExitChatroom(chatModel, user) {
+        if(await DBHelper.deleteChatroom(chatModel, user) === false){
             // TO DO:
             return false;
         }
