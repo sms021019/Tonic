@@ -1,8 +1,5 @@
 import React, {useState} from 'react';
 import Context from './Context'
-import {db} from '../firebase'
-import DBHelper from "../helpers/DBHelper";
-import UserModel from "../models/UserModel";
 
 export default function ContextWrapper(props) {
     const [user, setUser] = useState(null);
@@ -20,7 +17,6 @@ export default function ContextWrapper(props) {
     })
     const [events, setEvents] = useState({
         onContentChange: [],
-        onPostReport: [],
     });
 
 
@@ -54,14 +50,31 @@ export default function ContextWrapper(props) {
         })
     }
 
-    gUserModel.updateProfile = (username, profileImageType) => {
-        gUserModel.model.username = username;
-        gUserModel.model.profileImageType = profileImageType;
+    gUserModel.updateProfile = async (username, profileImageType) => {
+        let userModel = gUserModel.model;
+        userModel.username = username;
+        userModel.profileImageType = profileImageType;
+        await userModel.asyncUpdateProfile();
 
-        setGUserModel({
-            model: gUserModel.model,
-            ready: true,
-        })
+        gUserModel.commit(userModel);
+    }
+
+    gUserModel.reportPost = async (postModel) => {
+        let userModel = gUserModel.model;
+
+        await postModel.asyncReportPost(userModel.email);
+        userModel.postReports.push(postModel.ref);
+
+        gUserModel.commit(userModel);
+    }
+
+    gUserModel.unblockPost = async (postModel) => {
+        let userModel = gUserModel.model;
+
+        await postModel.asyncUnblockPost(userModel.email);
+        userModel.postReports = userModel.postReports.filter((ref) => ref?.path !== postModel.ref.path);
+        console.log(userModel.postReports);
+        gUserModel.commit(userModel);
     }
 // ----------------- POST MODEL LIST --------------------
     postModelList.set = (list) => {
@@ -82,17 +95,8 @@ export default function ContextWrapper(props) {
         setEvents((prev) => ({...prev, onContentChange: [...prev.onContentChange, callback]}));
     }
 
-
-    events.addOnPostReport = (callback) => {
-        setEvents((prev) => ({...prev, onPostReport: [...prev.onPostReport, callback]}));
-    }
-
     events.invokeOnContentUpdate = () => {
         events.invoke(events.onContentChange);
-    }
-
-    events.invokeOnPostReport = () => {
-        events.invoke(events.onPostReport);
     }
 
     events.invoke = (callbacks) => {
@@ -101,7 +105,6 @@ export default function ContextWrapper(props) {
 
     return (
         <Context.Provider value={{user, setUser, gUserModel, events, postModelList, status, chatroomModelList}}>
-
             {[props.children]}
         </Context.Provider>
     )

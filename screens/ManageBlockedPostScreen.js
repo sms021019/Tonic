@@ -10,16 +10,11 @@ import LoadingScreen from "./LoadingScreen";
 import UnblockPostModel from "../components/UnblockPostModal";
 
 export default function ManageBlockedPostScreen({navigation}) {
-    const {gUserModel, events} = useContext(GlobalContext);
+    const {gUserModel} = useContext(GlobalContext);
     const [blockedPostModelList, setBlockedPostModelList] = useState(null);
     const [pageReady, setPageReady] = useState(false);
     const [blockModelOn, setBlockModalOn] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
-
-    let onNewPostReportedEvent = useCallback(() => {
-        console.log("On new post block");
-        asyncLoadPostReports().then();
-    }, [])
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -28,9 +23,8 @@ export default function ManageBlockedPostScreen({navigation}) {
     }, [navigation]);
 
     useEffect(() => {
-        events.addOnPostReport(onNewPostReportedEvent);
-        asyncLoadPostReports().then();
-    }, [])
+        asyncLoadBlockedPosts().then();
+    }, [gUserModel])
 
     useEffect(() => {
         if (blockedPostModelList) {
@@ -38,38 +32,33 @@ export default function ManageBlockedPostScreen({navigation}) {
         }
     }, [blockedPostModelList])
 
-    useEffect(() => {
-        if (!selectedPostId) return;
-
-        setBlockModalOn(true);
-    }, [selectedPostId])
-
 
     if (pageReady === false) {
         return <LoadingScreen/>;
     }
 
-
-    async function asyncLoadPostReports() {
+    async function asyncLoadBlockedPosts() {
         const refs = gUserModel.model.postReports;
         const models = await PostModel.loadAllByRefs(refs);
         setBlockedPostModelList(models);
     }
 
-    async function asyncUnblockPost(docId) {
-        const post = blockedPostModelList.find(post => post.doc_id === docId);
-        await post.asyncUnblockPost(gUserModel.model.email);
-        setBlockModalOn(false);
+    async function asyncUnblockPost() {
+        const postModel = blockedPostModelList.find(model => model.doc_id === selectedPostId);
+        await gUserModel.unblockPost(postModel);
 
+        setBlockModalOn(false);
+        alert("The post is unblocked now.")
     }
 
     function handlePostClick(docId) {
         setSelectedPostId(docId);
+        setBlockModalOn(true);
     }
 
     return (
         <View style={styles.container}>
-            <UnblockPostModel state={blockModelOn} setState={setBlockModalOn} handleDeleteClick={asyncUnblockPost}/>
+            <UnblockPostModel state={blockModelOn} setState={setBlockModalOn} handleUnblockPost={asyncUnblockPost}/>
             <ScrollView>
                 <Center>
                     <PostList

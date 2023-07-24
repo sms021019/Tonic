@@ -12,7 +12,7 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
@@ -22,11 +22,13 @@ import ReportPostModal from "../components/ReportPostModal";
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
+import CreatePostButton from "../components/CreatePostButton";
+import TestFunctionCaller from "../components/TestFunctionCaller";
 
 
 export default function ContentDetailScreen({navigation, docId}) {
     const {events} = useContext(GlobalContext);
-    const {postModelList} = useContext(GlobalContext);
+    const {gUserModel, postModelList} = useContext(GlobalContext);
     const { user } = useContext(GlobalContext);
 
     const [postModel, setPostModel] = useState(null);
@@ -127,12 +129,17 @@ export default function ContentDetailScreen({navigation, docId}) {
     }
 
     async function asyncHandleReportPost() {
-        await postModel.asyncReportPost(user.email);
+        gUserModel.reportPost(postModel);
+
         setReportModalOn(false);
-        events.invokeOnPostReport();
-        alert("The post is reported and blocked. You can unblock it in the setting.");
+
         events.invokeOnContentUpdate();
+
+        alert("The post is reported and blocked. You can unblock it in the setting.");
         navigation.navigate(ScreenType.CONTENT);
+    }
+
+    async function asyncTestCaller() {
     }
 
     return (
@@ -162,6 +169,9 @@ export default function ContentDetailScreen({navigation, docId}) {
                     </ChatButton>
                 </Flex>
             </View>
+            <TestArea>
+                <TestFunctionCaller onPress={asyncTestCaller}/>
+            </TestArea>
         </Container>
     )
 }
@@ -202,3 +212,9 @@ const TonicText = styled.Text`
     font-size: 18px;
     font-weight: 600;
 `;
+
+const TestArea = styled.View`
+  position: absolute;
+  top: ${windowHeight - 250}px;
+  left: ${windowWidth - 80}px;
+`

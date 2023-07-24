@@ -46,12 +46,8 @@ export default function EditProfileScreen({navigation}) {
         setLoading(true);
 
         await updateProfile(user, {displayName: username})
-
-        gUserModel.model.username = username;
-        gUserModel.model.profileImageType = profileImageType;
-        await gUserModel.model.asyncUpdateProfile();
-
-        gUserModel.commit(gUserModel.model);
+        // TODO : profile name is not updated.
+        await gUserModel.updateProfile(username, profileImageType);
 
         setLoading(false);
         navigation.navigate(ScreenType.MYPAGE)

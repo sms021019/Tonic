@@ -9,7 +9,7 @@ export default function UnblockPostModal(props) {
 
     const state = props.state? props.state : false;
     const setState = props.setState? props.setState : ()=>{};
-    const handleUnblockClick = props.handleUnblockClick? props.handleUnblockClick : ()=>{};
+    const handleUnblockPost = props.handleUnblockPost? props.handleUnblockPost : ()=>{};
 
     return (
         <Modal
@@ -24,7 +24,7 @@ export default function UnblockPostModal(props) {
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextGray}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleUnblockClick}>
+                    <TouchableOpacity onPress={handleUnblockPost}>
                         <Text style={styles.tonicTextRed}>Unblock</Text>
                     </TouchableOpacity>
                 </Flex>
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     modalView: {
         backgroundColor: 'white',
         borderRadius: 20,
-        padding: 35,
+        padding: 25,
 
         alignItems: 'center',
         shadowColor: '#000',

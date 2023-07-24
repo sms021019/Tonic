@@ -78,8 +78,9 @@ export default class PostModel {
 
         let models = [];
         for (const ref of refs) {
+            if (!ref) continue;
             let data = []
-            if (await DBHelper.loadDataByRef(ref, /*OUT*/ data) === false) return null;
+            if (await DBHelper.loadDataByRef(ref, /*OUT*/ data) === false) continue;
             data = data[0];
             models.push(await this._asyncDataToModel(data));
         }
@@ -137,6 +138,8 @@ export default class PostModel {
 
     async asyncUnblockPost(reporterEmail) {
         try {
+            // TODO: if the post is not available, remove the post from the user report list, and do nothing.
+
             let batch = writeBatch(db);
 
             const reporterRef = DBHelper.getRef(DBCollectionType.USERS, reporterEmail);
