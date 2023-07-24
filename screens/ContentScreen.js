@@ -43,6 +43,10 @@ export default function ContentScreen({navigation}) {
         asyncLoadAllPost().then();
     }, []);
 
+    useEffect(() => {
+        asyncLoadAllPost().then();
+    }, [gUserModel])
+
     if (hasError) {
         return <ErrorScreen/>;
     }

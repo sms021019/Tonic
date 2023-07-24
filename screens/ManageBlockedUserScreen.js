@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
-import {Box, Divider, Flex, ScrollView} from "native-base";
-import {windowWidth} from "../utils/utils";
+import {Box, Center, Divider, Flex, ScrollView} from "native-base";
+import {windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import GlobalContext from "../context/Context";
 import UserModel from "../models/UserModel";
@@ -11,7 +11,10 @@ import UnblockUserModal from "../components/UnblockUserModal";
 
 export default function ManageBlockedUserScreen({navigation}) {
     const {gUserModel, events} = useContext(GlobalContext);
-    const [userModels, setUserModels] = useState([]);
+    const [userModelsWrapper, setUserModelsWrapper] = useState({
+        models: [],
+        ready: false,
+    });
     const [unblockModalOn, setUnblockModalOn] = useState(false);
     const [selectedUserModel, setSelectedUserModel] = useState(null);
 
@@ -25,13 +28,17 @@ export default function ManageBlockedUserScreen({navigation}) {
         asyncLoadUserModels().then();
     }, [gUserModel])
 
+    if (userModelsWrapper.ready === false) {
+        return <LoadingScreen/>
+    }
+
     async function asyncLoadUserModels() {
-        let _userModels = [];
+        let userModels = [];
 
         for (let email of gUserModel.model.userReports) {
-            _userModels.push(await UserModel.loadDataById(email));
+            userModels.push(await UserModel.loadDataById(email));
         }
-        setUserModels(_userModels);
+        setUserModelsWrapper({models: userModels, ready: true});
     }
 
     async function OnUnblockUserButtonClick(model) {
@@ -40,44 +47,45 @@ export default function ManageBlockedUserScreen({navigation}) {
     }
 
     async function unblockUser() {
-        await gUserModel.asyncUnblockUser(selectedUserModel?.email);
+        await gUserModel.unblockUser(selectedUserModel?.email);
 
         events.invokeOnContentUpdate();
         setUnblockModalOn(false);
     }
 
-    if (userModels.length === 0) {
-        return <Text> No blocked users. </Text>
-    }
-
-
     return (
         <View style={styles.container}>
             <UnblockUserModal state={unblockModalOn} setState={setUnblockModalOn} username={selectedUserModel?.username} handleUnblockUser={unblockUser}/>
-            <ScrollView>
-                {userModels.map((model) => (
-                    <>
-                        <Box style={styles.menu}>
-                            <Flex direction={'row'}>
-                                <Text style={styles.menuText}>{model.username}</Text>
-                                <TouchableOpacity onPress={() => OnUnblockUserButtonClick(model)}>
-                                    <Text style={styles.menuTextRed}>Unblock</Text>
-                                </TouchableOpacity>
-                            </Flex>
-                        </Box>
-                        <Divider/>
-                    </>
-                ))}
-            </ScrollView>
+            {
+                userModelsWrapper.models.length === 0 ?
+                <Center minHeight={windowHeight / 2}>
+                    <Text style={styles.grayText}>No blocked users.</Text>
+                </Center>
+                :
+                <ScrollView>
+                    {
+                        userModelsWrapper.models.map((model) => (
+                        <>
+                            <Box style={styles.menu}>
+                                <Flex direction={'row'}>
+                                    <Text style={styles.menuText}>{model.username}</Text>
+                                    <TouchableOpacity onPress={() => OnUnblockUserButtonClick(model)}>
+                                        <Text style={styles.menuTextRed}>Unblock</Text>
+                                    </TouchableOpacity>
+                                </Flex>
+                            </Box>
+                            <Divider/>
+                        </>
+                        ))
+                    }
+                </ScrollView>
+            }
         </View>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.colors.white,
-    },
+    container: {flex: 1, backgroundColor: theme.colors.white,},
     menu: {width: windowWidth, height: 60, justifyContent:'center', paddingLeft: 20, paddingRight: 20},
     menuText: {flex:1, fontWeight: "600", fontSize:16, color: theme.colors.text},
     blueText: {flex:1, textAlign:'right', fontWeight: "600", fontSize:16, color: theme.colors.primary},
