@@ -10,6 +10,7 @@ import {
     sendEmailVerification } from "firebase/auth";
 import ImageHelper from "../helpers/ImageHelper";
 import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
+import {arrayRemove} from "@firebase/firestore";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -25,7 +26,7 @@ import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
 ----------------------------------------------*/
 
 export default class UserModel {
-    constructor(doc_id, ref, username, email, password, postRefs, profileImageType, userReports, postReports, blocked) {
+    constructor(doc_id, ref, username, email, password, postRefs, profileImageType, userReports, postReports, blocked, reporters, reportCount) {
         // Document info
         this.doc_id = doc_id;
         this.ref = ref;
@@ -39,6 +40,8 @@ export default class UserModel {
         this.userReports = userReports;
         this.postReports = postReports;
         this.blocked = blocked;
+        this.reporters = reporters;
+        this.reportCount = reportCount;
 
         // Other
         this.password = password;
@@ -46,36 +49,100 @@ export default class UserModel {
     }
 
     copy() {
-        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType, this.userReports, this.postReports, this.blocked);
-    }
-
-    static newEmpty() {
-        return new UserModel(null, null, null, null, null, [], ImageHelper.getRandomProfileImageType(), [], [], false);
+        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType, this.userReports, this.postReports, this.blocked, this.reporters, this.reportCount);
     }
 
     static newSignup(username, email, password) {
-        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType(), [], [], false);
+        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType(), [], [], false, [], 0);
     }
 
     static async loadDataByAuth(auth) {
         const ref = DBHelper.getRef(DBCollectionType.USERS, auth.email);
+        return this.loadDataByRef(ref);
+    }
 
+    static async loadDataByRef(ref) {
         let data = []
         if (await DBHelper.loadDataByRef(ref, data) === false) return null;
         data = data[0]
 
-        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked);
+        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, null, /*ref[]*/ data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked, data.reporters, data.reportCount);
 
-        if (model.profileImageType === undefined || model.profileImageType === null) {
-            model.profileImageType = ImageHelper.getRandomProfileImageType();
-            model.asyncUpdateProfile().then();
-        }
+        model.asyncUpdateMissingField().then();
+
         return model;
+    }
+
+    static async loadDataById(userEmail) {
+        const ref = DBHelper.getRef(DBCollectionType.USERS, userEmail);
+        return this.loadDataByRef(ref);
     }
 
     async asyncUpdateProfile() {
         if (await DBHelper.updateData(this.ref, {profileImageType: this.profileImageType}) === false) return false;
         return true;
+    }
+
+    async asyncUpdateMissingField() {
+        let data = {};
+
+        if (!this.reportCount) {
+            this.reportCount = 0;
+            data["reportCount"] = this.reportCount;
+        }
+
+        if (!this.reporters) {
+            this.reporters = [];
+            data["reporters"] = this.reporters;
+        }
+
+        if (!this.postReports) {
+            this.postReports = [];
+            data["postReports"] = this.postReports;
+        }
+
+        if (!this.userReports) {
+            this.userReports = [];
+            data["userReports"] = this.userReports;
+        }
+
+        if (this.profileImageType === undefined || this.profileImageType === null) {
+            this.profileImageType = ImageHelper.getRandomProfileImageType();
+            data["profileImageType"] = this.profileImageType;
+        }
+        await DBHelper.updateData(this.ref, data);
+    }
+
+    async asyncReportUser(targetUserEmail) {
+        try {
+            let batch = writeBatch(db);
+
+            const targetUserRef = DBHelper.getRef(DBCollectionType.USERS, targetUserEmail);
+            batch.update(targetUserRef, {reporters: arrayUnion(this.ref)})
+            batch.update(this.ref, {userReports: arrayUnion(targetUserEmail)});
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
+
+    async asyncUnblockUser(targetUserEmail) {
+        try {
+            let batch = writeBatch(db);
+
+            const targetUserRef = DBHelper.getRef(DBCollectionType.USERS, targetUserEmail);
+            batch.update(targetUserRef, {reporters: arrayRemove(this.ref)});
+            batch.update(this.ref, {userReports: arrayRemove(targetUserEmail)});
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
     }
 
     async asyncCreateUser() {
@@ -93,6 +160,8 @@ export default class UserModel {
                     postReports: [],
                     userReports: [],
                     blocked: false,
+                    reportCounts: 0,
+                    reporters: [],
                 }
          
                 if(await DBHelper.addData(this.collectionType, userData) === false){
@@ -173,15 +242,6 @@ export default class UserModel {
         })
         return signOutResult;
     }
-
-    getData() {
-        return {
-            username : this.username,
-            email : this.email,
-            password : this.password,
-        }
-    }
-
     isValid() {
         return true;
     }

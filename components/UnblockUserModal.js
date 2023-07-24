@@ -5,11 +5,12 @@ import React from "react";
 import theme from "../utils/theme";
 
 
-export default function ReportPostModal(props) {
+export default function UnblockUserModal(props) {
 
     const state = props.state? props.state : false;
     const setState = props.setState? props.setState : ()=>{};
-    const handleReportPost = props.handleReportPost? props.handleReportPost : ()=>{};
+    const handleUnblockUser = props.handleUnblockUser? props.handleUnblockUser : ()=>{};
+    const username = props.username? props.username : "this user";
 
     return (
         <Modal
@@ -18,14 +19,14 @@ export default function ReportPostModal(props) {
         >
             <View style={styles.modalView}>
                 <Text style={styles.deleteModalText}>
-                    Do you want to report and block this post?
+                    Do you want to unblock {username}?
                 </Text>
                 <Flex direction="row" style={{marginTop: 20}}>
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextGray}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleReportPost}>
-                        <Text style={styles.tonicTextRed}>Report</Text>
+                    <TouchableOpacity onPress={handleUnblockUser}>
+                        <Text style={styles.tonicTextRed}>Unblock</Text>
                     </TouchableOpacity>
                 </Flex>
             </View>

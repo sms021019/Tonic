@@ -63,14 +63,13 @@ export default class PostModel {
         return true;
     }
 
-    static async loadAllUnblocked(userEmail) {
+    static async loadAllUnblocked(userModel) {
         let models = [];
         if (await this.loadAllData(models) === false) return null;
 
-        for (let model of models) {
-            console.log(model.reporters);
-        }
-        return models.filter((model) => model.reporters.includes(userEmail) === false);
+        models = models.filter(postModel => postModel.reporters.includes(userModel.email) === false);
+        models = models.filter(postModel => userModel.userReports.includes(postModel.email) === false);
+        return models;
     }
 
     static async loadAllByRefs(refs) {

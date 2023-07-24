@@ -22,8 +22,8 @@ import ReportPostModal from "../components/ReportPostModal";
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
-import CreatePostButton from "../components/CreatePostButton";
-import TestFunctionCaller from "../components/TestFunctionCaller";
+import LoadingScreen from "./LoadingScreen";
+import ReportUserModal from "../components/ReportUserModal";
 
 
 export default function ContentDetailScreen({navigation, docId}) {
@@ -34,7 +34,8 @@ export default function ContentDetailScreen({navigation, docId}) {
     const [postModel, setPostModel] = useState(null);
     const [owner, setPostOwner] = useState(null);
     const [deleteModalOn, setDeleteModalOn] = useState(false);
-    const [reportModalOn, setReportModalOn] = useState(false);
+    const [reportPostModalOn, setReportPostModalOn] = useState(false);
+    const [reportUserModalOn, setReportUserModalOn] = useState(false);
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
@@ -73,7 +74,8 @@ export default function ContentDetailScreen({navigation, docId}) {
                                 {name: "Delete", color: theme.colors.alert, callback: OpenDeleteModal},
                             ] :
                             [
-                                {name: "Report", color: theme.colors.alert, callback: OpenReportModal},
+                                {name: "Report post", color: theme.colors.alert, callback: OpenReportPostModal},
+                                {name: "Report user", color: theme.colors.alert, callback: OpenReportUserModal},
                             ]
                     }
                 />
@@ -82,9 +84,7 @@ export default function ContentDetailScreen({navigation, docId}) {
     }, [navigation, postModel]);
 
     if (postModel === null) {
-        return (
-            <Text>Loading..</Text>
-        )
+        return <LoadingScreen/>
     }
 
     function isMyPost() {
@@ -113,9 +113,14 @@ export default function ContentDetailScreen({navigation, docId}) {
         setDeleteModalOn(true);
     }
 
-    function OpenReportModal() {
-        setReportModalOn(true);
+    function OpenReportPostModal() {
+        setReportPostModalOn(true);
     }
+
+    function OpenReportUserModal() {
+        setReportUserModalOn(true);
+    }
+
     async function handleDeletePost() {
         if (await postModel.asyncDelete() === false) {
             console.log("Fail to delete data.");
@@ -129,23 +134,32 @@ export default function ContentDetailScreen({navigation, docId}) {
     }
 
     async function asyncHandleReportPost() {
-        gUserModel.reportPost(postModel);
-
-        setReportModalOn(false);
+        await gUserModel.reportPost(postModel);
 
         events.invokeOnContentUpdate();
 
         alert("The post is reported and blocked. You can unblock it in the setting.");
+
+        setReportPostModalOn(false);
         navigation.navigate(ScreenType.CONTENT);
     }
 
-    async function asyncTestCaller() {
+    async function asyncHandleReportUser() {
+        await gUserModel.reportUser(postModel.email);
+
+        events.invokeOnContentUpdate();
+
+        alert("The user is reported and blocked. You can unblock the user in the setting.");
+
+        setReportUserModalOn(false);
+        navigation.navigate(ScreenType.CONTENT);
     }
 
     return (
         <Container>
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
-            <ReportPostModal state={reportModalOn} setState={setReportModalOn} handleDeleteClick={asyncHandleReportPost}/>
+            <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
+            <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
             <ScrollView>
                 <ImageSwiper imageModels={postModel.imageModels} />
                 <View style={styles.contentArea}>
@@ -169,9 +183,6 @@ export default function ContentDetailScreen({navigation, docId}) {
                     </ChatButton>
                 </Flex>
             </View>
-            <TestArea>
-                <TestFunctionCaller onPress={asyncTestCaller}/>
-            </TestArea>
         </Container>
     )
 }
@@ -212,9 +223,3 @@ const TonicText = styled.Text`
     font-size: 18px;
     font-weight: 600;
 `;
-
-const TestArea = styled.View`
-  position: absolute;
-  top: ${windowHeight - 250}px;
-  left: ${windowWidth - 80}px;
-`

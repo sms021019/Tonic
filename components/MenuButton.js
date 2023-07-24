@@ -10,7 +10,7 @@ export default function MenuButton(props)
     if (items === null) return (<></>);
 
     return (
-        <Menu w="120px" trigger={triggerProps => {
+        <Menu w="140px" trigger={triggerProps => {
             return (
                 <Pressable accessibilityLabel="More options menu" {...triggerProps}>
                     <HamburgerIcon size={6} color="white" mr={5}/>

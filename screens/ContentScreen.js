@@ -22,9 +22,7 @@ import CreatePostButton from "../components/CreatePostButton";
 const LoadingView = <View><Text>Loading...</Text></View>
 
 export default function ContentScreen({navigation}) {
-    const {user} = useContext(GlobalContext);
-    const {events} = useContext(GlobalContext);
-    const {postModelList} = useContext(GlobalContext);
+    const {user, gUserModel, events, postModelList} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
@@ -66,7 +64,7 @@ export default function ContentScreen({navigation}) {
         asyncLoadAllPost().then();
     }
     async function asyncLoadAllPost() {
-        let models = await PostModel.loadAllUnblocked(user.email)
+        let models = await PostModel.loadAllUnblocked(gUserModel.model)
 
         if (models === null) {
             console.log("fail to load data");

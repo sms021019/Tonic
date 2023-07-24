@@ -59,6 +59,15 @@ export default function ContextWrapper(props) {
         gUserModel.commit(userModel);
     }
 
+    gUserModel.reportUser = async (targetUserEmail) => {
+        let userModel = gUserModel.model;
+
+        userModel.userReports.push(targetUserEmail);
+        await userModel.asyncReportUser(targetUserEmail);
+
+        gUserModel.commit(userModel);
+    }
+
     gUserModel.reportPost = async (postModel) => {
         let userModel = gUserModel.model;
 
@@ -73,9 +82,17 @@ export default function ContextWrapper(props) {
 
         await postModel.asyncUnblockPost(userModel.email);
         userModel.postReports = userModel.postReports.filter((ref) => ref?.path !== postModel.ref.path);
-        console.log(userModel.postReports);
         gUserModel.commit(userModel);
     }
+
+    gUserModel.unblockUser = async (targetUserEmail) => {
+        let userModel = gUserModel.model;
+
+        await userModel.asyncUnblockUser(targetUserEmail);
+        userModel.userReports = userModel.userReports.filter((email) => email !== targetUserEmail);
+        gUserModel.commit(userModel);
+    }
+
 // ----------------- POST MODEL LIST --------------------
     postModelList.set = (list) => {
         setPostModelList(list);

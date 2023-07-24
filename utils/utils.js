@@ -46,6 +46,7 @@ export const DBCollectionType = {
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
     IMAGE:      "images",
+    REPORTED_USERS: "reportedUsers",
 }
 
 export const StorageDirectoryType = {

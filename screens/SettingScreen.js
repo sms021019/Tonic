@@ -74,7 +74,7 @@ export default function SettingScreen({navigation}) {
                 <Divider/>
                 <Center mt={10} >
                     <Text style={styles.bold}>Contact</Text>
-                    <Text style={styles.grayText}>admin@admin.com</Text>
+                    <Text style={styles.grayText}>tonic.cs.acc@gmail.com</Text>
                 </Center>
             </ScrollView>
         </View>

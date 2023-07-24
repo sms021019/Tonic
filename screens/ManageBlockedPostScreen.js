@@ -7,13 +7,13 @@ import PostList from "../components/PostList";
 import GlobalContext from "../context/Context";
 import PostModel from "../models/PostModel";
 import LoadingScreen from "./LoadingScreen";
-import UnblockPostModel from "../components/UnblockPostModal";
+import UnblockPostModal from "../components/UnblockPostModal";
 
 export default function ManageBlockedPostScreen({navigation}) {
-    const {gUserModel} = useContext(GlobalContext);
+    const {gUserModel, events} = useContext(GlobalContext);
     const [blockedPostModelList, setBlockedPostModelList] = useState(null);
     const [pageReady, setPageReady] = useState(false);
-    const [blockModelOn, setBlockModalOn] = useState(false);
+    const [unblockModalOn, setUnblockModalOn] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
 
     useLayoutEffect(() => {
@@ -47,18 +47,19 @@ export default function ManageBlockedPostScreen({navigation}) {
         const postModel = blockedPostModelList.find(model => model.doc_id === selectedPostId);
         await gUserModel.unblockPost(postModel);
 
-        setBlockModalOn(false);
+        events.invokeOnContentUpdate();
+        setUnblockModalOn(false);
         alert("The post is unblocked now.")
     }
 
     function handlePostClick(docId) {
         setSelectedPostId(docId);
-        setBlockModalOn(true);
+        setUnblockModalOn(true);
     }
 
     return (
         <View style={styles.container}>
-            <UnblockPostModel state={blockModelOn} setState={setBlockModalOn} handleUnblockPost={asyncUnblockPost}/>
+            <UnblockPostModal state={unblockModalOn} setState={setUnblockModalOn} handleUnblockPost={asyncUnblockPost}/>
             <ScrollView>
                 <Center>
                     <PostList
