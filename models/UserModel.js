@@ -9,7 +9,7 @@ import {
     signOut, 
     sendEmailVerification } from "firebase/auth";
 import ImageHelper from "../helpers/ImageHelper";
-import {collection, doc} from "firebase/firestore";
+import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -66,13 +66,10 @@ export default class UserModel {
 
         let model = new UserModel(data.doc_id, data.ref, data.username, data.email, auth.password, /*ref[]*/ data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked);
 
-        console.log(data.profileImageType);
         if (model.profileImageType === undefined || model.profileImageType === null) {
-            console.log("Set new pi")
             model.profileImageType = ImageHelper.getRandomProfileImageType();
             model.asyncUpdateProfile().then();
         }
-        console.log("loadDataByAuth");
         return model;
     }
 

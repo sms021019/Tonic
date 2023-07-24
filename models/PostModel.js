@@ -135,6 +135,23 @@ export default class PostModel {
         }
     }
 
+    async asyncUnblockPost(reporterEmail) {
+        try {
+            let batch = writeBatch(db);
+
+            const reporterRef = DBHelper.getRef(DBCollectionType.USERS, reporterEmail);
+            batch.update(reporterRef, {postReports: arrayRemove(this.ref)})
+            batch.update(this.ref, {reportCount: this.reportCount - 1, reporters: arrayRemove(reporterEmail)});
+
+            await batch.commit();
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
+
+
 // -------------- BATCH POST --------------------
     async _bAsyncSetData(batch) {
         if (this.isContentReady() === false) return false;

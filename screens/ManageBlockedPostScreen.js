@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
 import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
 import {NavigatorType, windowWidth} from "../utils/utils";
@@ -6,51 +6,75 @@ import theme from "../utils/theme";
 import PostList from "../components/PostList";
 import GlobalContext from "../context/Context";
 import PostModel from "../models/PostModel";
-import LoadingAnimation from "../components/LoadingAnimation";
 import LoadingScreen from "./LoadingScreen";
+import UnblockPostModel from "../components/UnblockPostModal";
 
 export default function ManageBlockedPostScreen({navigation}) {
-    const {gUserModel} = useContext(GlobalContext);
-    const [postModelList, setPostModelList] = useState(null);
+    const {gUserModel, events} = useContext(GlobalContext);
+    const [blockedPostModelList, setBlockedPostModelList] = useState(null);
     const [pageReady, setPageReady] = useState(false);
+    const [blockModelOn, setBlockModalOn] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useState(null);
+
+    let onNewPostReportedEvent = useCallback(() => {
+        console.log("On new post block");
+        asyncLoadPostReports().then();
+    }, [])
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerTitle:'Manage blocked posts',
+            headerTitle: 'Blocked posts',
         });
     }, [navigation]);
 
     useEffect(() => {
+        events.addOnPostReport(onNewPostReportedEvent);
         asyncLoadPostReports().then();
     }, [])
 
     useEffect(() => {
-        if (postModelList) {
+        if (blockedPostModelList) {
             setPageReady(true);
         }
-    }, [postModelList])
+    }, [blockedPostModelList])
+
+    useEffect(() => {
+        if (!selectedPostId) return;
+
+        setBlockModalOn(true);
+    }, [selectedPostId])
+
 
     if (pageReady === false) {
         return <LoadingScreen/>;
     }
 
+
     async function asyncLoadPostReports() {
         const refs = gUserModel.model.postReports;
         const models = await PostModel.loadAllByRefs(refs);
-        setPostModelList(models);
+        setBlockedPostModelList(models);
     }
 
-    function handleContentClick(docId) {
+    async function asyncUnblockPost(docId) {
+        const post = blockedPostModelList.find(post => post.doc_id === docId);
+        await post.asyncUnblockPost(gUserModel.model.email);
+        setBlockModalOn(false);
 
+    }
+
+    function handlePostClick(docId) {
+        setSelectedPostId(docId);
     }
 
     return (
         <View style={styles.container}>
+            <UnblockPostModel state={blockModelOn} setState={setBlockModalOn} handleDeleteClick={asyncUnblockPost}/>
             <ScrollView>
                 <Center>
                     <PostList
-                        modelList={postModelList}
-                        handleClick={handleContentClick}
+                        modelList={blockedPostModelList}
+                        handleClick={handlePostClick}
                     />
                 </Center>
             </ScrollView>

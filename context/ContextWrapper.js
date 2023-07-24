@@ -20,6 +20,7 @@ export default function ContextWrapper(props) {
     })
     const [events, setEvents] = useState({
         onContentChange: [],
+        onPostReport: [],
     });
 
 
@@ -81,8 +82,21 @@ export default function ContextWrapper(props) {
         setEvents((prev) => ({...prev, onContentChange: [...prev.onContentChange, callback]}));
     }
 
+
+    events.addOnPostReport = (callback) => {
+        setEvents((prev) => ({...prev, onPostReport: [...prev.onPostReport, callback]}));
+    }
+
     events.invokeOnContentUpdate = () => {
-        events.onContentChange.forEach((func) => func());
+        events.invoke(events.onContentChange);
+    }
+
+    events.invokeOnPostReport = () => {
+        events.invoke(events.onPostReport);
+    }
+
+    events.invoke = (callbacks) => {
+        callbacks.forEach((func) => func());
     }
 
     return (

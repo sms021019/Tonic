@@ -35,7 +35,7 @@ export default function Chat(props) {
     }
 
     const postModel = props.model;
-    const opponent = postModel.participants[0] === user?.email ? postModel.participants[1] : postModel.participants[0];
+    // const opponent = postModel.participants[0] === user?.email ? postModel.participants[1] : postModel.participants[0];
 
     useEffect(() => {
         if( ChatroomModel.getRecentText(postModel.ref, setRecentText, setTimestamp) === false){
@@ -44,11 +44,11 @@ export default function Chat(props) {
             return;
         }            
 
-        if( ChatroomModel.asyncGetDisplayName(opponent, setOpponentUsername) === false){
-            // TO DO
-            setHasError(true);
-            return;
-        }
+        // if( ChatroomModel.asyncGetDisplayName(opponent, setOpponentUsername) === false){
+        //     // TO DO
+        //     setHasError(true);
+        //     return;
+        // }
     },[])
 
 

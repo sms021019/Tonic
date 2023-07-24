@@ -8,7 +8,7 @@ export default function ManageBlockedUserScreen({navigation}) {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerTitle:'Manage blocked users',
+            headerTitle:'Blocked users',
         });
     }, [navigation]);
 
