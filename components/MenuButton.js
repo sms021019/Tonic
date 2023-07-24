@@ -6,6 +6,7 @@ export default function MenuButton(props)
     let mr = props.mr? props.mr : 5;
     let size = props.size? props.size : 6;
     let items = props.items? props.items : null;
+    let color = props.color? props.color : 'white';
 
     if (items === null) return (<></>);
 
@@ -13,7 +14,7 @@ export default function MenuButton(props)
         <Menu w="120px" trigger={triggerProps => {
             return (
                 <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                    <HamburgerIcon size={6} color="white" mr={5}/>
+                    <HamburgerIcon size={6} color= {color} mr={5}/>
                 </Pressable>
             );
         }}>

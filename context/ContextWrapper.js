@@ -25,6 +25,13 @@ export default function ContextWrapper(props) {
 
 
     chatroomModelList.set = (list) => {
+        
+        list.sort(function (x,y){
+            x = x.recentText?.timestamp.toDate();
+            y = y.recentText?.timestamp.toDate();
+            let result = y - x;
+            return result;
+        })
         setChatroomModelList(list);
     }
 
@@ -35,6 +42,23 @@ export default function ContextWrapper(props) {
 
     chatroomModelList.getOneByDocId = (id) => {
         return chatroomModelList.find((model) => model.doc_id === id);
+    }
+
+    chatroomModelList.liftChatroom = (index) => {
+        let arrCopy = chatroomModelList;
+        arrCopy.unshift(chatroomModelList.splice(index,1)[0]);
+        setChatroomModelList(arrCopy);
+
+    }
+
+    chatroomModelList.sortByRecentText = () => {
+        const sorted = chatroomModelList.sort(function async (x,y){
+            let result = y.recentText.timestamp.toDate() - x.recentText.timestamp.toDate();
+            console.log(result);
+            return result;
+        })
+        console.log(sorted);
+        setChatroomModelList(sorted);
     }
 
 

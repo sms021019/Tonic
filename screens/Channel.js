@@ -30,6 +30,7 @@ import { useIsFocused } from '@react-navigation/native'
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ChatList from '../components/ChatList';
+import Loading from '../components/Loading';
 
 
 
@@ -37,11 +38,13 @@ export default function Channel({ navigation: {navigate}}) {
     const { user } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
-    const [chatroomsData, setChatroomsData] = useState([]);
     const {chatroomModelList} = useContext(GlobalContext);
-    const [loading, setLoading] = useState("true");
+    const [loading, setLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [newChatroomModel, setNewChatroomModel] = useState();
+    const [displayName, setDisplayName] = useState();
 
     state = {
         isModalVisible: modalVisible,
@@ -52,10 +55,10 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
-        if(isFocused){
-            loadChatrooms();
-        }
-    }, [isFocused]);
+    
+        loadChatrooms();
+        
+    }, []);
 
     function handleRefresh() {
         setRefreshing(true)
@@ -63,20 +66,21 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     const handleCreateChatroom = async () => {
-        if(email.length === 0){
-            alert('Email can\'t be empty!');
-        }else if(email === user?.email){
-            alert('You can\'t type your email!');
-        }else{
-            let opponentRef = [];
-            if(await DBHelper.getDocRefById(DBCollectionType.USERS, email, opponentRef) === false){
+        
+            if(!displayName || !user) {
                 //TO DO
-                setHasError(true);
-                return;
-            }else{
-                opponentRef = opponentRef[0];
+                console.log("Not proper user or Empty name");
+                return false;
             }
-            const chatroomModel = new ChatroomModel(opponentRef, user);
+
+        
+            const newRoom = ChatroomModel.newEmpty();
+            newRoom.setDisplayName(displayName);
+            newRoom.setUser(prev => [...prev, user]); // 무튼 유저 추가..?
+
+            newRoom.asyncSaveData();
+
+
 
 
             await chatroomModel.asyncSaveData().then( ref => {
@@ -91,7 +95,7 @@ export default function Channel({ navigation: {navigate}}) {
                     return;
                 }
             })
-        }
+    
     }
 
     async function loadChatrooms() {
@@ -110,14 +114,17 @@ export default function Channel({ navigation: {navigate}}) {
             return;
         }
         // setChatroomsData(chatroomData);
-        chatroomModelList.set(chatroomData);
-        setLoading("false");
+        // console.log(chatroomData);
+        chatroomModelList.set(chatroomData)
+        // chatroomModelList.sortByRecentText();
+        // console.log(chatroomModelList);
+        setLoading(false);
         setRefreshing(false);
     }
 
-    function handleContentClick(doc_id) {
+    function handleContentClick(doc_id, index) {
         if (doc_id === -1 || !doc_id) return;
-        navigate(ScreenType.CHAT, {doc_id: doc_id})
+        navigate(ScreenType.CHAT, {doc_id: doc_id, index: index});
     }
 
     //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
@@ -138,6 +145,7 @@ export default function Channel({ navigation: {navigate}}) {
     Error Screen
 -------------------*/
 if (hasError) return <ErrorScreen/>
+if (loading) return <Loading/>
 
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>

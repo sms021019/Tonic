@@ -26,6 +26,7 @@ export const ScreenType = {
     CHAT:               "chatScreen",
     CHAT_LIST:          "chatListScreen",
     CHANNEL:            "channelScreen",
+    USER_SEARCH:        "userSearchScreen",
     MYPAGE:             "mypageScreen",
     POSTING:            "postingScreen",
     SEARCH:             "searchScreen",
