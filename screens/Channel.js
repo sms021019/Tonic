@@ -55,9 +55,7 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
-    
         loadChatrooms();
-        
     }, []);
 
     function handleRefresh() {
@@ -66,8 +64,8 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     const handleCreateChatroom = async () => {
-        
-            if(!displayName || !user) {
+        // 처리 대상
+            if(!displayName || !gUserModel) {
                 //TO DO
                 console.log("Not proper user or Empty name");
                 return false;
@@ -99,6 +97,7 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     async function loadChatrooms() {
+
         let currentUserRef = [];
             if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
                 //TO DO
@@ -113,11 +112,7 @@ export default function Channel({ navigation: {navigate}}) {
             setHasError(true);
             return;
         }
-        // setChatroomsData(chatroomData);
-        // console.log(chatroomData);
         chatroomModelList.set(chatroomData)
-        // chatroomModelList.sortByRecentText();
-        // console.log(chatroomModelList);
         setLoading(false);
         setRefreshing(false);
     }

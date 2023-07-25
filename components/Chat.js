@@ -22,7 +22,7 @@ import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
 
 export default function Chat(props) {
-    const { user } = useContext(GlobalContext);
+    const { user, gUserModel } = useContext(GlobalContext);
     const [recentText, setRecentText] = useState(null);
     const [timestamp, setTimestamp] = useState();
     const [opponentUsername, setOpponentUsername] = useState();
@@ -44,7 +44,7 @@ export default function Chat(props) {
             console.log("Error when getting a recent text")
             return;
         }            
-
+        
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
         
         
@@ -63,9 +63,7 @@ export default function Chat(props) {
                         borderColor: "muted.50"
                     }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
                         <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={{
-                                uri: null/* image URL*/
-                            }} />
+                            <Avatar size="48px" source={gUserModel.model.profileImageUrl} />
                             <VStack>
                                 <Text _dark={{
                                     color: "warmGray.50"

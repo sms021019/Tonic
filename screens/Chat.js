@@ -158,15 +158,7 @@ export default function Chat({navigation, route}) {
         )
     }
 
-    renderTicks = currentMessage => {
-        const tickedUser = currentMessage.user._id
-        return (
-
-            <View>
-                {!!currentMessage.sent && !!currentMessage.received && tickedUser === this.props.user.userId && this.props.user.userId && (<Text style={{ color: 'gold', paddingRight: 10 }}>✓✓</Text>)}
-            </View>
-        )
-    }
+   
 
     renderFooter = () => {
         return;
@@ -181,7 +173,7 @@ export default function Chat({navigation, route}) {
                 user={{
                     _id: user?.email,
                     name: user?.displayName,
-                    avatar: 'https://i.pravatar.cc/300'
+                    avatar: gUserModel.model.profileImageUrl
                 }}
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
@@ -189,6 +181,7 @@ export default function Chat({navigation, route}) {
                 renderTicks={this.renderTicks}
                 
                 renderFooter={renderFooter}
+                
                 
                 
             />
