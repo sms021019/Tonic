@@ -24,7 +24,7 @@ export default function ChatList(props) {
                     return (
                         <View key={item.doc_id}>
                             <View style={{margin: margin}}>
-                                <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item}/>
+                                <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item} index = {index} modelList = {props.modelList}/>
                             </View>
                             
                         </View>

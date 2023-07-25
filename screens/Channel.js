@@ -32,10 +32,12 @@ import ChatroomModel from '../models/ChatroomModel';
 import ChatList from '../components/ChatList';
 import Loading from '../components/Loading';
 
+import {doc} from "firebase/firestore";
+
 
 
 export default function Channel({ navigation: {navigate}}) {
-    const { user } = useContext(GlobalContext);    
+    const { user, gUserModel } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
     const {chatroomModelList} = useContext(GlobalContext);
@@ -55,6 +57,7 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
+        
         loadChatrooms();
     }, []);
 
@@ -98,21 +101,29 @@ export default function Channel({ navigation: {navigate}}) {
 
     async function loadChatrooms() {
 
-        let currentUserRef = [];
-            if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
-                //TO DO
-                setHasError(true);
-                return;
-            }else{
-                currentUserRef = currentUserRef[0];
-            }
-
-        let chatroomData = [];
-        if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
+        let dest = []
+        if(await ChatroomModel.listChatrooms(gUserModel, dest, chatroomModelList) === false){
             setHasError(true);
             return;
         }
-        chatroomModelList.set(chatroomData)
+        // console.log(dest);
+        // chatroomModelList.set(dest);
+
+        // let currentUserRef = [];
+        //     if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
+        //         //TO DO
+        //         setHasError(true);
+        //         return;
+        //     }else{
+        //         currentUserRef = currentUserRef[0];
+        //     }
+
+        // let chatroomData = [];
+        // if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
+        //     setHasError(true);
+        //     return;
+        // }
+        // chatroomModelList.set(chatroomData)
         setLoading(false);
         setRefreshing(false);
     }

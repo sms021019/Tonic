@@ -34,11 +34,14 @@ import MenuButton from '../components/MenuButton'
 import PostModel from '../models/PostModel';
 import DBHelper from '../helpers/DBHelper';
 import Loading from '../components/Loading';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+
 
 
 
 export default function Chat({navigation, route}) {
-    const { user } = useContext(GlobalContext);
+    const { user, gUserModel } = useContext(GlobalContext);
     const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
     const [messages, setMessages] = useState([]);
@@ -104,6 +107,7 @@ export default function Chat({navigation, route}) {
                     user: doc.data().user
                 }))
             )
+
         });
 
         
@@ -121,7 +125,7 @@ export default function Chat({navigation, route}) {
             text,
             user
         });
-
+        // chatModel.setRecentChat(messages[0]);
         chatroomModelList.liftChatroom(index);
 
     }, [chatroomMessagesRef]);
@@ -163,7 +167,6 @@ export default function Chat({navigation, route}) {
     renderFooter = () => {
         return;
     }
-    
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -181,8 +184,7 @@ export default function Chat({navigation, route}) {
                 renderTicks={this.renderTicks}
                 
                 renderFooter={renderFooter}
-                
-                
+                bottomOffset={useBottomTabBarHeight()}
                 
             />
         </SafeAreaView>

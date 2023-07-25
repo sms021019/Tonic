@@ -58,6 +58,44 @@ export default class ChatroomModel {
 
     // static async asyncListChatrooms()
 
+    static async listChatrooms(gUserModel, dest, chatroomModelList) {
+        
+        const unsubscribe = onSnapshot(gUserModel.model.ref, (doc) => {
+            if(!doc.data().chatrooms || doc.data().chatrooms.length === 0 ) {
+                return;
+            }
+            let counter = 0;
+            doc.data().chatrooms.forEach( async (chatroomRef) => {
+                let data = [];
+                if (await DBHelper.loadDataByRef(chatroomRef, data) === false) {
+                    // TO DO:
+                    console.log(`Failed to load chatrooms data!`);
+                    return false;
+                }
+
+                data = data[0];
+
+                let modelTemp = await this._dataToModel(data);
+                await this.setRecentText(modelTemp);
+                
+                dest.push(modelTemp);
+                counter++;
+
+                if(counter === doc.data().chatrooms.length){
+                    dest.sort(function(x,y) {
+                        if(x.recentText.empty || y.recentText.empty) return -1;
+                        return (y.recentText?.timestamp.toDate() - x.recentText?.timestamp.toDate());
+                    })
+                    chatroomModelList.set(dest);
+                }
+            });
+        
+        });
+
+        return () => unsubscribe();
+    }
+
+
 
     static async loadAllData(currentUserRef, dest) {
 
@@ -162,10 +200,19 @@ export default class ChatroomModel {
             console.log("asdfa")
             return false;
         }
-        recentText = {
-            text: recentText[0].text,
-            timestamp: recentText[0].createdAt,
+        recentText = recentText[0];
+        if(recentText){
+            recentText = {
+                empty: false,
+                text: recentText.text,
+                timestamp: recentText.createdAt,
+            }
+        }else{
+            recentText = {
+                empty: true
+            }
         }
+    
         
         chatroomModel.setRecentText(recentText);
         return true;
@@ -173,11 +220,12 @@ export default class ChatroomModel {
 
 
 
-    static async getRecentText(chatroomModel, setRecentText, setTimestamp) {
-        try{
-            const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
-            onSnapshot(q, 
+    static async getRecentText(chatroomModel, setRecentText, setTimestamp, index, chatroomModelList) {
+        const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
+        const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
+                console.log("sdf");
+
                 let tempText = snapshot.docs[0]?.data().text;
                 let tempTime = snapshot.docs[0]?.data().createdAt;
                 if(setRecentText && setTimestamp){
@@ -189,17 +237,13 @@ export default class ChatroomModel {
                     text: tempText,
                     timestamp: tempTime,
                 }
-
                 chatroomModel.setRecentText(recentText);
+    
             }
-            )
+        );
 
-            return true;
-        }catch(e){
-            //TO DO
-            console.log(e);
-            return false;
-        }
+        return () => unsubscribe();
+
     }
 
     static async asyncGetDisplayName(opponentId, setDisplayName) {
@@ -306,6 +350,8 @@ export default class ChatroomModel {
             console.log("returning null")
             return null;
         }
+
+
         return new ChatroomModel(data.doc_id, data.ref, data.customer, data.owner, data.postModelId, data.displayName);
     }
 

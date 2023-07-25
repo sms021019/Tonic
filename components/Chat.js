@@ -36,10 +36,10 @@ export default function Chat(props) {
 
     const chatroomModel = props.model;
     const index = props.index;
-
+    const chatroomModelList = props.modelList;
 
     useEffect(() => {
-        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp) === false){
+        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp, index, chatroomModelList) === false){
             //TO DO
             console.log("Error when getting a recent text")
             return;
@@ -73,7 +73,7 @@ export default function Chat(props) {
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {recentText}
+                                    {recentText?.length >= 16 ? recentText?.substr(0,16)+"..." : recentText}
                                 </Text>
                             </VStack>
                             <Spacer />

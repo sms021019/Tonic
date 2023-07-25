@@ -22,12 +22,12 @@ export default function ContextWrapper(props) {
 
     chatroomModelList.set = (list) => {
         
-        list.sort(function (x,y){
-            x = x.recentText?.timestamp.toDate();
-            y = y.recentText?.timestamp.toDate();
-            let result = y - x;
-            return result;
-        })
+        // list.sort(function (x,y){
+        //     x = x.recentText?.timestamp.toDate();
+        //     y = y.recentText?.timestamp.toDate();
+        //     let result = y - x;
+        //     return result;
+        // })
         setChatroomModelList(list);
     }
 

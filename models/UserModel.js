@@ -26,7 +26,7 @@ import {arrayRemove} from "@firebase/firestore";
 ----------------------------------------------*/
 
 export default class UserModel {
-    constructor(doc_id, ref, username, email, password, postRefs, profileImageType, userReports, postReports, blocked, reporters, reportCount) {
+    constructor(doc_id, ref, username, email, password, chatroomRefs, postRefs, profileImageType, userReports, postReports, blocked, reporters, reportCount) {
         // Document info
         this.doc_id = doc_id;
         this.ref = ref;
@@ -35,6 +35,7 @@ export default class UserModel {
         // Field
         this.username = username;
         this.email = email;
+        this.chatroomRefs = chatroomRefs;
         this.postRefs = postRefs;
         this.profileImageType = profileImageType;
         this.userReports = userReports;
@@ -49,11 +50,11 @@ export default class UserModel {
     }
 
     copy() {
-        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.postRefs, this.profileImageType, this.userReports, this.postReports, this.blocked, this.reporters, this.reportCount);
+        return new UserModel(this.doc_id, this.ref, this.username, this.email, this.password, this.chatroomRefs, this.postRefs, this.profileImageType, this.userReports, this.postReports, this.blocked, this.reporters, this.reportCount);
     }
 
     static newSignup(username, email, password) {
-        return new UserModel(null, null, username, email, password, [], ImageHelper.getRandomProfileImageType(), [], [], false, [], 0);
+        return new UserModel(null, null, username, email, password, [], [], ImageHelper.getRandomProfileImageType(), [], [], false, [], 0);
     }
 
     static async loadDataByAuth(auth) {
@@ -66,7 +67,7 @@ export default class UserModel {
         if (await DBHelper.loadDataByRef(ref, data) === false) return null;
         data = data[0]
 
-        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, null, /*ref[]*/ data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked, data.reporters, data.reportCount);
+        let model = new UserModel(data.doc_id, data.ref, data.username, data.email, null, /*ref[]*/data.chatrooms, data.posts, data.profileImageType, data.userReports, data.postReports, data.blocked, data.reporters, data.reportCount);
 
         model.asyncUpdateMissingField().then();
 
@@ -220,6 +221,7 @@ export default class UserModel {
             .then(userCredentials => {
                 const user = userCredentials.user;
                 console.log('Logged in with: ', user.email);
+                
                 return true;
             })
             .catch(error => {
