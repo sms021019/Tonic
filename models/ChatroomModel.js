@@ -38,7 +38,7 @@ export default class ChatroomModel {
     }
 
     static newEmpty() {
-        return new ChatroomModel("", "", "", "", "", "");
+        return new ChatroomModel("", "", "", "", "", "", {empty: true});
     }
 
     // ---------------- Get / Set --------------------

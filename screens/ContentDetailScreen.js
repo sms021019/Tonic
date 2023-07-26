@@ -108,16 +108,7 @@ export default function ContentDetailScreen({navigation, docId}) {
         navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
 
         return true;
-        // await chatroomModel.asyncSaveData().then( ref => {
-        //     if(ref){
-        //         chatroomModel.setRef(ref);
-        //         navigation.navigate(NavigatorType.CHAT, { screen: ScreenType.CHAT, params: {ref: ref}, });
-        //     }
-        //     else{
-        //         // TO DO: error handle
-        //         return;
-        //     }
-        // })
+        
     }
 
     function handleEditPost() {
