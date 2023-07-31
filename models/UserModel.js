@@ -101,7 +101,7 @@ export default class UserModel {
             this.postReports = [];
             data["postReports"] = this.postReports;
         }
-
+ 
         if (!this.userReports) {
             this.userReports = [];
             data["userReports"] = this.userReports;

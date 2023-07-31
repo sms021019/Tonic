@@ -20,11 +20,13 @@ import theme from '../utils/theme'
 import {TouchableOpacity, View} from "react-native";
 import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
+import DBHelper from "../helpers/DBHelper";
 
 export default function Chat(props) {
     const { user, gUserModel } = useContext(GlobalContext);
     const [recentText, setRecentText] = useState(null);
-    const [timestamp, setTimestamp] = useState();
+    const [photoURL, setPhotoURL] = useState(null);
+    
     const [opponentUsername, setOpponentUsername] = useState();
 
     if (props.model === null) {
@@ -39,17 +41,19 @@ export default function Chat(props) {
     const chatroomModelList = props.modelList;
 
     useEffect(() => {
-        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, setTimestamp, index, chatroomModelList) === false){
+        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, index, chatroomModelList) === false){
             //TO DO
             console.log("Error when getting a recent text")
             return;
         }            
         
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
-        
-        
-
     },[])
+
+    // useEffect(() => {
+    //     if(!opponentUsername) return;
+    //     if(DBHelper.)
+    // })
 
 
     function handlePostClick() {
@@ -73,14 +77,14 @@ export default function Chat(props) {
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {recentText?.length >= 16 ? recentText?.substr(0,16)+"..." : recentText}
+                                    {recentText?.text.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
                                 </Text>
                             </VStack>
                             <Spacer />
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {timestamp ? `${TimeHelper.getTopElapsedStringUntilNow(timestamp?.toDate())} ago` : ``}
+                                {recentText ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
                             </Text>
                         </HStack>
                     </Box>

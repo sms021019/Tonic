@@ -36,6 +36,7 @@ import DBHelper from '../helpers/DBHelper';
 import Loading from '../components/Loading';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import UserModel from "../models/UserModel";
 
 
 
@@ -50,13 +51,18 @@ export default function Chat({navigation, route}) {
     const [chatroomRef, setChatroomRef] = useState(null);
     const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
     const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
+    const [opponentUserModel, setOpponentUserModel] = useState(null);
 
     const [postModel, setPostModel] = useState(null);
 
     const index = route.params.index;
 
+    var Filter = require('bad-words'),
+    filter = new Filter();
+
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
+        
         
     },[])
 
@@ -70,6 +76,8 @@ export default function Chat({navigation, route}) {
 
         setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
 
+        // const opponentId = user.email === chatModel.owner.email ? chatModel.customer.email : chatModel.owner.email;
+        // setOpponentUserModel(UserModel.loadDataById(opponentId));
         
 
     }, [chatModel])
@@ -86,7 +94,7 @@ export default function Chat({navigation, route}) {
                     items={
                             [
                                 {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
-                                {name: "Invite", color: theme.colors.primary, callback: handleInvite},
+                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: chatModel.postModelId}))},
                                 {name: "Report", color: theme.colors.alert, callback: (() => {})},
                             ]
                     }
@@ -95,8 +103,9 @@ export default function Chat({navigation, route}) {
 
         });
 
-        const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
+        
 
+        const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, snapshot => {
             
             setMessages(
@@ -116,9 +125,11 @@ export default function Chat({navigation, route}) {
     
 
     const onSend = useCallback((messages = []) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
 
+        messages[0].text = filter.clean(messages[0].text); /// 이거 한국어 안됨 왕니;ㄹ묀;ㅗㅎㅁ;ㅣ뇌;뫼;모미;ㅗㄱ;ㅣ모미친거 아님?
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
         const { _id, createdAt, text, user} = messages[0];
+        
         addDoc(chatroomMessagesRef, {
             _id,
             createdAt,
@@ -126,7 +137,7 @@ export default function Chat({navigation, route}) {
             user
         });
         // chatModel.setRecentChat(messages[0]);
-        chatroomModelList.liftChatroom(index);
+        // chatroomModelList.liftChatroom(index);
 
     }, [chatroomMessagesRef]);
 
@@ -164,9 +175,8 @@ export default function Chat({navigation, route}) {
 
    
 
-    renderFooter = () => {
-        return;
-    }
+   
+
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -183,7 +193,6 @@ export default function Chat({navigation, route}) {
                 }}
                 renderTicks={this.renderTicks}
                 
-                renderFooter={renderFooter}
                 bottomOffset={useBottomTabBarHeight()}
                 
             />

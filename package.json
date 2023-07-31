@@ -20,6 +20,7 @@
     "@react-navigation/stack": "^6.3.16",
     "@rneui/base": "^0.0.0-edge.2",
     "@rneui/themed": "^0.0.0-edge.2",
+    "bad-words": "^3.0.4",
     "date-fns": "^2.30.0",
     "expo": "~48.0.15",
     "expo-build-properties": "~0.6.0",

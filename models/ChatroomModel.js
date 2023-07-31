@@ -58,9 +58,10 @@ export default class ChatroomModel {
 
     // static async asyncListChatrooms()
 
-    static async listChatrooms(gUserModel, dest, chatroomModelList) {
+    static async listChatrooms(gUserModel, chatroomModelList) {
         
         const unsubscribe = onSnapshot(gUserModel.model.ref, (doc) => {
+            let tempArr = [];
             if(!doc.data().chatrooms || doc.data().chatrooms.length === 0 ) {
                 return;
             }
@@ -78,15 +79,16 @@ export default class ChatroomModel {
                 let modelTemp = await this._dataToModel(data);
                 await this.setRecentText(modelTemp);
                 
-                dest.push(modelTemp);
+                tempArr.push(modelTemp);
                 counter++;
 
                 if(counter === doc.data().chatrooms.length){
-                    dest.sort(function(x,y) {
+                    tempArr.sort(function(x,y) {
                         if(x.recentText.empty || y.recentText.empty) return -1;
                         return (y.recentText?.timestamp.toDate() - x.recentText?.timestamp.toDate());
                     })
-                    chatroomModelList.set(dest);
+                    console.log("sort end");
+                    chatroomModelList.set(tempArr);
                 }
             });
         
@@ -197,7 +199,7 @@ export default class ChatroomModel {
 
         if(await DBHelper.loadDataByQuery(q, recentText) === false){
             //TODO
-            console.log("asdfa")
+            console.log("쿼리 읽다가 난 에러")
             return false;
         }
         recentText = recentText[0];
@@ -220,27 +222,28 @@ export default class ChatroomModel {
 
 
 
-    static async getRecentText(chatroomModel, setRecentText, setTimestamp, index, chatroomModelList) {
+    static async getRecentText(chatroomModel, setRecentText, index, chatroomModelList) {
         const q = query(collection(chatroomModel.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
         const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
-                console.log("sdf");
-
+                console.log(`getRecentText onSnapshot callback function[${index}]`);
+        
                 let tempText = snapshot.docs[0]?.data().text;
                 let tempTime = snapshot.docs[0]?.data().createdAt;
-                if(setRecentText && setTimestamp){
-                    setRecentText(tempText);
-                    setTimestamp(tempTime);
-                }
+                        if(setRecentText){
+                            setRecentText(snapshot.docs[0]?.data());
+                        }
+        
+                        let recentText = {
+                            empty: false,
+                            text: tempText,
+                            timestamp: tempTime,
+                        }
+                        chatroomModel.setRecentText(recentText);
+                        // chatroomModelList.liftChatroom(index);
 
-                let recentText = {
-                    text: tempText,
-                    timestamp: tempTime,
-                }
-                chatroomModel.setRecentText(recentText);
-    
-            }
-        );
+                    }
+                );
 
         return () => unsubscribe();
 

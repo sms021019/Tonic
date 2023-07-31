@@ -101,29 +101,10 @@ export default function Channel({ navigation: {navigate}}) {
 
     async function loadChatrooms() {
 
-        let dest = []
-        if(await ChatroomModel.listChatrooms(gUserModel, dest, chatroomModelList) === false){
+        if(await ChatroomModel.listChatrooms(gUserModel, chatroomModelList) === false){
             setHasError(true);
             return;
         }
-        // console.log(dest);
-        // chatroomModelList.set(dest);
-
-        // let currentUserRef = [];
-        //     if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
-        //         //TO DO
-        //         setHasError(true);
-        //         return;
-        //     }else{
-        //         currentUserRef = currentUserRef[0];
-        //     }
-
-        // let chatroomData = [];
-        // if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
-        //     setHasError(true);
-        //     return;
-        // }
-        // chatroomModelList.set(chatroomData)
         setLoading(false);
         setRefreshing(false);
     }
