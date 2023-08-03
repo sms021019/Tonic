@@ -1,13 +1,14 @@
 import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
 import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
-import {NavigatorType, windowWidth} from "../utils/utils";
+import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import PostList from "../components/PostList";
 import GlobalContext from "../context/Context";
 import PostModel from "../models/PostModel";
 import LoadingScreen from "./LoadingScreen";
 import UnblockPostModal from "../components/UnblockPostModal";
+import {showQuickMessage} from "../helpers/MessageHelper";
 
 export default function ManageBlockedPostScreen({navigation}) {
     const {gUserModel, events} = useContext(GlobalContext);
@@ -44,12 +45,18 @@ export default function ManageBlockedPostScreen({navigation}) {
     }
 
     async function asyncUnblockPost() {
+        setUnblockModalOn(false);
+
         const postModel = blockedPostModelList.find(model => model.doc_id === selectedPostId);
+        if (!postModel) {
+            showQuickMessage("The post is already unblocked.");
+            return;
+        }
+
         await gUserModel.unblockPost(postModel);
 
         events.invokeOnContentUpdate();
-        setUnblockModalOn(false);
-        alert("The post is unblocked now.")
+        showQuickMessage("The post is unblocked successfully.");
     }
 
     function handlePostClick(docId) {
@@ -61,7 +68,7 @@ export default function ManageBlockedPostScreen({navigation}) {
         <View style={styles.container}>
             <UnblockPostModal state={unblockModalOn} setState={setUnblockModalOn} handleUnblockPost={asyncUnblockPost}/>
             <ScrollView>
-                <Center>
+                <Center minHeight={windowHeight / 2}>
                     <PostList
                         modelList={blockedPostModelList}
                         handleClick={handlePostClick}

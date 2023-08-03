@@ -10,7 +10,7 @@ export default function PostList(props) {
     if (props.modelList === null) return (<></>)
     if (props.modelList.length === 0) return (
         <Center style={styles.noPostArea}>
-            <Text style={styles.noPostText}>No posts</Text>
+            <Text style={styles.noPostText}>No blocked posts.</Text>
         </Center>
     )
     const handleClick = props.handleClick? props.handleClick : null;
@@ -32,5 +32,5 @@ export default function PostList(props) {
 
 const styles = StyleSheet.create({
     noPostArea: {height:'100%'},
-    noPostText: {fontWeight: '600', fontSize: 16, color:theme.colors.iconGray},
+    noPostText: {color:'gray'},
 })

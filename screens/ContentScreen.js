@@ -68,7 +68,7 @@ export default function ContentScreen({navigation}) {
         asyncLoadAllPost().then();
     }
     async function asyncLoadAllPost() {
-        let models = await PostModel.loadAllUnblocked(gUserModel.model)
+        let models = await PostModel.loadAllUnblocked(gUserModel.model.email)
 
         if (models === null) {
             console.log("fail to load data");

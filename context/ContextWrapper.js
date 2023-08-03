@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Context from './Context'
 
 export default function ContextWrapper(props) {
@@ -18,7 +18,6 @@ export default function ContextWrapper(props) {
     const [events, setEvents] = useState({
         onContentChange: [],
     });
-
 
     chatroomModelList.set = (list) => {
         
@@ -44,7 +43,6 @@ export default function ContextWrapper(props) {
         let arrCopy = chatroomModelList;
         arrCopy.unshift(chatroomModelList.splice(index,1)[0]);
         setChatroomModelList(arrCopy);
-
     }
 
     chatroomModelList.sortByRecentText = () => {
@@ -57,14 +55,12 @@ export default function ContextWrapper(props) {
         setChatroomModelList(sorted);
     }
 
-
 // ----------------- CURRENT USER MODEL --------------------
     gUserModel.set = (model) => {
         setGUserModel({
             model: model,
             ready: true,
         });
-
     }
 
     gUserModel.commit = (model) => {

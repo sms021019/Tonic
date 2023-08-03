@@ -1,7 +1,6 @@
 import {TouchableOpacity} from "react-native";
 import React from "react";
 import styled from "styled-components/native";
-import {windowHeight, windowWidth} from "../utils/utils";
 import {TonicButton} from "../utils/styleComponents";
 
 export default function CreatePostButton(props) {

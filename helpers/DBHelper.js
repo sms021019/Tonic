@@ -200,10 +200,8 @@ export default class DBHelper {
     }
 
     static async updateData(ref, data) {
-        console.log("updating document...")
         try {
             await updateDoc(ref, data);
-            console.log("updated success!")
             return true;
         }
         catch(error) {

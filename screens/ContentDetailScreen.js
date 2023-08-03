@@ -24,6 +24,9 @@ import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
 import LoadingScreen from "./LoadingScreen";
 import ReportUserModal from "../components/ReportUserModal";
+import ConfirmMessageModal from "../components/ConfirmMessageModal";
+import { showMessage, hideMessage } from "react-native-flash-message"
+import {showQuickMessage} from "../helpers/MessageHelper";
 
 
 export default function ContentDetailScreen({navigation, docId}) {
@@ -34,7 +37,10 @@ export default function ContentDetailScreen({navigation, docId}) {
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportPostModalOn, setReportPostModalOn] = useState(false);
     const [reportUserModalOn, setReportUserModalOn] = useState(false);
-    const [ready, setReady] = useState(false);
+    const [confirmMessageModal, setConfirmMessageModal] = useState({
+        state: false,
+        message: "",
+    })
 
     useEffect(() => {
         setPostModel(() => postModelList.getOneByDocId(docId));
@@ -144,7 +150,7 @@ export default function ContentDetailScreen({navigation, docId}) {
 
         setDeleteModalOn(false);
         events.invokeOnContentUpdate();
-        alert("The post is deleted.");
+        showQuickMessage("The post is deleted successfully.");
         navigation.navigate(ScreenType.CONTENT);
     }
 
@@ -153,9 +159,10 @@ export default function ContentDetailScreen({navigation, docId}) {
 
         events.invokeOnContentUpdate();
 
-        alert("The post is reported and blocked. You can unblock it in the setting.");
-
         setReportPostModalOn(false);
+
+        showQuickMessage("The post is reported and blocked successfully. You can unblock it in the setting.");
+
         navigation.navigate(ScreenType.CONTENT);
     }
 
@@ -164,14 +171,20 @@ export default function ContentDetailScreen({navigation, docId}) {
 
         events.invokeOnContentUpdate();
 
-        alert("The user is reported and blocked. You can unblock the user in the setting.");
-
         setReportUserModalOn(false);
+
+        showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
+
+        navigation.navigate(ScreenType.CONTENT);
+    }
+
+    function handleDismissConfirmMessageModal() {
         navigation.navigate(ScreenType.CONTENT);
     }
 
     return (
         <Container>
+            <ConfirmMessageModal state={confirmMessageModal} setState={setConfirmMessageModal} handler={handleDismissConfirmMessageModal}/>
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
             <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
             <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
