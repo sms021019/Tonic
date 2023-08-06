@@ -5,6 +5,7 @@ import ImageModel from './ImageModel';
 import TimeHelper from "../helpers/TimeHelper";
 import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
 import {arrayRemove} from "@firebase/firestore";
+import UserModel from "./UserModel";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -63,12 +64,16 @@ export default class PostModel {
         return true;
     }
 
-    static async loadAllUnblocked(userModel) {
+    static async loadAllUnblocked(userEmail) {
         let models = [];
         if (await this.loadAllData(models) === false) return null;
 
-        models = models.filter(postModel => postModel.reporters.includes(userModel?.email) === false);
-        models = models.filter(postModel => userModel.userReports.includes(postModel?.email) === false);
+
+        let userModel = await UserModel.loadDataById(userEmail);
+
+        models = models.filter(postModel => postModel.reporters.includes(userModel.email) === false);
+        models = models.filter(postModel => userModel.userReports.includes(postModel.email) === false);
+
         return models;
     }
 

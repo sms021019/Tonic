@@ -6,6 +6,7 @@ import {auth} from "../firebase";
 import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
+import packageJson from '../package.json';
 
 export default function SettingScreen({navigation}) {
 
@@ -53,7 +54,7 @@ export default function SettingScreen({navigation}) {
                 <Box style={styles.menu}>
                     <Flex direction={'row'}>
                         <Text style={styles.menuText}>Version</Text>
-                        <Text style={styles.menuTextRight}>1.0</Text>
+                        <Text style={styles.menuTextRight}>{packageJson.version}</Text>
                     </Flex>
                 </Box>
                 <Divider/>

@@ -1,8 +1,6 @@
 import AnimatedLoader from "react-native-animated-loader";
 import React from "react";
 import {StyleSheet} from "react-native";
-import {windowWidth} from "../utils/utils";
-import theme from "../utils/theme";
 
 export default function LoadingAnimation({visible}) {
     return (
