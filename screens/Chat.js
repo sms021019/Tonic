@@ -76,10 +76,6 @@ export default function Chat({navigation, route}) {
 
         setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
 
-        // const opponentId = user.email === chatModel.owner.email ? chatModel.customer.email : chatModel.owner.email;
-        // setOpponentUserModel(UserModel.loadDataById(opponentId));
-        
-
     }, [chatModel])
     
     useLayoutEffect(() => {
@@ -104,7 +100,7 @@ export default function Chat({navigation, route}) {
         });
 
         
-
+        console.log("Uselayout onsnapshot callback called");
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, snapshot => {
             
@@ -126,7 +122,7 @@ export default function Chat({navigation, route}) {
 
     const onSend = useCallback((messages = []) => {
 
-        messages[0].text = filter.clean(messages[0].text); /// 이거 한국어 안됨 왕니;ㄹ묀;ㅗㅎㅁ;ㅣ뇌;뫼;모미;ㅗㄱ;ㅣ모미친거 아님?
+        // messages[0].text = filter.clean(messages[0].text); /// 이거 한국어 안됨 왕니;ㄹ묀;ㅗㅎㅁ;ㅣ뇌;뫼;모미;ㅗㄱ;ㅣ모미친거 아님?
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
         const { _id, createdAt, text, user} = messages[0];
         

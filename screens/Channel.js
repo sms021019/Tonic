@@ -45,6 +45,9 @@ export default function Channel({ navigation: {navigate}}) {
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    const [chatroomRefs, setChatroomRefs] = useState(null);
+
+
     const [newChatroomModel, setNewChatroomModel] = useState();
     const [displayName, setDisplayName] = useState();
 
@@ -57,9 +60,14 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
-        
-        loadChatrooms();
+        ChatroomModel.onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs);
+        // loadChatrooms();
     }, []);
+    
+    useEffect(() => {
+        if(chatroomRefs === null) return;
+        loadChatrooms();
+    },[chatroomRefs]);
 
     function handleRefresh() {
         setRefreshing(true)
@@ -81,9 +89,6 @@ export default function Channel({ navigation: {navigate}}) {
 
             newRoom.asyncSaveData();
 
-
-
-
             await chatroomModel.asyncSaveData().then( ref => {
                 if(ref){
                     console.log(ref)
@@ -100,11 +105,10 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     async function loadChatrooms() {
+        let chatroomModelListBeforeSorting = await ChatroomModel.asyncChatroomRefsToModel(chatroomRefs);
+        let sortedChatroomList = await ChatroomModel.sortChatroomModelsByRecentText(chatroomModelListBeforeSorting);
+        chatroomModelList.set(sortedChatroomList);
 
-        if(await ChatroomModel.listChatrooms(gUserModel, chatroomModelList) === false){
-            setHasError(true);
-            return;
-        }
         setLoading(false);
         setRefreshing(false);
     }

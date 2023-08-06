@@ -41,7 +41,9 @@ export default function Chat(props) {
     const chatroomModelList = props.modelList;
 
     useEffect(() => {
-        if( ChatroomModel.getRecentText(chatroomModel, setRecentText, index, chatroomModelList) === false){
+        console.log('chat component');
+        if(chatroomModel === undefined) return;
+        if(chatroomModel.getRecentText(setRecentText, index ) === false){
             //TO DO
             console.log("Error when getting a recent text")
             return;
@@ -49,6 +51,7 @@ export default function Chat(props) {
         
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
     },[])
+
 
     // useEffect(() => {
     //     if(!opponentUsername) return;
