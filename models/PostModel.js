@@ -68,10 +68,12 @@ export default class PostModel {
         let models = [];
         if (await this.loadAllData(models) === false) return null;
 
+
         let userModel = await UserModel.loadDataById(userEmail);
 
         models = models.filter(postModel => postModel.reporters.includes(userModel.email) === false);
         models = models.filter(postModel => userModel.userReports.includes(postModel.email) === false);
+
         return models;
     }
 

@@ -1,7 +1,7 @@
 import {Box, Center, Divider, FlatList} from "native-base";
 import {View} from "react-native";
 import Chat from "./Chat";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ChatroomModel from "../models/ChatroomModel";
 
 export default function ChatList(props) {
@@ -11,10 +11,38 @@ export default function ChatList(props) {
         
     }
 
+    // const [a, seta] = useState([])
+
+    // useEffect(()=>{
+    //     let arr = []
+    //     for(let model of props.modelList)
+    //     {
+    //         arr.push(
+    //             <View key={item.doc_id}>
+    //                 <View style={{margin: margin}}>
+    //                     <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item} index = {index} modelList = {props.modelList}/>
+    //                 </View>
+                    
+    //             </View>
+    //         )
+    //         seta(arr);
+    //     }
+    // },[])
+
+    // SortAscendingOutlined() 
+    // {
+    //     let ta = a;
+    //     ta.sort();
+    //     seta(ta);
+    // }
+
     const handleClick = props.handleClick? props.handleClick : null;
     const margin = props.margin? props.margin : 2;
     const refreshing = props.refreshing? props.refreshing : false;
     const handleRefresh = props.handleRefresh? props.handleRefresh : null;
+
+
+
 
     return (
         <Box flex={1} px="0">
@@ -24,7 +52,7 @@ export default function ChatList(props) {
                     return (
                         <View key={item.doc_id}>
                             <View style={{margin: margin}}>
-                                <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item}/>
+                                <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item} index = {index} modelList = {props.modelList}/>
                             </View>
                             
                         </View>
