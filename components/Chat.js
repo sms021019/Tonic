@@ -1,26 +1,8 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import GlobalContext from "../context/Context";
-import {
-    Pressable,
-    Text,
-    Box,
-    HStack,
-    Spacer,
-    Flex,
-    Badge,
-    Center,
-    NativeBaseProvider,
-    VStack,
-    Image,
-    Divider,
-    Avatar
-} from "native-base";
-import {windowWidth} from "../utils/utils";
-import theme from '../utils/theme'
+import {Text, Box, HStack, Spacer, VStack, Avatar} from "native-base";
 import {TouchableOpacity, View} from "react-native";
-import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
-import DBHelper from "../helpers/DBHelper";
 
 export default function Chat(props) {
     const { user, gUserModel } = useContext(GlobalContext);
@@ -34,7 +16,6 @@ export default function Chat(props) {
             <View> no model data </View>
         )
     }
-
 
     const chatroomModel = props.model;
     const index = props.index;
@@ -51,13 +32,6 @@ export default function Chat(props) {
         
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
     },[])
-
-
-    // useEffect(() => {
-    //     if(!opponentUsername) return;
-    //     if(DBHelper.)
-    // })
-
 
     function handlePostClick() {
         props.onClickHandler();

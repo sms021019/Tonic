@@ -11,31 +11,6 @@ export default function ChatList(props) {
         
     }
 
-    // const [a, seta] = useState([])
-
-    // useEffect(()=>{
-    //     let arr = []
-    //     for(let model of props.modelList)
-    //     {
-    //         arr.push(
-    //             <View key={item.doc_id}>
-    //                 <View style={{margin: margin}}>
-    //                     <Chat onClickHandler={() => handleClick(item.doc_id, index)} key={item.doc_id} model={item} index = {index} modelList = {props.modelList}/>
-    //                 </View>
-                    
-    //             </View>
-    //         )
-    //         seta(arr);
-    //     }
-    // },[])
-
-    // SortAscendingOutlined() 
-    // {
-    //     let ta = a;
-    //     ta.sort();
-    //     seta(ta);
-    // }
-
     const handleClick = props.handleClick? props.handleClick : null;
     const margin = props.margin? props.margin : 2;
     const refreshing = props.refreshing? props.refreshing : false;

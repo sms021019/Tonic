@@ -1,45 +1,17 @@
-import React, {
-    useState,
-    useEffect,
-    useLayoutEffect,
-    useCallback,
-    useContext
-} from 'react'
-import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator } from 'react-native-gifted-chat'
-import {
-    collection,
-    addDoc,
-    orderBy,
-    query,
-    limit,
-    onSnapshot,
-    doc
-} from 'firebase/firestore';
+import React, {useState, useEffect, useLayoutEffect, useCallback, useContext} from 'react'
+import { View, SafeAreaView} from 'react-native'
+import { GiftedChat, MessageStatusIndicator, Bubble } from 'react-native-gifted-chat'
+import {collection, addDoc, orderBy, query, onSnapshot,} from 'firebase/firestore';
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
-
-import { Menu, Pressable, HamburgerIcon } from 'native-base';
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
-import * as ImagePicker from 'expo-image-picker';
-import Icon from 'react-native-vector-icons/Octicons';
-import Icon2 from 'react-native-vector-icons/Feather';
 import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
-
-import PostModel from '../models/PostModel';
-import DBHelper from '../helpers/DBHelper';
-import Loading from '../components/Loading';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import UserModel from "../models/UserModel";
-
-
-
 
 export default function Chat({navigation, route}) {
     const { user, gUserModel } = useContext(GlobalContext);
@@ -156,24 +128,20 @@ export default function Chat({navigation, route}) {
     -------------------*/
     if (hasError) return <ErrorScreen/>
 
+    //
+    // renderBubble = (props) => {
+    //     return (
+    //         <View style={{paddingRight: 12}}>
+    //         <View style={{position: 'absolute', right: -1, bottom: 0}}>
+    //             <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
+    //         </View>
+    //             <Bubble {...props} />
+    //         </View>
+    //     )
+    // }
+    //
+    //
 
-
-    renderBubble = (props) => {
-        return (
-            <View style={{paddingRight: 12}}>
-            <View style={{position: 'absolute', right: -1, bottom: 0}}>
-                <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
-            </View>
-            <Bubble {...props} />
-            </View>
-        )
-    }
-
-   
-
-   
-
-   
     return (
         <SafeAreaView style={{flex: 1,}} >
             <GiftedChat
@@ -193,7 +161,6 @@ export default function Chat({navigation, route}) {
                 
             />
         </SafeAreaView>
-            
     )
 }
 

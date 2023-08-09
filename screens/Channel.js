@@ -34,8 +34,6 @@ import Loading from '../components/Loading';
 
 import {doc} from "firebase/firestore";
 
-
-
 export default function Channel({ navigation: {navigate}}) {
     const { user, gUserModel } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
@@ -51,11 +49,11 @@ export default function Channel({ navigation: {navigate}}) {
     const [newChatroomModel, setNewChatroomModel] = useState();
     const [displayName, setDisplayName] = useState();
 
-    state = {
+    let state = {
         isModalVisible: modalVisible,
     };
-    showModal = () => setModalVisible(true);
-    hideModal = () => setModalVisible(false);
+    let showModal = () => setModalVisible(true);
+    let hideModal = () => setModalVisible(false);
     
     const isFocused = useIsFocused()
 
@@ -66,12 +64,12 @@ export default function Channel({ navigation: {navigate}}) {
     
     useEffect(() => {
         if(chatroomRefs === null) return;
-        loadChatrooms();
+        loadChatrooms().then();
     },[chatroomRefs]);
 
     function handleRefresh() {
         setRefreshing(true)
-        loadChatrooms();
+        loadChatrooms().then();
     }
 
     const handleCreateChatroom = async () => {
@@ -145,7 +143,6 @@ if (loading) return <Loading/>
                 visible={this.state.isModalVisible}
                 dismiss={this.hideModal}
             >
-
                 <View style={styles.modalView}>
                     <Text style={styles.modalText}>대화를 원하는 상대의 이메일을 입력해주세요</Text>
                     <Input shadow={2} _light={{
@@ -193,7 +190,7 @@ if (loading) return <Loading/>
             </TopContainer>
             <Divider />
             <TopContainer>
-                <MessageText>메시지</MessageText>
+                <MessageText>메세지</MessageText>
             </TopContainer>
             <ContentArea>
                 {Content}
