@@ -34,7 +34,6 @@ export default function ContentScreen({navigation}) {
         navigation.setOptions({
             headerTitle:'',
             headerLeft: () => <HeaderLeftLogo/>,
-            headerRight: () => <SearchIcon callback={() => {navigation.navigate(NavigatorType.SEARCH)}}/>,
         });
     }, [navigation]);
 
