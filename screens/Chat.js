@@ -34,11 +34,15 @@ import MenuButton from '../components/MenuButton'
 import PostModel from '../models/PostModel';
 import DBHelper from '../helpers/DBHelper';
 import Loading from '../components/Loading';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import UserModel from "../models/UserModel";
+
 
 
 
 export default function Chat({navigation, route}) {
-    const { user } = useContext(GlobalContext);
+    const { user, gUserModel } = useContext(GlobalContext);
     const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
     const [messages, setMessages] = useState([]);
@@ -47,13 +51,18 @@ export default function Chat({navigation, route}) {
     const [chatroomRef, setChatroomRef] = useState(null);
     const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
     const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
+    const [opponentUserModel, setOpponentUserModel] = useState(null);
 
     const [postModel, setPostModel] = useState(null);
 
     const index = route.params.index;
 
+    var Filter = require('bad-words'),
+    filter = new Filter();
+
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
+        
         
     },[])
 
@@ -66,8 +75,6 @@ export default function Chat({navigation, route}) {
         setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
 
         setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
-
-        
 
     }, [chatModel])
     
@@ -83,7 +90,7 @@ export default function Chat({navigation, route}) {
                     items={
                             [
                                 {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
-                                {name: "Invite", color: theme.colors.primary, callback: handleInvite},
+                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: chatModel.postModelId}))},
                                 {name: "Report", color: theme.colors.alert, callback: (() => {})},
                             ]
                     }
@@ -92,8 +99,9 @@ export default function Chat({navigation, route}) {
 
         });
 
+        
+        console.log("Uselayout onsnapshot callback called");
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
-
         const unsubscribe = onSnapshot(q, snapshot => {
             
             setMessages(
@@ -104,6 +112,7 @@ export default function Chat({navigation, route}) {
                     user: doc.data().user
                 }))
             )
+
         });
 
         
@@ -112,17 +121,19 @@ export default function Chat({navigation, route}) {
     
 
     const onSend = useCallback((messages = []) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
 
+        // messages[0].text = filter.clean(messages[0].text); /// 이거 한국어 안됨 왕니;ㄹ묀;ㅗㅎㅁ;ㅣ뇌;뫼;모미;ㅗㄱ;ㅣ모미친거 아님?
+        setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
         const { _id, createdAt, text, user} = messages[0];
+        
         addDoc(chatroomMessagesRef, {
             _id,
             createdAt,
             text,
             user
         });
-
-        chatroomModelList.liftChatroom(index);
+        // chatModel.setRecentChat(messages[0]);
+        // chatroomModelList.liftChatroom(index);
 
     }, [chatroomMessagesRef]);
 
@@ -158,20 +169,10 @@ export default function Chat({navigation, route}) {
         )
     }
 
-    renderTicks = currentMessage => {
-        const tickedUser = currentMessage.user._id
-        return (
+   
 
-            <View>
-                {!!currentMessage.sent && !!currentMessage.received && tickedUser === this.props.user.userId && this.props.user.userId && (<Text style={{ color: 'gold', paddingRight: 10 }}>✓✓</Text>)}
-            </View>
-        )
-    }
+   
 
-    renderFooter = () => {
-        return;
-    }
-    
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -181,15 +182,14 @@ export default function Chat({navigation, route}) {
                 user={{
                     _id: user?.email,
                     name: user?.displayName,
-                    avatar: 'https://i.pravatar.cc/300'
+                    avatar: gUserModel.model.profileImageUrl
                 }}
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
                 renderTicks={this.renderTicks}
                 
-                renderFooter={renderFooter}
-                
+                bottomOffset={useBottomTabBarHeight()}
                 
             />
         </SafeAreaView>

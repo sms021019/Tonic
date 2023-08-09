@@ -32,16 +32,21 @@ import ChatroomModel from '../models/ChatroomModel';
 import ChatList from '../components/ChatList';
 import Loading from '../components/Loading';
 
+import {doc} from "firebase/firestore";
+
 
 
 export default function Channel({ navigation: {navigate}}) {
-    const { user } = useContext(GlobalContext);    
+    const { user, gUserModel } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
     const [email, setEmail] = useState("");
     const {chatroomModelList} = useContext(GlobalContext);
     const [loading, setLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [chatroomRefs, setChatroomRefs] = useState(null);
+
 
     const [newChatroomModel, setNewChatroomModel] = useState();
     const [displayName, setDisplayName] = useState();
@@ -55,10 +60,14 @@ export default function Channel({ navigation: {navigate}}) {
     const isFocused = useIsFocused()
 
     useEffect(() => {
-    
-        loadChatrooms();
-        
+        ChatroomModel.onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs);
+        // loadChatrooms();
     }, []);
+    
+    useEffect(() => {
+        if(chatroomRefs === null) return;
+        loadChatrooms();
+    },[chatroomRefs]);
 
     function handleRefresh() {
         setRefreshing(true)
@@ -66,8 +75,8 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     const handleCreateChatroom = async () => {
-        
-            if(!displayName || !user) {
+        // 처리 대상
+            if(!displayName || !gUserModel) {
                 //TO DO
                 console.log("Not proper user or Empty name");
                 return false;
@@ -79,9 +88,6 @@ export default function Channel({ navigation: {navigate}}) {
             newRoom.setUser(prev => [...prev, user]); // 무튼 유저 추가..?
 
             newRoom.asyncSaveData();
-
-
-
 
             await chatroomModel.asyncSaveData().then( ref => {
                 if(ref){
@@ -99,25 +105,10 @@ export default function Channel({ navigation: {navigate}}) {
     }
 
     async function loadChatrooms() {
-        let currentUserRef = [];
-            if(await DBHelper.getDocRefById(DBCollectionType.USERS, user?.email, currentUserRef) === false){
-                //TO DO
-                setHasError(true);
-                return;
-            }else{
-                currentUserRef = currentUserRef[0];
-            }
+        let chatroomModelListBeforeSorting = await ChatroomModel.asyncChatroomRefsToModel(chatroomRefs);
+        let sortedChatroomList = await ChatroomModel.sortChatroomModelsByRecentText(chatroomModelListBeforeSorting);
+        chatroomModelList.set(sortedChatroomList);
 
-        let chatroomData = [];
-        if (await ChatroomModel.loadAllData(currentUserRef, /* OUT */ chatroomData) === false) {
-            setHasError(true);
-            return;
-        }
-        // setChatroomsData(chatroomData);
-        // console.log(chatroomData);
-        chatroomModelList.set(chatroomData)
-        // chatroomModelList.sortByRecentText();
-        // console.log(chatroomModelList);
         setLoading(false);
         setRefreshing(false);
     }
