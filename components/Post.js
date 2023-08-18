@@ -44,11 +44,12 @@ export default function Post(props) {
                              bg={isPressed ? "coolGray.100" : isHovered ? "coolGray.100" : "white"} rounded="md">
                             <Flex direction="row">
                                 <Center w={windowWidth*0.25} h={windowWidth*0.25} borderWidth={1} borderRadius={5} borderColor={theme.colors.lightGray}>
-                                    <Image
-                                        source={{uri: bannerImageUrl}}
-                                        alt="Alternate Text"
-                                        borderRadius={5}
-                                        size="100%"/>
+                                    {/*<Image*/}
+                                    {/*    source={{uri: bannerImageUrl}}*/}
+                                    {/*    alt="Alternate Text"*/}
+                                    {/*    borderRadius={5}*/}
+                                    {/*    size="100%"/>*/}
+                                    <Text>Test</Text>
                                 </Center>
                                 <Flex flex="1" marginLeft="5">
                                     <Text color="coolGray.800" fontWeight="medium" fontSize="lg" numberOfLines={1}>
