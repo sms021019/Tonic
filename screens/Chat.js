@@ -6,7 +6,7 @@ import React, {
     useContext
 } from 'react'
 import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
-import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator } from 'react-native-gifted-chat'
+import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator, SystemMessage } from 'react-native-gifted-chat'
 import {
     collection,
     addDoc,
@@ -45,12 +45,7 @@ export default function Chat({navigation, route}) {
     const { user, gUserModel } = useContext(GlobalContext);
     const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
-    const [messages, setMessages] = useState([{
-        _id: 0,
-        text: '부적절하거나 불쾌감을 줄 수 있는 대화는 삼가 부탁드립니다. 회원제재를 받을 수 있습니다.',
-        createdAt: new Date().getTime(),
-        system: true,
-    }]);
+    const [messages, setMessages] = useState([]);
     const [hasError, setHasError] = useState(false);
     const [chatModel, setChatModel] = useState(null);
     const [chatroomRef, setChatroomRef] = useState(null);
@@ -104,15 +99,19 @@ export default function Chat({navigation, route}) {
 
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, snapshot => {
-            
-            setMessages(
-                snapshot.docs.map(doc => ({
-                    _id: doc.id,
-                    createdAt: doc.data().createdAt.toDate(),
-                    text: doc.data().text,
-                    user: doc.data().user
-                }))
-            )
+            let temp = snapshot.docs.map(doc => ({
+                _id: doc.id,
+                createdAt: doc.data().createdAt.toDate(),
+                text: doc.data().text,
+                user: doc.data().user
+            }));
+            temp.push({
+                _id: 0,
+                text: 'Please refrain from inappropriate or offensive conversations. You may face membership sanctions.',
+                createdAt: new Date().getTime(),
+                system: true,
+            });
+            setMessages(temp);
 
         });
 
@@ -170,10 +169,15 @@ export default function Chat({navigation, route}) {
         )
     }
 
-   
+    onRenderSysyemMessage = (props) => (
+        <SystemMessage
+            {...props}
+            containerStyle= {{backgroundColor:'#0782F9'}}
+            textStyle={{color: "white", fontWeight:"500", fontSize: 17, textAlign: 'center'}}
+        />
+    );
 
    
-
    
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -189,6 +193,7 @@ export default function Chat({navigation, route}) {
                     backgroundColor: '#fff'
                 }}
                 renderTicks={this.renderTicks}
+                renderSystemMessage={onRenderSysyemMessage}
                 
                 bottomOffset={useBottomTabBarHeight()}
                 
