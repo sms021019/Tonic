@@ -34,7 +34,6 @@ export default function ContentScreen({navigation}) {
         navigation.setOptions({
             headerTitle:'',
             headerLeft: () => <HeaderLeftLogo/>,
-            headerRight: () => <SearchIcon callback={() => {navigation.navigate(NavigatorType.SEARCH)}}/>,
         });
     }, [navigation]);
 
@@ -42,6 +41,10 @@ export default function ContentScreen({navigation}) {
         events.addOnContentUpdate(onContentChangeEvent);
         asyncLoadAllPost().then();
     }, []);
+
+    useEffect(() => {
+        asyncLoadAllPost().then();
+    }, [gUserModel])
 
     if (hasError) {
         return <ErrorScreen/>;
@@ -64,7 +67,7 @@ export default function ContentScreen({navigation}) {
         asyncLoadAllPost().then();
     }
     async function asyncLoadAllPost() {
-        let models = await PostModel.loadAllUnblocked(gUserModel.model)
+        let models = await PostModel.loadAllUnblocked(gUserModel.model.email)
 
         if (models === null) {
             console.log("fail to load data");
