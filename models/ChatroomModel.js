@@ -2,8 +2,9 @@ import {DBCollectionType} from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
 import { collection, query, orderBy, onSnapshot, runTransaction, writeBatch, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { arrayUnion } from "firebase/firestore";
+import { arrayUnion, arrayRemove } from "firebase/firestore";
 import { useCallback } from "react";
+import ImageHelper from "../helpers/ImageHelper";
 
 /*----------DB COLLECTION STRUCT----------------
 {
@@ -32,6 +33,7 @@ export default class ChatroomModel {
         this.owner = owner;
         this.postModelId = postModelId;
         this.displayName = displayName;
+        this.amountOfUsers = 2;
 
         this.recentText = recentText
 
@@ -48,7 +50,10 @@ export default class ChatroomModel {
     setCustomer = (customer) => this.customer = customer;
     setPostModelId = (postModelId) => this.postModelId = postModelId;
     setDisplayName = (displayName) => this.displayName = displayName;
+    setAmountOfUsers = (amountOfUsers) => this.amountOfUsers = amountOfUsers;
     setRecentText = (recentText) => this.recentText = recentText;
+    
+    setCurrentEmail = (userEmail) => this.currentEmail = userEmail;
     
     // setRecentText = useCallback((recentText = {}) => {
     //     this.recentText = recentText;
@@ -56,15 +61,14 @@ export default class ChatroomModel {
 
     // ---------------- Task -------------------------
 
-    // static async asyncListChatrooms()
-
     static async onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs) {
         const unsubscribe = onSnapshot(gUserModel.model.ref, (userDoc) => {
             if(!userDoc.data().chatrooms || userDoc.data().chatrooms.length === 0 ) {
                 console.log("No Chatrooms");
-                return;
+                setChatroomRefs([]);
+            }else{
+                setChatroomRefs(userDoc.data().chatrooms);
             }
-            setChatroomRefs(userDoc.data().chatrooms);
         })
         return () => unsubscribe();
     }
@@ -96,89 +100,6 @@ export default class ChatroomModel {
 
 
 
-
-
-    // static async listChatrooms(gUserModel, chatroomModelList) {
-        
-    //     const unsubscribe = onSnapshot(gUserModel.model.ref, (doc) => {
-    //         let tempArr = [];
-    //         if(!doc.data().chatrooms || doc.data().chatrooms.length === 0 ) {
-    //             return;
-    //         }
-    //         let counter = 0;
-    //         doc.data().chatrooms.forEach( async (chatroomRef) => {
-    //             let data = [];
-    //             if (await DBHelper.loadDataByRef(chatroomRef, data) === false) {
-    //                 // TO DO:
-    //                 console.log(`Failed to load chatrooms data!`);
-    //                 return false;
-    //             }
-
-    //             data = data[0];
-
-    //             let modelTemp = await this._dataToModel(data);
-    //             await this.setRecentText(modelTemp);
-                
-    //             tempArr.push(modelTemp);
-    //             counter++;
-
-    //             if(counter === doc.data().chatrooms.length){
-    //                 tempArr.sort(function(x,y) {
-    //                     if(x.recentText.empty || y.recentText.empty) return -1;
-    //                     return (y.recentText?.timestamp.toDate() - x.recentText?.timestamp.toDate());
-    //                 })
-    //                 console.log("sort end");
-    //                 chatroomModelList.set(tempArr);
-    //             }
-    //         });
-        
-    //     });
-
-    //     return () => unsubscribe();
-    // }
-
-
-
-    // static async loadAllData(currentUserRef, dest) {
-
-    //     //---Reading user's DB document---
-    //     let userData = []
-    //     if (await DBHelper.loadDataByRef(currentUserRef, /* OUT */ userData) === false) {
-    //         // TO DO:
-    //         console.log("Failed to load the data of current user!");
-    //         return false;
-    //     }
-    //     else {
-    //         userData = userData[0];
-    //     }
-
-    //     //---Checking is there a chatroom---
-    //     if(userData.chatrooms?.length === 0 || !(userData.chatrooms)){
-    //         console.log("No chatrooms")
-    //         return true;
-    //     }
-
-    //     //---Reading all chatrooms that are in user's db document one by one---
-    //     for (let i = 0; i < userData.chatrooms.length; i++) {
-    //         let data = [];
-    //         if (await DBHelper.loadDataByRef(userData.chatrooms[i], data) === false) {
-    //             // TO DO:
-    //             console.log(`Failed to load chatrooms[${i}] data!`);
-    //             return false;
-    //         }
-    //         data = data[0];
-
-    //         let modelTemp = await this._dataToModel(data);
-    //         if(await this.setRecentText(modelTemp) === false) return false;
-    //         // await this.findRecentText(modelTemp);
-    //         dest.push(modelTemp);
-    //     }
-
-    //     // this.sortByNewestChat(modelTemp);
-
-    //     return true;
-    // }
-
     
     async asyncSaveData() {
         if (this.isContentReady() === false) return false;
@@ -205,8 +126,6 @@ export default class ChatroomModel {
             return false;
         }
 
-
-        // return (await DBHelper.addData(this.collectionType, this.getData()));
     }
 
 
@@ -216,7 +135,8 @@ export default class ChatroomModel {
         let ownerData = {
             email: owner.email,
             uid: owner.uid,
-            username: owner.username
+            username: owner.username,
+            profileImageType: owner.profileImageType
         }
         this.setOwner(ownerData);
 
@@ -226,7 +146,8 @@ export default class ChatroomModel {
         customerData = {
             email: customerData.email,
             uid: customerData.uid,
-            username: customerData.username
+            username: customerData.username,
+            profileImageType: customerData.profileImageType
         }
         this.setCustomer(customerData);
         return true;
@@ -263,26 +184,25 @@ export default class ChatroomModel {
 
 
     getRecentText(setRecentText, index) {
-
         const q = query(collection(this.ref, DBCollectionType.MESSAGES), orderBy("createdAt", "desc"), limit(1));
         const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "added") {
-                            console.log("New chat: ", change.doc.data());
-                        }
-                        if (change.type === "modified") {
-                            console.log("Modified chat: ", change.doc.data());
-                        }
-                        if (change.type === "removed") {
-                            console.log("Removed chat: ", change.doc.data());
-                        }
-                    });
-                console.log(`\ngetRecentText onSnapshot callback function[${index}]`);
-                console.log("LISTENER FIRING!!!!!!!!!")
-                console.log(`from cache: ${snapshot?.metadata.fromCache}`)
-                console.log(`pending writes: ${snapshot?.metadata.hasPendingWrites}`)
-                console.log(`number of records: ${snapshot?.docs.length}\n`)
+                //     snapshot.docChanges().forEach((change) => {
+                //         if (change.type === "added") {
+                //             console.log("New chat: ", change.doc.data());
+                //         }
+                //         if (change.type === "modified") {
+                //             console.log("Modified chat: ", change.doc.data());
+                //         }
+                //         if (change.type === "removed") {
+                //             console.log("Removed chat: ", change.doc.data());
+                //         }
+                //     });
+                // console.log(`\ngetRecentText onSnapshot callback function[${index}]`);
+                // console.log("LISTENER FIRING!!!!!!!!!")
+                // console.log(`from cache: ${snapshot?.metadata.fromCache}`)
+                // console.log(`pending writes: ${snapshot?.metadata.hasPendingWrites}`)
+                // console.log(`number of records: ${snapshot?.docs.length}\n`)
         
                 let tempText = snapshot.docs[0]?.data().text;
                 let tempTime = snapshot.docs[0]?.data().createdAt;
@@ -305,97 +225,152 @@ export default class ChatroomModel {
 
     }
 
-    static async asyncGetDisplayName(opponentId, setDisplayName) {
-        let dest = [];
-        if(await DBHelper.getDocRefById(DBCollectionType.USERS, opponentId, dest) === false){
-            // TO DO
-            return false;
-        }
-        dest = dest[0];
-        let data = [];
-        if(await DBHelper.loadDataByRef(dest, data) === false){
-            //TO DO
-            return false;
-        }
-        data = data[0];
+    // static async asyncGetDisplayName(opponentId, setDisplayName) {
+    //     let dest = [];
+    //     if(await DBHelper.getDocRefById(DBCollectionType.USERS, opponentId, dest) === false){
+    //         // TO DO
+    //         return false;
+    //     }
+    //     dest = dest[0];
+    //     let data = [];
+    //     if(await DBHelper.loadDataByRef(dest, data) === false){
+    //         //TO DO
+    //         return false;
+    //     }
+    //     data = data[0];
 
-        setDisplayName(data.username);
-        return true;
-    }
+    //     setDisplayName(data.username);
+    //     return true;
+    // }
 
-    static async asyncExitChatroom(chatModel, user) {
-        // TO DO
-        try{
-            await runTransaction(db, async (transaction) => {
-                const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
-                const currentUserDoc = await transaction.get(currentUserRef);
-                
-                const chatroomDoc = await transaction.get(ref);
-                const currentUserEmail = currentUserDoc.data().email;
-    
-                if(!currentUserDoc.exists()){
-                    throw "User document does not exist!";
-                }
-    
-                
-                let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
-                let index = -1;
-                for(let i = 0; i < copyOfUserChatrooms.length; i++){
-                    if(ref.id === copyOfUserChatrooms[i].id){
-                        index = i;
-                    }
-                }
-                console.log(index);
+    async asyncExitChatroom(userEmail) {
+        console.log("Entered asyncExitChatroom")
+        this.setCurrentEmail(userEmail);
         
-                if(index > -1) {
-                    copyOfUserChatrooms.splice(index, 1);
-                    transaction.update(currentUserRef, {
-                        chatrooms: copyOfUserChatrooms,
-                    })
-                }else{
-                    return Promise.reject("Sorry! Chatroom reference doesn't exist");
-                }
-    
-                if(!chatroomDoc.exists()){
-                    throw "Chatroom document does not exist!";
-                }
-    
-                let leftParticipants = chatroomDoc.data().participants.length;
-                if( leftParticipants === 1){
-                    console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
-                    transaction.delete(ref);
-                }else if( leftParticipants > 1){
-                    let copyOfParticipants = chatroomDoc.data().participants;
-                    let temp = copyOfParticipants.indexOf(currentUserEmail);
-                    console.log(temp);
-                    if( temp > -1) {
-                        copyOfParticipants.splice(temp, 1);
-                        transaction.update(ref, {
-                            participants: copyOfParticipants,
-                        })
-                    }else{
-                        return Promise.reject("Sorry! User reference doesn't exist");
-                    }
-                }else{
-                    throw "Please check number of participants"
-                }
-                
-    
-            });
-    
-            console.log("Transaction successfully committed!");
-            return true;
-        }catch(error){
-            console.error(error);
-            return false;
+        if(this.amountOfUsers < 2){
+            return this.asyncDeleteData();
+        }else{
+            return this.asyncRemoveChatroomFromList();
         }
+    }
 
-        if(await DBHelper.deleteChatroom(chatModel, user) === false){
-            // TO DO:
+    async asyncDeleteData(){
+        console.log("Entered asyncDeleteData")
+        try {
+            let batch = writeBatch(db);
+            if (await this._bAsyncDeleteData(batch) === false) return false;
+
+            await batch.commit();
+            this.setAmountOfUsers(this.amountOfUsers - 1);
+            return true;
+        }
+        catch (err) {
             return false;
         }
+    }
+
+    async _bAsyncDeleteData(batch) {
+        console.log("Entered _bAsyncDeleteData")
+        if(this.ref === null) return false;
+
+        batch.delete(this.ref);
+
+        const userRef = DBHelper.getRef(DBCollectionType.USERS, this.currentEmail)
+        batch.update(userRef, {chatrooms: arrayRemove(this.ref)});
+
         return true;
     }
+
+    async asyncRemoveChatroomFromList() {
+        console.log("Entered asyncRemoveChatroomFromList")
+        try {
+            let batch = writeBatch(db);
+
+            const userRef = DBHelper.getRef(DBCollectionType.USERS, this.currentEmail)
+            batch.update(userRef, {chatrooms: arrayRemove(this.ref)});
+
+            await batch.commit();
+            this.setAmountOfUsers(this.amountOfUsers - 1);
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
+
+    // static async asyncExitChatroom(chatModel, user) {
+    //     // TO DO
+    //     try{
+    //         await runTransaction(db, async (transaction) => {
+    //             const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
+    //             const currentUserDoc = await transaction.get(currentUserRef);
+                
+    //             const chatroomDoc = await transaction.get(ref);
+    //             const currentUserEmail = currentUserDoc.data().email;
+    
+    //             if(!currentUserDoc.exists()){
+    //                 throw "User document does not exist!";
+    //             }
+    
+                
+    //             let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
+    //             let index = -1;
+    //             for(let i = 0; i < copyOfUserChatrooms.length; i++){
+    //                 if(ref.id === copyOfUserChatrooms[i].id){
+    //                     index = i;
+    //                 }
+    //             }
+    //             console.log(index);
+        
+    //             if(index > -1) {
+    //                 copyOfUserChatrooms.splice(index, 1);
+    //                 transaction.update(currentUserRef, {
+    //                     chatrooms: copyOfUserChatrooms,
+    //                 })
+    //             }else{
+    //                 return Promise.reject("Sorry! Chatroom reference doesn't exist");
+    //             }
+    
+    //             if(!chatroomDoc.exists()){
+    //                 throw "Chatroom document does not exist!";
+    //             }
+    
+    //             let leftParticipants = chatroomDoc.data().participants.length;
+    //             if( leftParticipants === 1){
+    //                 console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
+    //                 transaction.delete(ref);
+    //             }else if( leftParticipants > 1){
+    //                 let copyOfParticipants = chatroomDoc.data().participants;
+    //                 let temp = copyOfParticipants.indexOf(currentUserEmail);
+    //                 console.log(temp);
+    //                 if( temp > -1) {
+    //                     copyOfParticipants.splice(temp, 1);
+    //                     transaction.update(ref, {
+    //                         participants: copyOfParticipants,
+    //                     })
+    //                 }else{
+    //                     return Promise.reject("Sorry! User reference doesn't exist");
+    //                 }
+    //             }else{
+    //                 throw "Please check number of participants"
+    //             }
+                
+    
+    //         });
+    
+    //         console.log("Transaction successfully committed!");
+    //         return true;
+    //     }catch(error){
+    //         console.error(error);
+    //         return false;
+    //     }
+
+    //     if(await DBHelper.deleteChatroom(chatModel, user) === false){
+    //         // TO DO:
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     async updateData() {
         if (this.isValid() === false) return false;
@@ -409,7 +384,6 @@ export default class ChatroomModel {
             console.log("returning null")
             return null;
         }
-
 
         return new ChatroomModel(data.doc_id, data.ref, data.customer, data.owner, data.postModelId, data.displayName);
     }

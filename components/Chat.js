@@ -15,19 +15,22 @@ import {
     Divider,
     Avatar
 } from "native-base";
-import {windowWidth} from "../utils/utils";
+import {DBCollectionType, windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
 import {TouchableOpacity, View} from "react-native";
 import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
 import DBHelper from "../helpers/DBHelper";
+import UserModel from "../models/UserModel";
+import ImageHelper from "../helpers/ImageHelper";
 
 export default function Chat(props) {
     const { user, gUserModel } = useContext(GlobalContext);
     const [recentText, setRecentText] = useState(null);
     const [photoURL, setPhotoURL] = useState(null);
     
-    const [opponentUsername, setOpponentUsername] = useState();
+    const [opponentUsername, setOpponentUsername] = useState(null);
+    const [opponentProfileImageUrl, setOpponentprofileImageUrl] = useState(null);
 
     if (props.model === null) {
         return (
@@ -41,22 +44,28 @@ export default function Chat(props) {
     const chatroomModelList = props.modelList;
 
     useEffect(() => {
-        console.log('chat component');
         if(chatroomModel === undefined) return;
+
+        // setRecentText(chatroomModel.recentText);
         if(chatroomModel.getRecentText(setRecentText, index ) === false){
             //TO DO
             console.log("Error when getting a recent text")
             return;
         }            
-        
+
+        setOpponentprofileImageUrl(ImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
     },[])
 
-
     // useEffect(() => {
-    //     if(!opponentUsername) return;
-    //     if(DBHelper.)
+    //     if(opponentEmail === null) return;
+        
+    //     let tempData = UserModel.loadDataById(opponentEmail);
+    //     setopponentProfileUrl(ImageHelper.getProfileImageUrl(tempData.profileImageType));
+
     // })
+
+
 
 
     function handlePostClick() {
@@ -70,7 +79,7 @@ export default function Chat(props) {
                         borderColor: "muted.50"
                     }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
                         <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={gUserModel.model.profileImageUrl} />
+                            <Avatar size="48px" source={opponentProfileImageUrl} />
                             <VStack>
                                 <Text _dark={{
                                     color: "warmGray.50"
@@ -80,7 +89,7 @@ export default function Chat(props) {
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {recentText?.text.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
+                                    {recentText?.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
                                 </Text>
                             </VStack>
                             <Spacer />

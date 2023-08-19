@@ -33,6 +33,12 @@ export default function ContextWrapper(props) {
         return chatroomModelList.find((model) => model.doc_id === id);
     }
 
+    chatroomModelList.removeOneByDocId = (id) => {
+        return chatroomModelList.filter(function(model) {
+            return model => model.doc_id !== id
+        });
+    }
+
     chatroomModelList.liftChatroom = (index) => {
         let arrCopy = chatroomModelList;
         arrCopy.unshift(chatroomModelList.splice(index,1)[0]);

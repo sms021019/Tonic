@@ -45,7 +45,12 @@ export default function Chat({navigation, route}) {
     const { user, gUserModel } = useContext(GlobalContext);
     const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([{
+        _id: 0,
+        text: '부적절하거나 불쾌감을 줄 수 있는 대화는 삼가 부탁드립니다. 회원제재를 받을 수 있습니다.',
+        createdAt: new Date().getTime(),
+        system: true,
+    }]);
     const [hasError, setHasError] = useState(false);
     const [chatModel, setChatModel] = useState(null);
     const [chatroomRef, setChatroomRef] = useState(null);
@@ -62,8 +67,6 @@ export default function Chat({navigation, route}) {
 
     useEffect(() => {
         setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
-        
-        
     },[])
 
     useEffect(() => {
@@ -99,8 +102,6 @@ export default function Chat({navigation, route}) {
 
         });
 
-        
-        console.log("Uselayout onsnapshot callback called");
         const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, snapshot => {
             
@@ -142,7 +143,7 @@ export default function Chat({navigation, route}) {
     }
     
     const handleExitChatroom = async () => {
-        if(await ChatroomModel.asyncExitChatroom(chatModel, user) === false){
+        if(await chatModel.asyncExitChatroom(user.email) === false){
             // TO DO: handle error
             setHasError(true);
             return;
