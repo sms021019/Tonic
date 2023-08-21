@@ -54,19 +54,13 @@ export default class PostModel {
 // ---------------- Task -------------------------
     static async loadAllData(dest) {
         let dataList = []
-let st1 = TimeHelper.startTimer();
         if (await DBHelper.loadAllData(DBCollectionType.POSTS, /* OUT */ dataList) === false) return false;
-TimeHelper.printElapsed("loadAllData", st1);
 
-
-let st = TimeHelper.startTimer();
         for (let data of dataList) {
             let postModel = await this._asyncDataToModel(data);
             if (postModel !== null)
                 dest.push(postModel);
         }
-TimeHelper.printElapsed("dataToModel", st);
-
         return true;
     }
 

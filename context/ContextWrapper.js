@@ -1,20 +1,18 @@
 import React, {useEffect, useState} from 'react';
 import Context from './Context'
+import PostStateManager from "./PostStateManager";
 
 export default function ContextWrapper(props) {
     const [user, setUser] = useState(null);
 
     const [chatroomModelList, setChatroomModelList] = useState([]);
-
     const [gUserModel, setGUserModel] = useState({
         model: null,
         ready: false,
     })
 
-    const [postModelList, setPostModelList] = useState([]);
-    const [status, setStatus] = useState({
-        postModelList: false,
-    })
+    const [postStateManager, setPostStateManager] = useState({});
+
     const [events, setEvents] = useState({
         onContentChange: [],
     });
@@ -106,20 +104,6 @@ export default function ContextWrapper(props) {
         gUserModel.commit(userModel);
     }
 
-// ----------------- POST MODEL LIST --------------------
-    postModelList.set = (list) => {
-        setPostModelList(list);
-    }
-
-    postModelList.addOne = (model) => {
-        if (model === null) return;
-        setPostModelList((prev) => ([...prev, model]));
-    }
-
-    postModelList.getOneByDocId = (id) => {
-        return postModelList.find((model) => model.doc_id === id);
-    }
-
 // ----------------- EVENTS --------------------
     events.addOnContentUpdate = (callback) => {
         setEvents((prev) => ({...prev, onContentChange: [...prev.onContentChange, callback]}));
@@ -134,7 +118,8 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, gUserModel, events, postModelList, status, chatroomModelList}}>
+        <Context.Provider value={{user, setUser, gUserModel, events, chatroomModelList}}>
+            <PostStateManager postStateManager={postStateManager}/>
             {[props.children]}
         </Context.Provider>
     )

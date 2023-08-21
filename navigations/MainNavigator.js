@@ -19,13 +19,14 @@ import ContentDetailScreen from "../screens/ContentDetailScreen";
 import SettingNavigator from "./SettingNavigator";
 import EditProfileNavigator from "./EditProfileNavigator";
 import UserModel from "../models/UserModel";
+import LoadingScreen from "../screens/LoadingScreen";
 
 
 const Stack = createStackNavigator();
 
 export default function MainNavigator() {
     const {user, setUser, gUserModel} = useContext(GlobalContext);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth,
@@ -45,9 +46,7 @@ export default function MainNavigator() {
 
     if (loading) {
         return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <ActivityIndicator/>
-            </View>
+            <LoadingScreen/>
         )
     }
 
@@ -57,7 +56,7 @@ export default function MainNavigator() {
  ----------------------*/
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            { user ? user.emailVerified ? 
+            { user ? user.emailVerified ?
             <Stack.Screen name={NavigatorType.HOME} component={HomeNavigator} options={{title: ""}}/> :
             <Stack.Screen name={NavigatorType.EMAIL} component={EmailVerification} options={{headerShown: true}}/> :
             <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>

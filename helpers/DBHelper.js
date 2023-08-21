@@ -84,7 +84,7 @@ export default class DBHelper {
         try {
             if (query) {
                 const querySnapshot = await getDocs(query);
-              
+
                 querySnapshot.forEach((doc) => {
                     if (doc.exists()) {
                         let data = doc.data();
@@ -145,7 +145,7 @@ export default class DBHelper {
                     if(oppUserDoc.data().email === data.user.email){
                         throw "Can\'t make room by yourself!";
                     }
-                    
+
                     const chatroomsCol = collection(db, DBCollectionType.CHATROOMS);
                     const chatroomRef = doc(chatroomsCol);
                     // const chatroomId = chatroomRef.id;
@@ -153,19 +153,19 @@ export default class DBHelper {
                         ref: chatroomRef,
                         participants: [oppUserDoc.data().email, data.user.email],
                         users: [oppUserDoc.data(), data.user],
-                        
+
                     }
-    
+
                     transaction.set(chatroomRef, chatroom);
-    
+
                     transaction.update(data.opponentRef, {
                         chatrooms: arrayUnion(chatroomRef)
                     });
-    
+
                     transaction.update(doc(collection(db, DBCollectionType.USERS), data.user.email), {
                         chatrooms: arrayUnion(chatroomRef)
                     });
-    
+
                     console.log("Transaction successfully committed!");
                     return chatroomRef;
                 });
@@ -182,7 +182,7 @@ export default class DBHelper {
                     else {
                         usersCollectionRef = usersCollectionRef[0];
                     }
-                    
+
                     transaction.set(doc(usersCollectionRef, data.email), data);
 
                     console.log("Transaction successfully committed!")
@@ -226,15 +226,15 @@ export default class DBHelper {
             await runTransaction(db, async (transaction) => {
                 const currentUserRef = doc(collection(db, DBCollectionType.USERS), user?.email);
                 const currentUserDoc = await transaction.get(currentUserRef);
-                
+
                 const chatroomDoc = await transaction.get(ref);
                 const currentUserEmail = currentUserDoc.data().email;
-    
+
                 if(!currentUserDoc.exists()){
                     throw "User document does not exist!";
                 }
-    
-                
+
+
                 let copyOfUserChatrooms = currentUserDoc.data().chatrooms;
                 let index = -1;
                 for(let i = 0; i < copyOfUserChatrooms.length; i++){
@@ -243,7 +243,7 @@ export default class DBHelper {
                     }
                 }
                 console.log(index);
-        
+
                 if(index > -1) {
                     copyOfUserChatrooms.splice(index, 1);
                     transaction.update(currentUserRef, {
@@ -252,11 +252,11 @@ export default class DBHelper {
                 }else{
                     return Promise.reject("Sorry! Chatroom reference doesn't exist");
                 }
-    
+
                 if(!chatroomDoc.exists()){
                     throw "Chatroom document does not exist!";
                 }
-    
+
                 let leftParticipants = chatroomDoc.data().participants.length;
                 if( leftParticipants === 1){
                     console.log("You are the last one in chatroom...\nTherefore, deleting this chatroom...");
@@ -276,10 +276,10 @@ export default class DBHelper {
                 }else{
                     throw "Please check number of participants"
                 }
-                
-    
+
+
             });
-    
+
             console.log("Transaction successfully committed!");
             return true;
         }catch(error){
@@ -291,46 +291,7 @@ export default class DBHelper {
 /*----------------------
     POSTING-RELATED
 -----------------------*/
-    static async _asyncCreateBlobByImageUri(imageUri) {
-        return await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                resolve(xhr.response);
-            };
-            xhr.onerror = function () {
-                reject(new TypeError('Network request failed'));
-            };
-            xhr.responseType = 'blob';
-            xhr.open('GET', imageUri, true);
-            xhr.send(null);
-            return true;
-        }).catch((e) => {
-            LOG_ERROR(e, "Fail to convert imageURI into Blob.");
-            return false;
-        });
-    }
 
-    static async asyncUploadImageToStorage(uri, userEmail) {
-        try {
-            const blob = await this._asyncCreateBlobByImageUri(uri);
-            if (blob === false) return false;
-
-            const storageUrl = createURL(StorageDirectoryType.POST_IMAGES, userEmail, TimeHelper.getTimeNow());
-
-            const storageRef = ref(storage, storageUrl);
-            if (storageRef === null) return false;
-
-            await uploadBytesResumable(storageRef, blob);
-
-            const downloadUrl = await getDownloadURL(storageRef);
-
-            return {storageUrl: storageUrl, downloadUrl: downloadUrl};
-        }
-        catch(error) {
-            console.log("Error occurs while upload Image to Storage.");
-            return null;
-        }
-    }
 
     static async asyncDeleteImageFromStorage(url) {
         try {

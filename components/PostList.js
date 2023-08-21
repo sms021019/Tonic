@@ -21,7 +21,7 @@ export default function PostList(props) {
             { props.modelList.map((model) => (
                 <View key={model.doc_id}>
                     <View style={{margin: margin}}>
-                        <Post onClickHandler={() => handleClick(model.doc_id)} key={model.doc_id} model={model}/>
+                        {/*<Post onClickHandler={() => handleClick(model.doc_id)} key={model.doc_id} model={model}/>*/}
                     </View>
                     <Divider/>
                 </View>

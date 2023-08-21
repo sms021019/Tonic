@@ -27,13 +27,17 @@ import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
 import { showMessage, hideMessage } from "react-native-flash-message"
 import {showQuickMessage} from "../helpers/MessageHelper";
+import {useRecoilValue} from "recoil";
+import {postAtom} from "../recoli/postState";
+import TimeHelper from "../helpers/TimeHelper";
 
 
-export default function ContentDetailScreen({navigation, docId}) {
-    const {events, user, gUserModel, postModelList, chatroomModelList} = useContext(GlobalContext);
+export default function ContentDetailScreen({navigation, postId}) {
+    const {events, user, gUserModel, chatroomModelList} = useContext(GlobalContext);
+    const /**@type Post*/ post = useRecoilValue(postAtom(postId))
 
-    const [postModel, setPostModel] = useState(null);
     const [owner, setPostOwner] = useState(null);
+
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportPostModalOn, setReportPostModalOn] = useState(false);
     const [reportUserModalOn, setReportUserModalOn] = useState(false);
@@ -43,13 +47,7 @@ export default function ContentDetailScreen({navigation, docId}) {
     })
 
     useEffect(() => {
-        setPostModel(() => postModelList.getOneByDocId(docId));
-    },[])
-
-    useEffect(() => {
-        if (postModel === null) return;
-
-        let userRef = doc(collection(db, DBCollectionType.USERS), postModel.email);
+        let userRef = doc(collection(db, DBCollectionType.USERS), post.ownerEmail);
 
         getDoc(userRef).then((doc) => {
             if(doc.data() === null) {
@@ -60,11 +58,9 @@ export default function ContentDetailScreen({navigation, docId}) {
 
             setPostOwner(doc.data());
         })
-    }, [postModel])
+    }, [])
 
     useLayoutEffect(() => {
-        if (postModel === null) return;
-
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
@@ -72,7 +68,7 @@ export default function ContentDetailScreen({navigation, docId}) {
             headerRight: () => (
                 <MenuButton mr={5} size={6}
                     items={
-                        isMyPost() ?
+                        (user.email === post.ownerEmail) ?
                             [
                                 {name: "Edit", color: theme.colors.primary, callback: handleEditPost},
                                 {name: "Delete", color: theme.colors.alert, callback: OpenDeleteModal},
@@ -85,28 +81,17 @@ export default function ContentDetailScreen({navigation, docId}) {
                 />
             )
         });
-    }, [navigation, postModel]);
-
-    if (postModel === null) {
-        return <LoadingScreen/>
-    }
-
-    function isMyPost() {
-        return user.email === postModel.email;
-    }
+    }, [navigation]);
 
     async function handleChatClick() {
-        if(postModel === false || isMyPost()) return;
+        if (user.email === post.ownerEmail) return;
 
         const chatroomModel = ChatroomModel.newEmpty();
-        if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postModel.doc_id, owner, user) === false) return;
+        if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postId, owner, user) === false) return;
 
         chatroomModelList.addOne(chatroomModel);
-        
-
 
         if( await chatroomModel.asyncSaveData() === false) {
-            // TO DO
             console.log("Failed to create chatroom")
             return false;
         }
@@ -114,11 +99,10 @@ export default function ContentDetailScreen({navigation, docId}) {
         navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
 
         return true;
-        
     }
 
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
+        // navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
     }
 
     function OpenDeleteModal() {
@@ -134,39 +118,39 @@ export default function ContentDetailScreen({navigation, docId}) {
     }
 
     async function handleDeletePost() {
-        if (await postModel.asyncDelete() === false) {
-            console.log("Fail to delete data.");
-            return;
-        }
-
-        setDeleteModalOn(false);
-        events.invokeOnContentUpdate();
-        showQuickMessage("The post is deleted successfully.");
-        navigation.navigate(ScreenType.CONTENT);
+        // if (await postModel.asyncDelete() === false) {
+        //     console.log("Fail to delete data.");
+        //     return;
+        // }
+        //
+        // setDeleteModalOn(false);
+        // events.invokeOnContentUpdate();
+        // showQuickMessage("The post is deleted successfully.");
+        // navigation.navigate(ScreenType.CONTENT);
     }
 
     async function asyncHandleReportPost() {
-        await gUserModel.reportPost(postModel);
-
-        events.invokeOnContentUpdate();
-
-        setReportPostModalOn(false);
-
-        showQuickMessage("The post is reported and blocked successfully. You can unblock it in the setting.");
-
-        navigation.navigate(ScreenType.CONTENT);
+        // await gUserModel.reportPost(postModel);
+        //
+        // events.invokeOnContentUpdate();
+        //
+        // setReportPostModalOn(false);
+        //
+        // showQuickMessage("The post is reported and blocked successfully. You can unblock it in the setting.");
+        //
+        // navigation.navigate(ScreenType.CONTENT);
     }
 
     async function asyncHandleReportUser() {
-        await gUserModel.reportUser(postModel.email);
-
-        events.invokeOnContentUpdate();
-
-        setReportUserModalOn(false);
-
-        showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
-
-        navigation.navigate(ScreenType.CONTENT);
+        // await gUserModel.reportUser(postModel.email);
+        //
+        // events.invokeOnContentUpdate();
+        //
+        // setReportUserModalOn(false);
+        //
+        // showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
+        //
+        // navigation.navigate(ScreenType.CONTENT);
     }
 
     function handleDismissConfirmMessageModal() {
@@ -180,22 +164,22 @@ export default function ContentDetailScreen({navigation, docId}) {
             <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
             <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
             <ScrollView>
-                <ImageSwiper imageModels={postModel.imageModels} />
+                <ImageSwiper imageModels={post.postImages} />
                 <View style={styles.contentArea}>
                     <Box style={styles.titleBox}>
-                        <Text style={styles.titleText}>{postModel.title}</Text>
+                        <Text style={styles.titleText}>{post.title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
                         <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
-                        <Text style={{color:'gray'}}>{postModel.getElapsedString()} ago</Text>
+                        <Text style={{color:'gray'}}>{TimeHelper.getTopElapsedStringUntilNow(post.postTime)} ago</Text>
                     </Flex>
-                    <Text style={styles.contentText}>{postModel.info}</Text>
+                    <Text style={styles.contentText}>{post.info}</Text>
                 </View>
             </ScrollView>
             <View style={styles.footerArea}>
                 <Flex direction="row" alignItems='center'>
                     <Text flex="1" style={styles.priceText}>
-                        ${postModel.price.toLocaleString()}
+                        ${post.price.toLocaleString()}
                     </Text>
                     <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
                         <TonicText>Chat</TonicText>

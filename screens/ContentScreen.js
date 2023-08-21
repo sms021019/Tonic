@@ -14,21 +14,21 @@ import GlobalContext from '../context/Context';
 // firebase
 import {getDocs, collection} from 'firebase/firestore';
 import {db} from "../firebase";
-// model
-import PostModel from "../models/PostModel";
+
 import ErrorScreen from "./ErrorScreen";
 import CreatePostButton from "../components/CreatePostButton";
-
-const LoadingView = <View><Text>Loading...</Text></View>
+import {useRecoilValue} from "recoil";
+import {postIdsAtom} from "../recoli/postState";
+import LoadingScreen from '../screens/LoadingScreen'
 
 export default function ContentScreen({navigation}) {
-    const {user, gUserModel, events, postModelList} = useContext(GlobalContext);
+    const {user} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-    let onContentChangeEvent = useCallback(() => {
-        asyncLoadAllPost().then();
-    }, [])
+    const postIds = useRecoilValue(postIdsAtom);
+
+    console.log("postIDs:", postIds);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -37,25 +37,20 @@ export default function ContentScreen({navigation}) {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        events.addOnContentUpdate(onContentChangeEvent);
-        asyncLoadAllPost().then();
-    }, []);
-
-    useEffect(() => {
-        asyncLoadAllPost().then();
-    }, [gUserModel])
-
     if (hasError) {
         return <ErrorScreen/>;
+    }
+
+    if (!user) {
+        return <LoadingScreen/>
     }
 
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(docId) {
-        if (docId === -1 || !docId) return;
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId})
+    function handleContentClick(postId) {
+        if (!postId) return;
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: postId})
     }
 
     function handleCreatePost() {
@@ -64,39 +59,24 @@ export default function ContentScreen({navigation}) {
 
     function handleRefresh() {
         setRefreshing(true)
-        asyncLoadAllPost().then();
     }
-    async function asyncLoadAllPost() {
-        let models = await PostModel.loadAllUnblocked(gUserModel.model.email)
-
-        if (models === null) {
-            console.log("fail to load data");
-            setHasError(true);
-        }
-
-        postModelList.set(models);
-        setRefreshing(false);
-    }
-
-/* ------------------
-      Components
- -------------------*/
-    const ContentView = (
-        <PostFlatList
-            modelList={postModelList}
-            handleClick={handleContentClick}
-            handleRefresh={handleRefresh}
-            refreshing={refreshing}
-        />
-    )
-
 /* ------------------
       Render
 -------------------*/
     return (
         <Container>
             <ContentArea>
-                {(!user || !postModelList) ? LoadingView : ContentView}
+                {
+                    (postIds.length === 0)?
+                    <Text> No Post </Text>
+                    :
+                    <PostFlatList
+                        postIds={postIds}
+                        handleClick={handleContentClick}
+                        handleRefresh={handleRefresh}
+                        refreshing={refreshing}
+                    />
+                }
             </ContentArea>
             <CreateButtonArea>
                 <CreatePostButton onPress={handleCreatePost}/>

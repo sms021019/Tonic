@@ -43,7 +43,7 @@ export const ModelStatusType = {
 }
 export const DBCollectionType = {
     USERS:      "users",
-    POSTS:      "post_test",
+    POSTS:      "posts_test",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
     IMAGE:      "images",
