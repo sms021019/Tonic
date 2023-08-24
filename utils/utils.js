@@ -44,7 +44,7 @@ export const ModelStatusType = {
     LOADED: "loadedModelStatus",
 }
 export const DBCollectionType = {
-    USERS:      "users",
+    USERS:      "users_test",
     POSTS:      "posts_test",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",

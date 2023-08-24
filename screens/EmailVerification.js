@@ -9,7 +9,6 @@ import GlobalContext from '../context/Context';
 import UserModel from '../models/UserModel';
 
 
-
 const EmailVerification = ({navigation}) => {
     const {user} = useContext(GlobalContext);
     const [emailSent, setEmailSent] = useState('none');
@@ -28,14 +27,12 @@ const EmailVerification = ({navigation}) => {
     }, [navigation]);
 
     const asyncHandleSignOut = async () => {
-
         if( await UserModel.asyncSignOut() === false){
             setHasError(true);
             return;
         }
         console.log(`${user?.email} logged out`);
         navigation.navigate(ScreenType.LOGIN);
-
     }
 
 
@@ -46,8 +43,6 @@ const EmailVerification = ({navigation}) => {
         }
         console.log('Email verification sent');
         setEmailSent('block');
-
-
     }
 
     return (

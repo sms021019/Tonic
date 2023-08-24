@@ -22,7 +22,7 @@ import {useRecoilState} from "recoil";
 
 
 export default function PostEditScreen({navigation, postId}) {
-    const {events, gUserModel, postStateManager} = useContext(GlobalContext);
+    const {events} = useContext(GlobalContext);
 
     const [post, setPost] = useRecoilState(postAtom(postId));
 

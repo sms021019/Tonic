@@ -1,12 +1,9 @@
 
-import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
+import React, {useState} from 'react'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
-
-
 import { EMAIL_DOMAIN } from '../utils/utils';
 import ErrorScreen from './ErrorScreen';
 import UserModel from '../models/UserModel';
@@ -20,13 +17,16 @@ const LoginScreen = () => {
 
 
     const handleSignUp = async () => {
-        // const userModel = new UserModel(username, email, password);
         const userModel = UserModel.newSignup(username, email, password);
         if(await userModel.asyncCreateUser() === false){
             //TO DO
             setHasError(true);
             return;
         }
+    }
+
+    async function handleSignUp() {
+        if (await UserController.asyncCreateUser(username, email, password) === false) return false;
     }
 
     /* ------------------

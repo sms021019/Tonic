@@ -26,6 +26,18 @@ export default class FirebaseHelper {
         return doc(collection(db, type), docId);
     }
 
+    static async addDoc(type, docId, data) {
+        try {
+            let dRef = doc(collection(db, type), docId);
+            await setDoc(dRef, data);
+            return true;
+        }
+        catch(error) {
+            console.log("Err: FirebaseHelper.addDocByRef");
+            return false;
+        }
+    }
+
     static async getDocIds(collectionType) {
         const cRef = collection(db, collectionType);
 
@@ -44,7 +56,6 @@ export default class FirebaseHelper {
         const _doc = await getDoc(dRef);
         return /**@type Post*/ (_doc.data());
     }
-
 
     static async asyncUploadImageToStorage(uri, userEmail) {
         try {
