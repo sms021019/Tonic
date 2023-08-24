@@ -30,7 +30,7 @@ import MenuButton from "../components/MenuButton";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {user, chatroomModelList} = useContext(GlobalContext);
+    const {user, chatroomModelList, postStateManager} = useContext(GlobalContext);
     const /**@type Post*/ post = useRecoilValue(postAtom(postId))
 
     const [owner, setPostOwner] = useState(null);
@@ -102,17 +102,9 @@ export default function ContentDetailScreen({navigation, postId}) {
         // navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
     }
 
-    function OpenDeleteModal() {
-        setDeleteModalOn(true);
-    }
-
-    function OpenReportPostModal() {
-        setReportPostModalOn(true);
-    }
-
-    function OpenReportUserModal() {
-        setReportUserModalOn(true);
-    }
+    function OpenDeleteModal() { setDeleteModalOn(true); }
+    function OpenReportPostModal() { setReportPostModalOn(true); }
+    function OpenReportUserModal() { setReportUserModalOn(true); }
 
     async function handleDeletePost() {
         if (await PostController.asyncDelete(post) === false) {
@@ -120,8 +112,9 @@ export default function ContentDetailScreen({navigation, postId}) {
             return;
         }
 
-        setDeleteModalOn(false);
+        postStateManager.removeId(post.docId);
         showQuickMessage("The post is deleted successfully.");
+        setDeleteModalOn(false);
         navigation.navigate(ScreenType.CONTENT);
     }
 
