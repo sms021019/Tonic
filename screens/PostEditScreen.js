@@ -17,14 +17,14 @@ import {PostCollect, PostCollection} from '../types/PostCollection'
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
-import {postAtom, postIdsAtom} from "../recoli/postState";
-import {useRecoilValue, useSetRecoilState} from "recoil";
+import {postAtom} from "../recoli/postState";
+import {useRecoilState} from "recoil";
 
 
 export default function PostEditScreen({navigation, postId}) {
     const {events, gUserModel, postStateManager} = useContext(GlobalContext);
 
-    const oldPost = useRecoilValue(postAtom(postId));
+    const [post, setPost] = useRecoilState(postAtom(postId));
 
     const [title, setTitle] =           useState("");
     const [price, setPrice] =           useState(0);
@@ -49,13 +49,13 @@ export default function PostEditScreen({navigation, postId}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (oldPost) {
-            setTitle(oldPost.title)
-            setPrice(oldPost.price)
-            setInfo(oldPost.info)
-            setPostImages(oldPost.postImages)
+        if (post) {
+            setTitle(post.title)
+            setPrice(post.price)
+            setInfo(post.info)
+            setPostImages(post.postImages)
         }
-    }, [oldPost])
+    }, [post])
 
     useEffect(() => {
         if (ready === false) return;
@@ -83,21 +83,21 @@ export default function PostEditScreen({navigation, postId}) {
     async function asyncSavePost() {
 
         let /** @type Post */ newPost = {
-            docId: oldPost.docId,
-            ownerEmail: oldPost.ownerEmail,
+            docId: post.docId,
+            ownerEmail: post.ownerEmail,
             title,
             price,
             info,
-            postTime: oldPost.postTime,
+            postTime: post.postTime,
             postImages
         }
 
-        if (await PostController.asyncUpdate(oldPost, newPost) === false) {
+        if (await PostController.asyncUpdate(post, newPost) === false) {
             setHasError(true);
             return LOG_ERROR("Unknown error occur while posting the images.");
         }
 
-        // update post atom.
+        setPost(newPost);
 
         events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
