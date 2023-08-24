@@ -13,7 +13,6 @@ import AnimatedLoader from "react-native-animated-loader";
 // Context
 import GlobalContext from "../context/Context";
 import PostingImageUploader from "../components/PostingImageUploader";
-import {PostCollect, PostCollection} from '../types/PostCollection'
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
@@ -21,7 +20,7 @@ import {postIdsAtom} from "../recoli/postState";
 import {useSetRecoilState} from "recoil";
 
 
-export default function PostingScreen({navigation}) {
+export default function PostCreateScreen({navigation}) {
     const {events, gUserModel, postStateManager} = useContext(GlobalContext);
 
     const [title, setTitle] =           useState("");

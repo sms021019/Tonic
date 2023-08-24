@@ -55,7 +55,7 @@ export default function ContentScreen({navigation}) {
     }
 
     function handleCreatePost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
+        navigation.navigate(NavigatorType.POST_CREATE);
     }
 
     function handleRefresh() {

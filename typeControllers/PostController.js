@@ -8,7 +8,7 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class PostController {
     static async asyncAdd(post) {
-        if (!this.isValid(post)) return -1;
+        if (!this.isValid(post)) return false;
 
         try {
             let batch = writeBatch(db);
@@ -19,6 +19,25 @@ export default class PostController {
             return true;
         }
         catch (err) {
+            console.log("Err: PostController.asyncAdd")
+            return false;
+        }
+    }
+
+    static async asyncUpdate(oldPost, newPost) {
+        if (!this.isValid(newPost)) return false;
+
+        try {
+            let batch = writeBatch(db);
+
+            if (await this.asyncSetUpdatePostActionToBatch(batch, oldPost, newPost) === false) return false;
+
+            await batch.commit();
+            return true;
+
+        }
+        catch (err) {
+            console.log("Err: PostController.asyncUpdate")
             return false;
         }
     }
@@ -41,7 +60,6 @@ export default class PostController {
 
 // -------------- BATCH POST --------------------
     /**
-     *
      * @param batch
      * @param {Post }post
      * @returns {Promise<boolean>}
@@ -50,7 +68,7 @@ export default class PostController {
      */
     static async asyncSetAddPostActionToBatch(batch, post) {
         try {
-            if (await this.asyncUploadPostImage(post.postImages, post.ownerEmail) === false) return false;
+            if (await this.asyncUploadPostImagesToStorage(post.postImages, post.ownerEmail) === false) return false;
 
             let dRef = FirebaseHelper.getNewRef(DBCollectionType.POSTS);
             post.docId = dRef.id
@@ -62,41 +80,38 @@ export default class PostController {
             return true;
         }
         catch(err) {
+            console.log("Err: PostController.asyncSetAddPostActionToBatch")
             return false;
         }
     }
 
-    static async asyncUploadPostImage(postImages, ownerEmail) {
+    /**
+     * @param batch
+     * @param {Post} oldPost
+     * @param {Post} newPost
+     * @returns {Promise<boolean>}
+     */
+    static async asyncSetUpdatePostActionToBatch(batch, oldPost, newPost) {
         try {
-            for (let postImage of postImages) {
-                const resultLow = await FirebaseHelper.asyncUploadImageToStorage(postImage.downloadUrlLow, ownerEmail);
-                const resultMid = await FirebaseHelper.asyncUploadImageToStorage(postImage.downloadUrlMid, ownerEmail);
-                postImage.downloadUrlLow = resultLow.downloadUrl;
-                postImage.downloadUrlMid = resultMid.downloadUrl;
-                postImage.storageUrlLow = resultLow.storageUrl;
-                postImage.storageUrlMid = resultMid.storageUrl;
-            }
-            return true
+            let result = this.getNewAndRemovedPostImages(oldPost.postImages, newPost.postImages);
+            let newPostImages = result.newPostImages;
+            let removedPostImages = result.removedPostImages;
+
+            if (await this.asyncUploadPostImagesToStorage(newPostImages, newPost.ownerEmail) === false) return false;
+            if (await this.asyncDeletePostImagesFromStorage(removedPostImages) === false) return false;
+
+            const dRef = FirebaseHelper.getRef(DBCollectionType.POSTS, newPost.docId);
+            batch.update(dRef, newPost);
+
+            return true;
         }
-        catch(err) {
-            return false
+        catch (e) {
+            console.log("Err: PostController.asyncSetUpdatePostActionToBatch")
+            return false;
         }
     }
 
-    // async _bAsyncUpdateData(batch) {
-    //     if (this.isContentReady() === false) return false;
-    //     if (this.ref === null) return false;
-    //
-    //     if (await this._bAsyncSetImageModels(batch, this.newImageModels) === false) return false;
-    //     if (await this._bAsyncRemoveImageModels(batch, this.removedImageModels) === false) return false;
-    //
-    //     batch.update(this.ref, this.getData());
-    //
-    //     return true;
-    // }
-
     /**
-     *
      * @param batch
      * @param {Post} post
      * @returns {Promise<boolean>}
@@ -117,7 +132,29 @@ export default class PostController {
     }
 
     /**
-     *
+     * @param {PostImage[]} postImages
+     * @param ownerEmail
+     * @returns {Promise<boolean>}
+     */
+    static async asyncUploadPostImagesToStorage(postImages, ownerEmail) {
+        try {
+            for (let postImage of postImages) {
+                const resultLow = await FirebaseHelper.asyncUploadImageToStorage(postImage.downloadUrlLow, ownerEmail);
+                const resultMid = await FirebaseHelper.asyncUploadImageToStorage(postImage.downloadUrlMid, ownerEmail);
+                postImage.downloadUrlLow = resultLow.downloadUrl;
+                postImage.downloadUrlMid = resultMid.downloadUrl;
+                postImage.storageUrlLow = resultLow.storageUrl;
+                postImage.storageUrlMid = resultMid.storageUrl;
+            }
+            return true
+        }
+        catch(err) {
+            console.log("Err: PostController.asyncUploadPostImagesToStorage")
+            return false
+        }
+    }
+
+    /**
      * @param {PostImage[]} postImages
      * @returns {Promise<boolean>}
      */
@@ -135,6 +172,20 @@ export default class PostController {
         }
     }
 
+    /**
+     *
+     * @param {PostImage[]} postImagesBefore
+     * @param {PostImage[]} postImagesAfter
+     */
+    static getNewAndRemovedPostImages(postImagesBefore, postImagesAfter) {
+        const removedPostImages = postImagesBefore.filter(before => !postImagesAfter.some((after) => this.isPostImageEqual(before, after)))
+        const newPostImages =  postImagesAfter.filter(after => !postImagesBefore.some((before) => this.isPostImageEqual(before, after)))
+        return {
+            removedPostImages,
+            newPostImages,
+        }
+    }
+
     static isValid(post) {
         if (!post) return false;
         if (!post.title || !post.price || !post.info || !post.postImages) return false;
@@ -143,26 +194,19 @@ export default class PostController {
         return true;
     }
 
-    static postToJson(post) {
-        return {
-            title: post.title,
-            price: post.price,
-            info: post.info,
-            postTime: post.postTime,
-            postImages: this.postImagesToJson(post.postImages)
-        }
+    /**
+     *
+     * @param {PostImage} imageA
+     * @param {PostImage} imageB
+     * @returns {*}
+     */
+    static isPostImageEqual(imageA, imageB) {
+        return (
+            imageA.storageUrlMid === imageB.storageUrlMid &&
+            imageA.storageUrlLow === imageB.storageUrlLow &&
+            imageA.downloadUrlMid === imageB.downloadUrlMid &&
+            imageA.downloadUrlLow === imageB.downloadUrlLow
+        )
     }
 
-    static postImagesToJson(postImages) {
-        let result = []
-        for (let postImage of postImages) {
-            result.push({
-                downloadUrlLow: postImage.downloadUrlLow,
-                downloadUrlMid: postImage.downloadUrlMid,
-                storageUrlLow: postImage.storageUrlLow,
-                storageUrlMid: postImage.storageUrlMid
-            })
-        }
-        return result;
-    }
 }

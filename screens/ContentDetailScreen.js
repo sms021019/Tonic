@@ -99,7 +99,7 @@ export default function ContentDetailScreen({navigation, postId}) {
     }
 
     function handleEditPost() {
-        // navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
+        navigation.navigate(NavigatorType.POST_EDIT, {postId: postId});
     }
 
     function OpenDeleteModal() { setDeleteModalOn(true); }

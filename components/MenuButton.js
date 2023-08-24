@@ -16,7 +16,7 @@ export default function MenuButton(props)
         <Menu w="140px" trigger={triggerProps => {
             return (
                 <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                    <HamburgerIcon size={6} color= {color} mr={5} style={{...styles.shadow, shadowRadius: shadowOpacity}}/>
+                    <HamburgerIcon size={6} color= {color} mr={5} style={{...styles.shadow, shadowOpacity: shadowOpacity}}/>
                 </Pressable>
             );
         }}>
