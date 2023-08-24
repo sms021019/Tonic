@@ -1,6 +1,6 @@
-import DocumentBase from './DocumentBase'
 
 export interface Post {
+    docId: string;
     ownerEmail: string;
     title: string;
     price: number;

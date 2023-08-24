@@ -13,7 +13,7 @@ import {
 import {db, getDownloadURL, storage, uploadBytesResumable} from '../firebase'
 import {createURL, LOG_ERROR, StorageDirectoryType} from "../utils/utils";
 import TimeHelper from "./TimeHelper";
-import {ref} from "firebase/storage";
+import {deleteObject, ref} from "firebase/storage";
 
 
 export default class FirebaseHelper {
@@ -85,4 +85,15 @@ export default class FirebaseHelper {
         });
     }
 
+    static async asyncDeleteImageFromStorage(url) {
+        try {
+            let _ref = ref(storage, url);
+            await deleteObject(_ref);
+            return true;
+        }
+        catch(error) {
+            console.log("Error occurs while delete image from Storage.");
+            return false;
+        }
+    }
 }

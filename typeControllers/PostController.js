@@ -4,55 +4,66 @@ import UserModel from "../models/UserModel";
 import {arrayUnion, writeBatch} from "firebase/firestore";
 import {db} from "../firebase";
 import {arrayRemove} from "@firebase/firestore";
-import TimeHelper from "../helpers/TimeHelper";
-import ImageModel from "../models/ImageModel";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class PostController {
-    static async asyncAdd(post, ownerEmail) {
+    static async asyncAdd(post) {
         if (!this.isValid(post)) return -1;
 
         try {
             let batch = writeBatch(db);
 
-            let postId = await this.asyncAddPostActionToBatch(batch, post, ownerEmail);
-            if (postId === -1) return -1;
+            if (await this.asyncSetAddPostActionToBatch(batch, post) === false) return false;
 
             await batch.commit();
-            return postId;
+            return true;
         }
         catch (err) {
-            return -1;
+            return false;
         }
     }
 
-    async asyncDelete() {
-        // try {
-        //     let batch = writeBatch(db);
-        //     if (await this._bAsyncDeleteData(batch) === false) return false;
-        //
-        //     await batch.commit();
-        //     return true;
-        // }
-        // catch (err) {
-        //     return false;
-        // }
+    static async asyncDelete(post) {
+        try {
+            let batch = writeBatch(db);
+            if (await this.asyncSetDeletePostActionToBatch(batch, post) === false) return false;
+            await batch.commit();
+
+            if (await this.asyncDeletePostImagesFromStorage(post.postImages) === false) return false;
+            console.log("Done: PostController.asyncDelete.")
+            return true;
+        }
+        catch (err) {
+            console.log("Err: PostController.asyncDelete")
+            return false;
+        }
     }
 
 // -------------- BATCH POST --------------------
-    static async asyncAddPostActionToBatch(batch, post, ownerEmail) {
+    /**
+     *
+     * @param batch
+     * @param {Post }post
+     * @returns {Promise<boolean>}
+     *
+     * This function will create and set new 'docId' to the post.
+     */
+    static async asyncSetAddPostActionToBatch(batch, post) {
+        try {
+            if (await this.asyncUploadPostImage(post.postImages, post.ownerEmail) === false) return false;
 
-        if (await this.asyncUploadPostImage(post.postImages, ownerEmail) === false) return -1;
+            let dRef = FirebaseHelper.getNewRef(DBCollectionType.POSTS);
+            post.docId = dRef.id
+            batch.set(dRef, post);
 
+            const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
+            batch.update(userRef, {posts: arrayUnion(dRef)});
 
-        let dRef = FirebaseHelper.getNewRef(DBCollectionType.POSTS);
-        console.log(post);
-        batch.set(dRef, post);
-
-        const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, ownerEmail)
-        batch.update(userRef, {posts: arrayUnion(dRef)});
-
-        return dRef.id;
+            return true;
+        }
+        catch(err) {
+            return false;
+        }
     }
 
     static async asyncUploadPostImage(postImages, ownerEmail) {
@@ -83,19 +94,46 @@ export default class PostController {
     //
     //     return true;
     // }
-    //
-    // async _bAsyncDeleteData(batch) {
-    //     if (this.ref === null) return false;
-    //
-    //     if (await this._bAsyncRemoveImageModels(batch, this.imageModels) === false) return false;
-    //
-    //     batch.delete(this.ref);
-    //
-    //     const userRef = DBHelper.getRef(DBCollectionType.USERS, this.email)
-    //     batch.update(userRef, {posts: arrayRemove(this.ref)});
-    //
-    //     return true;
-    // }
+
+    /**
+     *
+     * @param batch
+     * @param {Post} post
+     * @returns {Promise<boolean>}
+     */
+    static async asyncSetDeletePostActionToBatch(batch, post) {
+        try {
+            const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, post.docId);
+            batch.delete(postRef);
+
+            const userRef = DBHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
+            batch.update(userRef, {posts: arrayRemove(postRef)});
+            return true;
+        }
+        catch(e) {
+            console.log("Err: PostController.asyncSetDeletePostActionToBatch")
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param {PostImage[]} postImages
+     * @returns {Promise<boolean>}
+     */
+    static async asyncDeletePostImagesFromStorage(postImages) {
+        try {
+            for (let postImage of postImages) {
+                if (await FirebaseHelper.asyncDeleteImageFromStorage(postImage.storageUrlMid) === false) return false;
+                if (await FirebaseHelper.asyncDeleteImageFromStorage(postImage.storageUrlLow) === false) return false;
+            }
+            return true;
+        }
+        catch(e) {
+            console.log("Err: PostController.asyncDeletePostImagesFromStorage")
+            return false;
+        }
+    }
 
     static isValid(post) {
         if (!post) return false;

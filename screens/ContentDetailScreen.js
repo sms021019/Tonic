@@ -1,35 +1,32 @@
 // React
 import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
+import {View, Text, StyleSheet} from 'react-native'
 import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
-import Swiper from "react-native-swiper";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {LinearGradient} from "expo-linear-gradient";
 // DB
 import { db } from '../firebase';
 import { doc, getDoc, collection } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
+import {DBCollectionType, NavigatorType, ScreenType} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
-import MenuButton from '../components/MenuButton'
 import DeletePostModal from "../components/DeletePostModal";
 import ReportPostModal from "../components/ReportPostModal";
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
-import LoadingScreen from "./LoadingScreen";
 import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
-import { showMessage, hideMessage } from "react-native-flash-message"
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoli/postState";
 import TimeHelper from "../helpers/TimeHelper";
+import PostController from "../typeControllers/PostController";
+import MenuButton from "../components/MenuButton";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
@@ -47,7 +44,6 @@ export default function ContentDetailScreen({navigation, postId}) {
     })
 
     useEffect(() => {
-        console.log(post.ownerEmail);
         let userRef = doc(collection(db, DBCollectionType.USERS), post.ownerEmail);
 
         getDoc(userRef).then((doc) => {
@@ -65,9 +61,9 @@ export default function ContentDetailScreen({navigation, postId}) {
         navigation.setOptions({
             headerTransparent: true,
             headerTitle: "",
-            headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)}/>,
+            headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)} shadow={true}/>,
             headerRight: () => (
-                <MenuButton mr={5} size={6}
+                <MenuButton mr={5} size={6} shadow={true}
                     items={
                         (user.email === post.ownerEmail) ?
                             [
@@ -119,15 +115,14 @@ export default function ContentDetailScreen({navigation, postId}) {
     }
 
     async function handleDeletePost() {
-        // if (await postModel.asyncDelete() === false) {
-        //     console.log("Fail to delete data.");
-        //     return;
-        // }
-        //
-        // setDeleteModalOn(false);
-        // events.invokeOnContentUpdate();
-        // showQuickMessage("The post is deleted successfully.");
-        // navigation.navigate(ScreenType.CONTENT);
+        if (await PostController.asyncDelete(post) === false) {
+            // show msg :: something went wrong. try again
+            return;
+        }
+
+        setDeleteModalOn(false);
+        showQuickMessage("The post is deleted successfully.");
+        navigation.navigate(ScreenType.CONTENT);
     }
 
     async function asyncHandleReportPost() {
@@ -165,7 +160,7 @@ export default function ContentDetailScreen({navigation, postId}) {
             <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
             <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
             <ScrollView>
-                <ImageSwiper imageModels={post.postImages} />
+                <ImageSwiper postImages={post.postImages} />
                 <View style={styles.contentArea}>
                     <Box style={styles.titleBox}>
                         <Text style={styles.titleText}>{post.title}</Text>

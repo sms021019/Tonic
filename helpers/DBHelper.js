@@ -293,18 +293,6 @@ export default class DBHelper {
 -----------------------*/
 
 
-    static async asyncDeleteImageFromStorage(url) {
-        try {
-            let _ref = ref(storage, url);
-            await deleteObject(_ref);
-            return true;
-        }
-        catch(error) {
-            console.log("Error occurs while delete image from Storage.");
-            return false;
-        }
-    }
-
     static getNewRef(type) {
         return doc(collection(db, type));
     }

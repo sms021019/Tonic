@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text} from 'react-native';
+import {Text, StyleSheet} from 'react-native';
 import {HamburgerIcon, Menu, Pressable} from "native-base";
 export default function MenuButton(props)
 {
@@ -7,6 +7,8 @@ export default function MenuButton(props)
     let size = props.size? props.size : 6;
     let items = props.items? props.items : null;
     let color = props.color? props.color : 'white';
+    let isShadow = props.shadow? props.shadow : false;
+    let shadowOpacity = (isShadow)? 0.8 : 0;
 
     if (items === null) return (<></>);
 
@@ -14,7 +16,7 @@ export default function MenuButton(props)
         <Menu w="140px" trigger={triggerProps => {
             return (
                 <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                    <HamburgerIcon size={6} color= {color} mr={5}/>
+                    <HamburgerIcon size={6} color= {color} mr={5} style={{...styles.shadow, shadowRadius: shadowOpacity}}/>
                 </Pressable>
             );
         }}>
@@ -28,3 +30,17 @@ export default function MenuButton(props)
         </Menu>
     )
 }
+
+const styles = StyleSheet.create({
+    shadow: {
+        shadowColor: 'gray',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 3,
+    },
+});
+
+
+
+
+

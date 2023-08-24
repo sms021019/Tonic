@@ -73,6 +73,7 @@ export default function PostingScreen({navigation}) {
         let postTime = TimeHelper.getTimeNow();
 
         let /** @type Post */ newPost = {
+            docId: null,
             ownerEmail: gUserModel.model.email,
             title,
             price,
@@ -81,13 +82,12 @@ export default function PostingScreen({navigation}) {
             postImages
         }
 
-        let postId = await PostController.asyncAdd(newPost, gUserModel.model.email)
-        if (postId === -1) {
+        if (await PostController.asyncAdd(newPost) === false) {
             setHasError(true);
             return LOG_ERROR("Unknown error occur while posting the images.");
         }
 
-        postStateManager.addId(postId);
+        postStateManager.addId(newPost.docId);
 
         events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
