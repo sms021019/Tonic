@@ -33,7 +33,7 @@ import TimeHelper from "../helpers/TimeHelper";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {events, user, gUserModel, chatroomModelList} = useContext(GlobalContext);
+    const {user, chatroomModelList} = useContext(GlobalContext);
     const /**@type Post*/ post = useRecoilValue(postAtom(postId))
 
     const [owner, setPostOwner] = useState(null);
@@ -47,6 +47,7 @@ export default function ContentDetailScreen({navigation, postId}) {
     })
 
     useEffect(() => {
+        console.log(post.ownerEmail);
         let userRef = doc(collection(db, DBCollectionType.USERS), post.ownerEmail);
 
         getDoc(userRef).then((doc) => {

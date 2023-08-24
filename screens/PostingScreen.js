@@ -72,7 +72,6 @@ export default function PostingScreen({navigation}) {
     async function asyncUploadPost() {
         let postTime = TimeHelper.getTimeNow();
 
-
         let /** @type Post */ newPost = {
             ownerEmail: gUserModel.model.email,
             title,
@@ -93,7 +92,6 @@ export default function PostingScreen({navigation}) {
         events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
     }
-
 
 /* ------------------
      Error Screen

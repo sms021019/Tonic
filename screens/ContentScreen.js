@@ -1,6 +1,6 @@
 import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
 import {Text, TouchableOpacity, View, Button} from 'react-native'
-import {Center, FlatList, Input, Icon, Divider} from "native-base";
+import {Center, FlatList, Input, Icon, Divider, Flex, Image, Box} from "native-base";
 import styled from "styled-components/native";
 // util
 import {flexCenter, TonicButton} from "../utils/styleComponents";
@@ -20,6 +20,7 @@ import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
 import {postIdsAtom} from "../recoli/postState";
 import LoadingScreen from '../screens/LoadingScreen'
+import theme from "../utils/theme";
 
 export default function ContentScreen({navigation}) {
     const {user} = useContext(GlobalContext);
@@ -68,7 +69,11 @@ export default function ContentScreen({navigation}) {
             <ContentArea>
                 {
                     (postIds.length === 0)?
-                    <Text> No Post </Text>
+                        <Flex h={"100px"} w={windowWidth} justifyContent={'center'}>
+                            <Center>
+                                <Text style={{color: 'gray'}}>No post</Text>
+                            </Center>
+                        </Flex>
                     :
                     <PostFlatList
                         postIds={postIds}

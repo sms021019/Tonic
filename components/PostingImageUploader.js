@@ -57,8 +57,8 @@ export default function PostingImageUploader ({postImages, setPostImages}) {
 
 
         let /** @type PostImage */ newPostImage = {
-            downloadUrlLow: lowImage,
-            downloadUrlMid: midImage,
+            downloadUrlLow: lowImage.uri,
+            downloadUrlMid: midImage.uri,
             storageUrlLow: "",
             storageUrlMid: "",
         }

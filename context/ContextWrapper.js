@@ -118,7 +118,7 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, gUserModel, events, chatroomModelList}}>
+        <Context.Provider value={{user, setUser, gUserModel, events, chatroomModelList, postStateManager}}>
             <PostStateManager postStateManager={postStateManager}/>
             {[props.children]}
         </Context.Provider>
