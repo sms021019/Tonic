@@ -33,6 +33,7 @@ import ChatList from '../components/ChatList';
 import Loading from '../components/Loading';
 
 import {doc} from "firebase/firestore";
+import CreateChatroomModal from '../components/CreateChatroomModal';
 
 
 
@@ -47,21 +48,8 @@ export default function Channel({ navigation: {navigate}}) {
 
     const [chatroomRefs, setChatroomRefs] = useState(null);
 
-
-    const [newChatroomModel, setNewChatroomModel] = useState();
-    const [displayName, setDisplayName] = useState();
-
-    state = {
-        isModalVisible: modalVisible,
-    };
-    showModal = () => setModalVisible(true);
-    hideModal = () => setModalVisible(false);
-    
-    const isFocused = useIsFocused()
-
     useEffect(() => {
         ChatroomModel.onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs);
-        // loadChatrooms();
     }, []);
     
     useEffect(() => {
@@ -74,34 +62,12 @@ export default function Channel({ navigation: {navigate}}) {
         loadChatrooms();
     }
 
-    const handleCreateChatroom = async () => {
-        // 처리 대상
-            if(!displayName || !gUserModel) {
-                //TO DO
-                console.log("Not proper user or Empty name");
-                return false;
-            }
+    function openCreateChatroomModal() {
+        setModalVisible(true);
+    }
 
-        
-            const newRoom = ChatroomModel.newEmpty();
-            newRoom.setDisplayName(displayName);
-            newRoom.setUser(prev => [...prev, user]); // 무튼 유저 추가..?
-
-            newRoom.asyncSaveData();
-
-            await chatroomModel.asyncSaveData().then( ref => {
-                if(ref){
-                    console.log(ref)
-                    setEmail('');
-                    setModalVisible(prev => !prev);
-                    chatroomModel.setRef(ref);
-                    navigate(ScreenType.CHAT, {ref: ref});
-                }else{
-                    setHasError(true);
-                    return;
-                }
-            })
-    
+    function handleCreateChatroom () {
+        return;
     }
 
     async function loadChatrooms() {
@@ -118,19 +84,18 @@ export default function Channel({ navigation: {navigate}}) {
         navigate(ScreenType.CHAT, {doc_id: doc_id, index: index});
     }
 
-    //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
     const LoadingView = <View><Text>Loading...</Text></View>
 
-        const ContentView = (
-            <ChatList
-                modelList={chatroomModelList}
-                handleClick={handleContentClick}
-                handleRefresh={handleRefresh}
-                refreshing={refreshing}
-            />
-        )
-            
-        const Content = !user ? LoadingView : ContentView;
+    const ContentView = (
+        <ChatList
+            modelList={chatroomModelList}
+            handleClick={handleContentClick}
+            handleRefresh={handleRefresh}
+            refreshing={refreshing}
+        />
+    )
+        
+    const Content = !user ? LoadingView : ContentView;
 
 /* ------------------
     Error Screen
@@ -141,47 +106,14 @@ if (loading) return <Loading/>
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
 
-            <Modal
-                visible={this.state.isModalVisible}
-                dismiss={this.hideModal}
-            >
 
-                <View style={styles.modalView}>
-                    <Text style={styles.modalText}>대화를 원하는 상대의 이메일을 입력해주세요</Text>
-                    <Input shadow={2} _light={{
-                        bg: "coolGray.100",
-                        _hover: {
-                            bg: "coolGray.200"
-                        },
-                        _focus: {
-                            bg: "coolGray.200:alpha.70"
-                        }
-                    }} _dark={{
-                        bg: "coolGray.800",
-                        _hover: {
-                            bg: "coolGray.900"
-                        },
-                        _focus: {
-                            bg: "coolGray.900:alpha.70"
-                        }
-                    }} placeholder="이메일"
-                        value={email}
-                        onChangeText={text => setEmail(text.toLowerCase())}
-                    />
-                    <TouchableOpacity
-                        style={[styles.button, styles.buttonClose]}
-                        onPress={handleCreateChatroom}>
-                        <Text style={styles.textStyle}>채팅하기</Text>
-                    </TouchableOpacity>
-                </View>
-
-            </Modal>
+            <CreateChatroomModal state = {modalVisible} setState = {setModalVisible} email={email} setEmail = {setEmail} handleCreateChatroom = {handleCreateChatroom}/>
             <TopContainer>
                 <UsernameContainer>
                     <UsernameText>{user?.displayName}</UsernameText>
                 </UsernameContainer>
                 <FormButtonContainer>
-                    <Button type="clear" onPress={this.showModal}>
+                    <Button type="clear" onPress={openCreateChatroomModal}>
                         <Icon
                             name='sc-telegram'
                             type='evilicon'
@@ -238,50 +170,5 @@ const MessageText = styled.Text`
     font-size: 20px;
     font-weight: 700;
 `
-
-const styles = StyleSheet.create({
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 22,
-    },
-    modalView: {
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    button: {
-        marginTop: 20,
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2,
-    },
-    buttonOpen: {
-        backgroundColor: '#F194FF',
-    },
-    buttonClose: {
-        backgroundColor: '#2196F3',
-    },
-    textStyle: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    modalText: {
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-});
 
 
