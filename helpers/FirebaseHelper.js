@@ -67,6 +67,19 @@ export default class FirebaseHelper {
         }
     }
 
+    static async updateDoc(collectionType, id, data) {
+        try {
+            console.log(collectionType, id, data);
+            const dRef = this.getRef(collectionType, id);
+            await updateDoc(dRef, data);
+            return true;
+        }
+        catch (e) {
+            console.log(e, "Err: FirebaseHelper.updateDoc");
+            return false;
+        }
+    }
+
     static async asyncUploadImageToStorage(uri, userEmail) {
         try {
             const blob = await this._asyncCreateBlobByImageUri(uri);

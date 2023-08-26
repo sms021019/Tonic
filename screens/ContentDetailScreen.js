@@ -28,6 +28,7 @@ import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
 import {userAtom, userAtomByEmail} from "../recoli/userState";
+import UserController from "../typeControllers/UserController";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
@@ -107,15 +108,14 @@ export default function ContentDetailScreen({navigation, postId}) {
     }
 
     async function asyncHandleReportPost() {
-        // await gUserModel.reportPost(postModel);
-        //
-        // events.invokeOnContentUpdate();
-        //
-        // setReportPostModalOn(false);
-        //
-        // showQuickMessage("The post is reported and blocked successfully. You can unblock it in the setting.");
-        //
-        // navigation.navigate(ScreenType.CONTENT);
+        if (await UserController.asyncReportPost(user.email, post.docId) === false) {
+            showQuickMessage("Fail to report post. Please try again.");
+        }
+        else {
+            showQuickMessage("The post is reported and blocked successfully.");
+        }
+
+        setReportPostModalOn(false);
     }
 
     async function asyncHandleReportUser() {

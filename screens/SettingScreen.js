@@ -9,7 +9,6 @@ import theme from "../utils/theme";
 import packageJson from '../package.json';
 
 export default function SettingScreen({navigation}) {
-
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTitle:'Setting',
@@ -23,7 +22,7 @@ export default function SettingScreen({navigation}) {
             console.log(error);
         })
 
-        navigation.navigate(NavigatorType.HOME);
+        navigation.navigate(NavigatorType.LOGIN);
     }
 
     function handleManageBlockedUserClick() {
