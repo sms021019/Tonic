@@ -8,13 +8,14 @@ import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import AuthController from "../typeControllers/AuthController";
 import {Center, Flex} from "native-base";
 import {useRecoilValue} from "recoil";
-import {userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoli/userState";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginFail, setLoginFail] = useState(false);
     const userAuth = useRecoilValue(userAuthAtom);
+    const user = useRecoilValue(userAtom);
 
     useEffect(() => {
         if (!userAuth) return;
@@ -22,7 +23,7 @@ export default function Login({navigation}) {
         if (userAuth.emailVerified === false) {
             navigation.navigate(ScreenType.EMAIL_VERIFICATION);
         }
-        else {
+        if (user) {
             navigation.navigate(NavigatorType.HOME);
         }
     }, [userAuth])
@@ -35,8 +36,8 @@ export default function Login({navigation}) {
 
     return (
         <Container>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none"/>
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={{...styles.buttonOutline, ...styles.buttonBorder}}
                                   onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>

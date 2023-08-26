@@ -29,7 +29,8 @@ export default function StartNavigator({navigation}) {
 
                 if (!user) {
                     console.log("onAuthStateChanged: Login")
-                    userStateManager.login(authenticatedUser);
+                    const result = await userStateManager.login(authenticatedUser);
+                    console.log("login:", result);
                 }
                 else {
                     console.log("onAuthStateChanged: Auth updated | email verified");

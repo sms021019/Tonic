@@ -1,4 +1,6 @@
-import {atom, selector} from "recoil";
+import {atom, atomFamily, selector, selectorFamily} from "recoil";
+import PostController from "../typeControllers/PostController";
+import UserController from "../typeControllers/UserController";
 
 
 export const userAuthAtom = atom({
@@ -11,7 +13,12 @@ export const userAtom = atom({
     default: /**@type {UserDoc}*/ null,
 })
 
-export const userAuthEmailVerified = atom({
-    key: "userAuthEmailVerified",
-    default: false,
+export const userAtomByEmail = atomFamily({
+    key: 'userAtomFamily',
+    default: selectorFamily({
+        key: 'postAtom/Default',
+        get: (email) => async () => {
+            return await UserController.asyncGetUser(email);
+        },
+    })
 })

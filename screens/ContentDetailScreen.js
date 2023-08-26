@@ -27,15 +27,14 @@ import {postAtom} from "../recoli/postState";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
-import {userAtom} from "../recoli/userState";
+import {userAtom, userAtomByEmail} from "../recoli/userState";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
     const {chatroomModelList, postStateManager} = useContext(GlobalContext);
     const /**@type UserDoc*/ user = useRecoilValue(userAtom);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
-
-    const [owner, setPostOwner] = useState(null);
+    const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post.ownerEmail));
 
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportPostModalOn, setReportPostModalOn] = useState(false);
@@ -45,19 +44,7 @@ export default function ContentDetailScreen({navigation, postId}) {
         message: "",
     })
 
-    useEffect(() => {
-        let userRef = doc(collection(db, DBCollectionType.USERS), post.ownerEmail);
-
-        getDoc(userRef).then((doc) => {
-            if(doc.data() === null) {
-                // To Do : error handling.
-                console.log(" err no post user");
-                return;
-            }
-
-            setPostOwner(doc.data());
-        })
-    }, [])
+    console.log('user', user);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -86,7 +73,7 @@ export default function ContentDetailScreen({navigation, postId}) {
         if (user.email === post.ownerEmail) return;
 
         const chatroomModel = ChatroomModel.newEmpty();
-        if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postId, owner, user) === false) return;
+        if(await chatroomModel.asyncSetNewChatroomData(postOwner?.username, postId, postOwner, user) === false) return;
 
         chatroomModelList.addOne(chatroomModel);
 
@@ -161,7 +148,7 @@ export default function ContentDetailScreen({navigation, postId}) {
                         <Text style={styles.titleText}>{post.title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
-                        <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
+                        <Text style={styles.userNameText}>{`@${postOwner?.username}`}</Text>
                         <Text style={{color:'gray'}}>{TimeHelper.getTopElapsedStringUntilNow(post.postTime)} ago</Text>
                     </Flex>
                     <Text style={styles.contentText}>{post.info}</Text>

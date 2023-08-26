@@ -1,20 +1,31 @@
 
-import React, {useState} from 'react'
-import {flexCenter, TonicButton} from "../utils/styleComponents";
-import theme from '../utils/theme'
+import React, {useEffect, useState} from 'react'
+import {Text, StyleSheet} from "react-native";
+import {Center} from "native-base";
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
-import { EMAIL_DOMAIN } from '../utils/utils';
-import ErrorScreen from './ErrorScreen';
+import theme from '../utils/theme'
 import UserController from "../typeControllers/UserController";
 import AuthController from "../typeControllers/AuthController";
+import {windowWidth} from "../utils/utils";
+import {flexCenter, TonicButton} from "../utils/styleComponents";
+import ErrorScreen from './ErrorScreen';
 
 
 const SignupScreen = () => {
-    const [email, setEmail] = useState(EMAIL_DOMAIN);
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [hasError, setHasError] = useState(false);
+    const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
+
+    useEffect(() => {
+        const regex = /\.edu$/i;
+        if (email === "" || regex.test(email)) {
+            setWrongEmailFormat(false);
+        }
+        else {
+            setWrongEmailFormat(true);
+        }
+    }, [email])
 
     async function handleSignUp() {
         const /**@type {Account}*/ newAccount = {
@@ -37,16 +48,19 @@ const SignupScreen = () => {
         if (await UserController.asyncAddUser(newUser) === false) return false;
     }
 
-    /* ------------------
-        Error Screen
-    -------------------*/
-    if (hasError) return <ErrorScreen/>
-
     return (
         <Container>
-            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername}/>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername} autoCapitalize="none"/>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none"/>
+            {
+                (wrongEmailFormat) &&
+                <Center style={styles.warningArea}>
+                    <Text style={styles.warningText}>
+                        Email should ends with '.edu'
+                    </Text>
+                </Center>
+            }
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
             <StartButton onPress={handleSignUp}>
                 <StartText>Sign up</StartText>
             </StartButton>
@@ -55,6 +69,12 @@ const SignupScreen = () => {
 }
 
 export default SignupScreen;
+
+
+const styles = StyleSheet.create({
+    warningArea: {width: windowWidth*0.9, padding:5, marginBottom: 10, backgroundColor:'#ffbdbd'},
+    warningText: {color:"#8a2020"},
+})
 
 
 const UsernameInputField = styled.TextInput`
@@ -70,7 +90,6 @@ const EmailInputField = styled.TextInput`
   border-bottom-width: 2px;
   width: ${windowWidth * 0.9}px;
   height: 50px;
-  margin-bottom: 20px;
   margin-top: 20px;
 `
 
@@ -79,6 +98,7 @@ const PasswordInputField = styled.TextInput`
   border-bottom-width: 2px;
   width: ${windowWidth * 0.9}px;
   height: 50px;
+  margin-top: 20px;
   margin-bottom: 20px;
 `
 const StartButton = styled.Pressable`

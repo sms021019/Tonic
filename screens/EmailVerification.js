@@ -44,8 +44,6 @@ const EmailVerification = ({navigation}) => {
 
 
     async function reloadUserAuth() {
-        console.log('reload');
-
         await userAuth.reload();
         if (userAuth.emailVerified === false) return;
 

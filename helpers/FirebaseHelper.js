@@ -58,6 +58,7 @@ export default class FirebaseHelper {
         try {
             const dRef = doc(collection(db, collectionType), id);
             const _doc = await getDoc(dRef);
+            if (!_doc.data()) return null;
             return _doc.data();
         }
         catch (e) {
