@@ -40,8 +40,8 @@ export default function MyPage({navigation}) {
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(docId) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId});
+    function handleContentClick(postId) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: postId});
     }
 
     function handleEditProfileClick() {
