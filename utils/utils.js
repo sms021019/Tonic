@@ -44,12 +44,10 @@ export const ModelStatusType = {
     LOADED: "loadedModelStatus",
 }
 export const DBCollectionType = {
-    USERS:      "users_test",
-    POSTS:      "posts_test",
+    USERS:      "users",
+    POSTS:      "posts",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
-    IMAGE:      "images",
-    REPORTED_USERS: "reportedUsers",
 }
 
 export const StorageDirectoryType = {

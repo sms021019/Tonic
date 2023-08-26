@@ -3,11 +3,8 @@ import {View, Text, TextInput, Button, Image, StyleSheet, TouchableOpacity} from
 import {Box, Center, Divider, Flex, ScrollView} from "native-base";
 import theme from "../utils/theme";
 import {NavigatorType, PageMode, ProfileImageType, ScreenType, windowWidth} from "../utils/utils";
-import styled from "styled-components/native";
-import {flexCenter, TonicButtonWhite} from "../utils/styleComponents";
 import GlobalContext from "../context/Context";
-import {Feather} from "@expo/vector-icons";
-import ImageHelper from "../helpers/ImageHelper";
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingAnimation from '../components/LoadingAnimation'
 import {updateProfile} from "firebase/auth";
 
@@ -35,7 +32,7 @@ export default function EditProfileScreen({navigation}) {
         }
     }, [save])
 
-    let myProfileImageUrl = ImageHelper.getProfileImageUrl(profileImageType);
+    let myProfileImageUrl = ProfileImageHelper.getProfileImageUrl(profileImageType);
 
     async function asyncUpdateProfile() {
         if (isProfileChanged()) {

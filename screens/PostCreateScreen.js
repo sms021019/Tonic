@@ -17,11 +17,13 @@ import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
 import {postIdsAtom} from "../recoli/postState";
-import {useSetRecoilState} from "recoil";
+import {useRecoilValue, useSetRecoilState} from "recoil";
+import {userAtom} from "../recoli/userState";
 
 
 export default function PostCreateScreen({navigation}) {
-    const {events, gUserModel, postStateManager} = useContext(GlobalContext);
+    const {events, postStateManager, userStateManager} = useContext(GlobalContext);
+    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
 
     const [title, setTitle] =           useState("");
     const [price, setPrice] =           useState(0);
@@ -73,7 +75,7 @@ export default function PostCreateScreen({navigation}) {
 
         let /** @type PostDoc */ newPost = {
             docId: null,
-            ownerEmail: gUserModel.model.email,
+            ownerEmail: user.email,
             title,
             price,
             info,
@@ -87,6 +89,7 @@ export default function PostCreateScreen({navigation}) {
         }
 
         postStateManager.addId(newPost.docId);
+        userStateManager.refreshUser(user.email);
 
         events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
@@ -117,14 +120,14 @@ export default function PostCreateScreen({navigation}) {
             <Flex direction="column" style={styles.content}>
                 <PostingImageUploader postImages={postImages} setPostImages={setPostImages}/>
                 <Divider/>
-                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle}/>
+                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle} autoCapitalize="none"/>
                 <Divider/>
                 <Flex direction="row" alignItems="center" justifyContent="left">
                     <SignText style={{color: "black"}}>$</SignText>
-                    <PriceInputField placeholder="Price" value={price.toLocaleString()} onChangeText={onPriceChange} keyboardType="numeric"/>
+                    <PriceInputField placeholder="Price" value={price.toLocaleString()} onChangeText={onPriceChange} keyboardType="numeric" autoCapitalize="none"/>
                 </Flex>
                 <Divider/>
-                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} />
+                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} autoCapitalize="none"/>
             </Flex>
         </Container>
     )
@@ -179,7 +182,8 @@ const SignText = styled.Text`
 const InfoInputField = styled.TextInput`
   width: ${windowWidth}px;
   height: 60px;
-  margin-left: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
   margin-top: 20px;
   font-size: 18px;
 `

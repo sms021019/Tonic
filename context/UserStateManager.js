@@ -10,9 +10,7 @@ export default function UserStateManager({userStateManager}) {
     userStateManager.login = async (userAuth) => {
         setUserAuth(userAuth);
 
-        console.log("1", userAuth.email);
         const userDoc = await UserController.asyncGetUser(userAuth.email);
-        console.log("2", userDoc);
         if (!userDoc) return false;
 
         setUser(userDoc);
@@ -25,5 +23,13 @@ export default function UserStateManager({userStateManager}) {
 
     userStateManager.isReady = () => {
         return (userAuth && userAuth?.emailVerified && user);
+    }
+
+    userStateManager.refreshUser = async (email) => {
+        const userDoc = await UserController.asyncGetUser(email);
+        if (!userDoc) return false;
+
+        setUser(userDoc);
+        return true;
     }
 }

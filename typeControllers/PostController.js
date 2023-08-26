@@ -79,12 +79,12 @@ export default class PostController {
         try {
             if (await this.asyncUploadPostImagesToStorage(post.postImages, post.ownerEmail) === false) return false;
 
-            let dRef = FirebaseHelper.getNewRef(DBCollectionType.POSTS);
-            post.docId = dRef.id
-            batch.set(dRef, post);
+            const postRef = FirebaseHelper.getNewRef(DBCollectionType.POSTS);
+            post.docId = postRef.id
+            batch.set(postRef, post);
 
             const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
-            batch.update(userRef, {posts: arrayUnion(dRef)});
+            batch.update(userRef, {myPostIds: arrayUnion(post.docId)});
 
             return true;
         }

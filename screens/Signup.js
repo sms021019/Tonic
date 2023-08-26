@@ -6,9 +6,10 @@ import styled from "styled-components/native";
 import theme from '../utils/theme'
 import UserController from "../typeControllers/UserController";
 import AuthController from "../typeControllers/AuthController";
-import {windowWidth} from "../utils/utils";
+import {ProfileImageType, windowWidth} from "../utils/utils";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import ErrorScreen from './ErrorScreen';
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 
 const SignupScreen = () => {
@@ -40,6 +41,7 @@ const SignupScreen = () => {
             uid: newAccount.uid,
             email: newAccount.email,
             username: newAccount.username,
+            profileImageType: ProfileImageHelper.getRandomProfileImageType(),
             myPostIds: [],
             chatrooms: [],
             reportedUserEmails: [],

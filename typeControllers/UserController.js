@@ -1,9 +1,4 @@
-import {createUserWithEmailAndPassword, updateProfile} from "firebase/auth";
-import {auth, db} from "../firebase";
-import ImageHelper from "../helpers/ImageHelper";
-import DBHelper from "../helpers/DBHelper";
 import {DBCollectionType, LOG_ERROR} from "../utils/utils";
-import {doc, runTransaction, writeBatch} from "firebase/firestore";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 
 
@@ -27,5 +22,4 @@ export default class UserController {
             return false;
         }
     }
-
 }

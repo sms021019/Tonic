@@ -44,10 +44,9 @@ export default function ContentDetailScreen({navigation, postId}) {
         message: "",
     })
 
-    console.log('user', user);
-
     useLayoutEffect(() => {
         navigation.setOptions({
+            headerShown: true,
             headerTransparent: true,
             headerTitle: "",
             headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)} shadow={true}/>,

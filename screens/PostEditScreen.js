@@ -128,14 +128,14 @@ export default function PostEditScreen({navigation, postId}) {
             <Flex direction="column" style={styles.content}>
                 <PostingImageUploader postImages={postImages} setPostImages={setPostImages}/>
                 <Divider/>
-                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle}/>
+                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle} autoCapitalize="none"/>
                 <Divider/>
                 <Flex direction="row" alignItems="center" justifyContent="left">
                     <SignText style={{color: "black"}}>$</SignText>
-                    <PriceInputField placeholder="Price" value={price.toLocaleString()} onChangeText={onPriceChange} keyboardType="numeric"/>
+                    <PriceInputField placeholder="Price" value={price.toLocaleString()} onChangeText={onPriceChange} keyboardType="numeric" autoCapitalize="none"/>
                 </Flex>
                 <Divider/>
-                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} />
+                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} autoCapitalize="none"/>
             </Flex>
         </Container>
     )

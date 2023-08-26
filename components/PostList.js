@@ -6,22 +6,16 @@ import ImageModel from "../models/ImageModel";
 import PostModel from "../models/PostModel";
 import theme from "../utils/theme";
 
-export default function PostList(props) {
-    if (props.modelList === null) return (<></>)
-    if (props.modelList.length === 0) return (
-        <Center style={styles.noPostArea}>
-            <Text style={styles.noPostText}>No blocked posts.</Text>
-        </Center>
-    )
-    const handleClick = props.handleClick? props.handleClick : null;
-    const margin = props.margin? props.margin : 20;
+export default function PostList({postIds, handleClick, margin}) {
+
+    margin = margin? margin : 10;
 
     return (
         <Center flex={1} px="0">
-            { props.modelList.map((model) => (
-                <View key={model.doc_id}>
+            { postIds.map((id) => (
+                <View key={id}>
                     <View style={{margin: margin}}>
-                        {/*<Post onClickHandler={() => handleClick(model.doc_id)} key={model.doc_id} model={model}/>*/}
+                        <Post onClickHandler={() => handleClick(id)} id={id}/>
                     </View>
                     <Divider/>
                 </View>

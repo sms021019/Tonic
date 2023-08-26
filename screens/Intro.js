@@ -14,7 +14,7 @@ export default function Intro({navigation}) {
     const user = useRecoilValue(userAtom);
 
     useEffect(() => {
-        if (userStateManager.isReady()) {
+        if (userAuth && userAuth?.emailVerified) {
             console.log("go to home");
             navigation.navigate(NavigatorType.HOME);
         }

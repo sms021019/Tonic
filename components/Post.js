@@ -7,14 +7,14 @@ import {postAtom} from "../recoli/postState";
 import {TouchableOpacity} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
 
-export default function Post(props) {
-    const post = useRecoilValue(postAtom(props.id));
+export default function Post({id, onClickHandler}) {
+    const post = useRecoilValue(postAtom(id));
 
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 
     function handlePostClick() {
-        props.onClickHandler();
+        onClickHandler();
     }
 
     return (
