@@ -7,6 +7,15 @@ import {arrayRemove} from "@firebase/firestore";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class PostController {
+
+    static async asyncGetPostIds() {
+        return await FirebaseHelper.getDocIds(DBCollectionType.POSTS);
+    }
+
+    static async asyncGetPost(id) {
+        return /**@type {PostDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.POSTS, id);
+    }
+
     static async asyncAdd(post) {
         if (!this.isValid(post)) return false;
 
@@ -61,7 +70,7 @@ export default class PostController {
 // -------------- BATCH POST --------------------
     /**
      * @param batch
-     * @param {Post }post
+     * @param {PostDoc}post
      * @returns {Promise<boolean>}
      *
      * This function will create and set new 'docId' to the post.
@@ -87,8 +96,8 @@ export default class PostController {
 
     /**
      * @param batch
-     * @param {Post} oldPost
-     * @param {Post} newPost
+     * @param {PostDoc} oldPost
+     * @param {PostDoc} newPost
      * @returns {Promise<boolean>}
      */
     static async asyncSetUpdatePostActionToBatch(batch, oldPost, newPost) {
@@ -113,7 +122,7 @@ export default class PostController {
 
     /**
      * @param batch
-     * @param {Post} post
+     * @param {PostDoc} post
      * @returns {Promise<boolean>}
      */
     static async asyncSetDeletePostActionToBatch(batch, post) {

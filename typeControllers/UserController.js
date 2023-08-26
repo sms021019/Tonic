@@ -9,24 +9,18 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class UserController {
 
-    static async asyncCreateUser(username, email, password) {
+    static async asyncGetUser(email) {
+        return /**@type {UserDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.USERS, email);
+    }
+
+    /**
+     *
+     * @param {UserDoc} user
+     * @returns {Promise<boolean>}
+     */
+    static async asyncAddUser(user) {
         try {
-            const uid = await this.asyncCreateUserAuth(username, email, password);
-            if (!uid) return false;
-
-            const /**@type UserDoc*/ user = {
-                uid,
-                email,
-                username,
-                myPostIds: [],
-                chatrooms: [],
-                reportedUserEmails: [],
-                reportedPostIds: [],
-            }
-
-            if (await FirebaseHelper.addDoc(DBCollectionType.USERS, user.email, user) === false) return false;
-
-            return true;
+            return await FirebaseHelper.addDoc(DBCollectionType.USERS, user.email, user);
         }
         catch (e) {
             console.log("Err: UserController.asyncCreateUser");
@@ -34,17 +28,4 @@ export default class UserController {
         }
     }
 
-    static async asyncCreateUserAuth(username, email, password) {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const userAuth = userCredential.user;
-            await updateProfile(userAuth, {displayName: username})
-
-            return userAuth.uid;
-        }
-        catch (e) {
-            console.log("Err: UserController.asyncCreateUserAuth");
-            return null;
-        }
-    }
 }

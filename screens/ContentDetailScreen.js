@@ -27,11 +27,13 @@ import {postAtom} from "../recoli/postState";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
+import {userAtom} from "../recoli/userState";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {user, chatroomModelList, postStateManager} = useContext(GlobalContext);
-    const /**@type Post*/ post = useRecoilValue(postAtom(postId))
+    const {chatroomModelList, postStateManager} = useContext(GlobalContext);
+    const /**@type UserDoc*/ user = useRecoilValue(userAtom);
+    const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
 
     const [owner, setPostOwner] = useState(null);
 

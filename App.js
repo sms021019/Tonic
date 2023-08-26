@@ -13,7 +13,6 @@ import FlashMessage from "react-native-flash-message";
 import {
     RecoilRoot,
 } from 'recoil';
-import TestA from "./screens/TestA";
 import LoadingScreen from './screens/LoadingScreen'
 
 export default function App() {

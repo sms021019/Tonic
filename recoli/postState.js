@@ -1,6 +1,6 @@
 import {atom, atomFamily, selector, selectorFamily} from "recoil";
-import FirebaseHelper from '../helpers/FirebaseHelper';
-import {DBCollectionType} from "../utils/utils";
+import PostController from "../typeControllers/PostController";
+
 
 /* ---------------
    RECOIL STATES
@@ -11,7 +11,7 @@ export const postIdsAtom = atom({
     default: selector({
         key: 'postIdsAtom/Default',
         get: async () => {
-            return await getPostIds();
+            return await PostController.asyncGetPostIds();
         }
     })
 })
@@ -21,22 +21,7 @@ export const postAtom = atomFamily({
     default: selectorFamily({
         key: 'postAtom/Default',
         get: (id) => async () => {
-            return await getPost(id);
+            return await PostController.asyncGetPost(id);
         },
     })
 });
-
-
-/* ---------------
-    FUNCTIONS
- ----------------*/
-
-async function getPostIds() {
-    return await FirebaseHelper.getDocIds(DBCollectionType.POSTS);
-}
-
-async function getPost(id) {
-    return await FirebaseHelper.getDocDataById(DBCollectionType.POSTS, id);
-}
-
-

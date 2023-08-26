@@ -6,27 +6,35 @@ import styled from "styled-components/native";
 import {windowWidth} from "../utils/utils";
 import { EMAIL_DOMAIN } from '../utils/utils';
 import ErrorScreen from './ErrorScreen';
-import UserModel from '../models/UserModel';
+import UserController from "../typeControllers/UserController";
+import AuthController from "../typeControllers/AuthController";
 
 
-const LoginScreen = () => {
+const SignupScreen = () => {
     const [email, setEmail] = useState(EMAIL_DOMAIN);
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [hasError, setHasError] = useState(false);
 
-
-    const handleSignUp = async () => {
-        const userModel = UserModel.newSignup(username, email, password);
-        if(await userModel.asyncCreateUser() === false){
-            //TO DO
-            setHasError(true);
-            return;
-        }
-    }
-
     async function handleSignUp() {
-        if (await UserController.asyncCreateUser(username, email, password) === false) return false;
+        const /**@type {Account}*/ newAccount = {
+            uid: null,
+            email,
+            password,
+            username,
+        }
+        if (await AuthController.asyncCreateUserAuth(newAccount) === false) return false;
+
+        const /**@type UserDoc*/ newUser = {
+            uid: newAccount.uid,
+            email: newAccount.email,
+            username: newAccount.username,
+            myPostIds: [],
+            chatrooms: [],
+            reportedUserEmails: [],
+            reportedPostIds: [],
+        }
+        if (await UserController.asyncAddUser(newUser) === false) return false;
     }
 
     /* ------------------
@@ -40,13 +48,13 @@ const LoginScreen = () => {
             <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
             <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
             <StartButton onPress={handleSignUp}>
-                <StartText>가입하기</StartText>
+                <StartText>Sign up</StartText>
             </StartButton>
         </Container>
     )
 }
 
-export default LoginScreen;
+export default SignupScreen;
 
 
 const UsernameInputField = styled.TextInput`
@@ -86,12 +94,6 @@ const StartText = styled.Text`
   font-weight: 600;
 `;
 
-const OptionText = styled.Text`
-  color: black;
-  font-size: 12px;
-  margin-bottom: 10px;
-  color: ${theme.colors.foreground};
-`
 
 const Container = styled.View`
   ${flexCenter};

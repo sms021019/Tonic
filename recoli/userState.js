@@ -1,17 +1,17 @@
 import {atom, selector} from "recoil";
 
 
-export const userAtom = atom({
-    key: 'userAtom',
-    default: selector({
-        key: 'userAtom/Default',
-        get: async () => {
-            return await getUser();
-        }
-    })
+export const userAuthAtom = atom({
+    key: "userAuthAtom",
+    default: /**@type {User}*/ null,
 })
 
+export const userAtom = atom({
+    key: 'userAtom',
+    default: /**@type {UserDoc}*/ null,
+})
 
-async function getUser() {
-
-}
+export const userAuthEmailVerified = atom({
+    key: "userAuthEmailVerified",
+    default: false,
+})

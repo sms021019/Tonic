@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import Context from './Context'
 import PostStateManager from "./PostStateManager";
+import UserStateManager from "./UserStateManager";
 
 export default function ContextWrapper(props) {
     const [user, setUser] = useState(null);
@@ -12,6 +13,7 @@ export default function ContextWrapper(props) {
     })
 
     const [postStateManager, setPostStateManager] = useState({});
+    const [userStateManager, setUserStateManager] = useState({});
 
     const [events, setEvents] = useState({
         onContentChange: [],
@@ -118,7 +120,8 @@ export default function ContextWrapper(props) {
     }
 
     return (
-        <Context.Provider value={{user, setUser, gUserModel, events, chatroomModelList, postStateManager}}>
+        <Context.Provider value={{user, setUser, gUserModel, events, chatroomModelList, postStateManager, userStateManager}}>
+            <UserStateManager userStateManager={userStateManager}/>
             <PostStateManager postStateManager={postStateManager}/>
             {[props.children]}
         </Context.Provider>

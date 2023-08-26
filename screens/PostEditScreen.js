@@ -82,7 +82,7 @@ export default function PostEditScreen({navigation, postId}) {
 
     async function asyncSavePost() {
 
-        let /** @type Post */ newPost = {
+        let /** @type PostDoc */ newPost = {
             docId: post.docId,
             ownerEmail: post.ownerEmail,
             title,

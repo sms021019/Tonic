@@ -23,10 +23,7 @@ import LoadingScreen from '../screens/LoadingScreen'
 import theme from "../utils/theme";
 
 export default function ContentScreen({navigation}) {
-    const {user} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
-    const [hasError, setHasError] = useState(false);
-
     const postIds = useRecoilValue(postIdsAtom);
 
     console.log("postIDs:", postIds);
@@ -38,13 +35,6 @@ export default function ContentScreen({navigation}) {
         });
     }, [navigation]);
 
-    if (hasError) {
-        return <ErrorScreen/>;
-    }
-
-    if (!user) {
-        return <LoadingScreen/>
-    }
 
 /* ------------------
        Handlers

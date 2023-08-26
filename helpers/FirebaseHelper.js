@@ -49,12 +49,21 @@ export default class FirebaseHelper {
     }
 
     /**
-    * @returns {Promise<Post>} The fetched document data.
-    */
+     *
+     * @param collectionType
+     * @param id
+     * @returns {Promise<DocumentData|null>}
+     */
     static async getDocDataById(collectionType, id) {
-        const dRef = doc(collection(db, collectionType), id);
-        const _doc = await getDoc(dRef);
-        return /**@type Post*/ (_doc.data());
+        try {
+            const dRef = doc(collection(db, collectionType), id);
+            const _doc = await getDoc(dRef);
+            return _doc.data();
+        }
+        catch (e) {
+            console.log("Err: FirebaseHelper.getDocDataById");
+            return null
+        }
     }
 
     static async asyncUploadImageToStorage(uri, userEmail) {

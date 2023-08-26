@@ -71,7 +71,7 @@ export default function PostCreateScreen({navigation}) {
     async function asyncUploadPost() {
         let postTime = TimeHelper.getTimeNow();
 
-        let /** @type Post */ newPost = {
+        let /** @type PostDoc */ newPost = {
             docId: null,
             ownerEmail: gUserModel.model.email,
             title,

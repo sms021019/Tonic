@@ -1,11 +1,21 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
 import {flexCenter, TonicButton, TonicButtonWhite} from "../utils/styleComponents";
 import styled from "styled-components/native";
-import {ScreenType, windowWidth} from "../utils/utils";
+import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
+import {useRecoilValue} from "recoil";
+import {userAuthAtom} from "../recoli/userState";
 
 export default function Intro({navigation}) {
+    const userAuth = useRecoilValue(userAuthAtom);
+
+    useEffect(() => {
+        if (userAuth && userAuth?.emailVerified) {
+            navigation.navigate(NavigatorType.HOME);
+        }
+    }, [userAuth])
+
     const goLogin = () => {
         navigation.push(ScreenType.LOGIN);
     };

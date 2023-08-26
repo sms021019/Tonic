@@ -1,5 +1,5 @@
 
-export interface Post {
+export interface PostDoc {
     docId: string;
     ownerEmail: string;
     title: string;

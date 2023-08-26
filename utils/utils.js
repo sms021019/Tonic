@@ -74,13 +74,6 @@ export const ProfileImageType = {
 
 export const windowWidth = Dimensions.get("window").width;
 export const windowHeight = Dimensions.get("window").height;
-export const IMAGE_SIZE = {
-    shortCardWidth: windowWidth * 0.44,
-    shortCardHeight: windowWidth * 0.34,
-    itemDetailWidth: windowWidth,
-    itemDetailHeight: windowHeight * 0.5,
-};
-
 
 
 export function LOG(message) {
