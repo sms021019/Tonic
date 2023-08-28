@@ -35,4 +35,13 @@ export default class UserController {
         }
         return true;
     }
+
+    /**
+     *
+     * @param {UserDoc} user
+     * @param {string} postId
+     */
+    static isReportedPostId(user, postId) {
+        return user.reportedPostIds.includes(postId);
+    }
 }

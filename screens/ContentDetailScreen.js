@@ -114,7 +114,6 @@ export default function ContentDetailScreen({navigation, postId}) {
         else {
             showQuickMessage("The post is reported and blocked successfully.");
         }
-
         setReportPostModalOn(false);
     }
 

@@ -13,12 +13,7 @@ export default function PostList({postIds, handleClick, margin}) {
     return (
         <Center flex={1} px="0">
             { postIds.map((id) => (
-                <View key={id}>
-                    <View style={{margin: margin}}>
-                        <Post onClickHandler={() => handleClick(id)} id={id}/>
-                    </View>
-                    <Divider/>
-                </View>
+                <Post key={id} onClickHandler={() => handleClick(id)} id={id}/>
             ))}
         </Center>
     )
