@@ -8,7 +8,7 @@ import {
     signInWithEmailAndPassword, 
     signOut, 
     sendEmailVerification } from "firebase/auth";
-import ImageHelper from "../helpers/ImageHelper";
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import {arrayUnion, collection, doc, writeBatch} from "firebase/firestore";
 import {arrayRemove} from "@firebase/firestore";
 
@@ -46,7 +46,7 @@ export default class UserModel {
 
         // Other
         this.password = password;
-        this.profileImageUrl = ImageHelper.getProfileImageUrl(this.profileImageType);
+        this.profileImageUrl = ProfileImageHelper.getProfileImageUrl(this.profileImageType);
     }
 
     copy() {
@@ -54,7 +54,7 @@ export default class UserModel {
     }
 
     static newSignup(username, email, password) {
-        return new UserModel(null, null, username, email, password, [], [], ImageHelper.getRandomProfileImageType(), [], [], false, [], 0);
+        return new UserModel(null, null, username, email, password, [], [], ProfileImageHelper.getRandomProfileImageType(), [], [], false, [], 0);
     }
 
     static async loadDataByAuth(auth) {
@@ -108,7 +108,7 @@ export default class UserModel {
         }
 
         if (this.profileImageType === undefined || this.profileImageType === null) {
-            this.profileImageType = ImageHelper.getRandomProfileImageType();
+            this.profileImageType = ProfileImageHelper.getRandomProfileImageType();
             data["profileImageType"] = this.profileImageType;
         }
         await DBHelper.updateData(this.ref, data);
@@ -157,7 +157,7 @@ export default class UserModel {
                     uid: user.uid,
                     email: user.email,
                     posts: [],
-                    profileImageType: ImageHelper.getRandomProfileImageType(),
+                    profileImageType: ProfileImageHelper.getRandomProfileImageType(),
                     postReports: [],
                     userReports: [],
                     blocked: false,

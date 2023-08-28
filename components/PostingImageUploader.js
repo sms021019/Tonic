@@ -9,15 +9,22 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {LOG, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import ImageModel from "../models/ImageModel";
+import {PostImage} from "../types/PostCollection";
 
 
 const MAX_IMAGE_UPLOAD_COUNT = 4;
 
-export default function PostingImageUploader ({imageModels, setImageModels}) {
+/**
+ * @param {{
+ *   postImages: PostImage[];
+ *   setPostImages: React.Dispatch<React.SetStateAction<PostImage[]>>;
+ * }} props
+ */
+export default function PostingImageUploader ({postImages, setPostImages}) {
     const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
 
     async function asyncGetImageFromUserLibrary() {
-        if (imageModels.length >= MAX_IMAGE_UPLOAD_COUNT) return;
+        if (postImages.length >= MAX_IMAGE_UPLOAD_COUNT) return;
 
         if (!status?.granted) {
             const permission = await requestPermission();
@@ -28,76 +35,70 @@ export default function PostingImageUploader ({imageModels, setImageModels}) {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            maxWidth: 512,
-            maxHeight: 512,
             aspect: [1, 1]
         });
 
-        if (result?.assets[0] === null) return;
+        if (result.canceled) return;
 
-        const originalImage = result.assets[0];
+        const pickedImage = result.assets[0];
+        console.log('filesize', pickedImage.fileSize)
 
-        const smallImage = await ImageManipulator.manipulateAsync(
-            originalImage.uri,
+        const lowImage = await ImageManipulator.manipulateAsync(
+            pickedImage.uri,
             [{ resize: { width: 100, height: 100 } }],
             {}
         );
 
-        let model = ImageModel.newModel(originalImage.uri, smallImage.uri);
-        setImageModels(prev => ([...prev, model]))
-    }
+        const midImage = await ImageManipulator.manipulateAsync(
+            pickedImage.uri,
+            [{ resize: { width: 1024, height: 1024 } }],
+            {}
+        )
 
 
-    const UploadedImages = getUploadedImagesComp();
-
-    function getUploadedImagesComp() {
-        let component = [];
-
-        for (let i = 0; i < MAX_IMAGE_UPLOAD_COUNT; i++) {
-            if (imageModels[i]) {
-                component.push(
-                    <Box key={i}>
-                        <UploadImageBox>
-                            <UploadImage source={{uri: imageModels[i].sDownloadUrl}}/>
-                        </UploadImageBox>
-                        <TouchableOpacity
-                            style={styles.imageBox}
-                            onPress={() => handleDeleteImage(i)}
-                        >
-                            <Icon name="close-circle" size={20} color="#242424"/>
-                        </TouchableOpacity>
-                    </Box>
-                )
-            } else {
-                component.push(<UploadImageBox key={i}><GrayText>{i + 1}</GrayText></UploadImageBox>);
-            }
+        let /** @type PostImage */ newPostImage = {
+            downloadUrlLow: lowImage.uri,
+            downloadUrlMid: midImage.uri,
+            storageUrlLow: "",
+            storageUrlMid: "",
         }
-        return component
+
+        setPostImages(prev => ([...prev, newPostImage]))
     }
 
-    function handleDeleteImage(index) {
-        if (index < 0 || index >= imageModels.length) { LOG(this, "ERR::Invalid index"); return; }
+    function handleRemoveImage(postImage) {
+        if (!postImage) { LOG(this, "ERR::Invalid index"); return; }
 
-        let tImageModels = imageModels;
-        tImageModels.splice(index, 1);
-        setImageModels(() => ([...tImageModels]));
+        setPostImages(postImages.filter((_postImage) => _postImage.downloadUrlLow !== postImage.downloadUrlLow))
     }
-
 
     return (
         <Flex direction="row" w="100%" h="100px" style={styles.flexCenter}>
             <Box style={{margin: windowWidth * 0.05}}>
                 <TouchableOpacity
                     onPress={asyncGetImageFromUserLibrary}
-                    style={[styles.button, styles.buttonOutline]}
+                    style={styles.button}
                 >
                     <MaterialCommunityIcons name="camera-outline" color={theme.colors.iconGray} size={35}/>
-                    <GrayText>{imageModels.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
+                    <GrayText>{postImages.length + "/" + MAX_IMAGE_UPLOAD_COUNT}</GrayText>
                 </TouchableOpacity>
             </Box>
-            <Divider orientation="vertical" height="80%"/>
             <ContentGroupBox>
-                {UploadedImages}
+                {
+                    postImages.map((postImage) => (
+                        <Box key={postImage.downloadUrlLow} styles={{padding:10}}>
+                            <UploadImageBox>
+                                <UploadImage source={{uri: postImage.downloadUrlLow}}/>
+                            </UploadImageBox>
+                            <TouchableOpacity
+                                style={styles.imageBox}
+                                onPress={() => handleRemoveImage(postImage)}
+                            >
+                                <Icon name="close-circle" size={20} color="#242424"/>
+                            </TouchableOpacity>
+                        </Box>
+                    ))
+                }
             </ContentGroupBox>
         </Flex>
     )
@@ -107,10 +108,10 @@ const styles = StyleSheet.create({
     button: {
         width: windowWidth * 0.2,
         height: windowWidth * 0.2,
-        borderRadius: 20,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 3,
+        borderWidth: 2,
         borderColor: theme.colors.iconGray,
     },
     lottie: {
@@ -118,11 +119,12 @@ const styles = StyleSheet.create({
         height: 200,
     },
 
-    imageBox: {position: 'absolute', left: 40, top: -5}
+    imageBox: {position: 'absolute', top:-7, left:-7}
 })
 
 const UploadImageBox = styled.View`
   overflow: hidden;
+  margin: 5px;
   width: ${windowWidth * 0.14}px;
   height: ${windowWidth * 0.14}px;
   border-width: 1px;
@@ -146,6 +148,5 @@ const ContentGroupBox = styled.View`
   display: flex;
   flex-direction: row;
   flex: 1;
-  align-items: center;
-  justify-content: space-evenly;
+  justify-content: start;
 `

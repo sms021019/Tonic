@@ -225,6 +225,7 @@ export default class PostModel {
         }
 
         let imageModels = await ImageModel.refsToModels(data.imageRefs);
+
         if (imageModels === null) return null;
 
         return new PostModel(ModelStatusType.LOADED, data.doc_id, data.ref, data.imageRefs, imageModels, data.title, data.price, data.info, data.email, data.postTime, data.reportCount, data.reporters, data.blocked)

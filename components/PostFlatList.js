@@ -1,5 +1,5 @@
 import {Center, Divider, FlatList} from "native-base";
-import {View} from "react-native";
+import {View, Text} from "react-native";
 import Post from "./Post";
 import React from "react";
 import ImageModel from "../models/ImageModel";
@@ -8,8 +8,7 @@ import {ModelStatusType} from "../utils/utils";
 
 export default function PostFlatList(props) {
 
-    if (props.modelList === null) return (<></>)
-
+    const postIds = props.postIds ?? [];
     const handleClick = props.handleClick? props.handleClick : null;
     const margin = props.margin? props.margin : 20;
     const refreshing = props.refreshing? props.refreshing : false;
@@ -18,12 +17,12 @@ export default function PostFlatList(props) {
     return (
         <Center flex={1} px="0">
             <FlatList
-                data={props.modelList}
-                renderItem={(data) => {
+                data={postIds}
+                renderItem={(postId) => {
                     return (
-                        <View key={data.item.doc_id}>
+                        <View key={postId.item}>
                             <View style={{margin: margin}}>
-                                <Post onClickHandler={() => handleClick(data.item.doc_id)} key={data.item.doc_id} model={data.item}/>
+                                <Post onClickHandler={() => handleClick(postId.item)} id={postId.item}/>
                             </View>
                             <Divider/>
                         </View>

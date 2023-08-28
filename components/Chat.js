@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import GlobalContext from "../context/Context";
 import {
     Pressable,
@@ -17,12 +17,13 @@ import {
 } from "native-base";
 import {DBCollectionType, windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
+
 import {TouchableOpacity, View} from "react-native";
-import ChatroomModel from "../models/ChatroomModel";
 import TimeHelper from "../helpers/TimeHelper";
 import DBHelper from "../helpers/DBHelper";
 import UserModel from "../models/UserModel";
 import ImageHelper from "../helpers/ImageHelper";
+
 
 export default function Chat(props) {
     const { user, gUserModel } = useContext(GlobalContext);
@@ -37,7 +38,6 @@ export default function Chat(props) {
             <View> no model data </View>
         )
     }
-
 
     const chatroomModel = props.model;
     const index = props.index;
@@ -56,16 +56,6 @@ export default function Chat(props) {
         setOpponentprofileImageUrl(ImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
         setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
     },[])
-
-    // useEffect(() => {
-    //     if(opponentEmail === null) return;
-        
-    //     let tempData = UserModel.loadDataById(opponentEmail);
-    //     setopponentProfileUrl(ImageHelper.getProfileImageUrl(tempData.profileImageType));
-
-    // })
-
-
 
 
     function handlePostClick() {

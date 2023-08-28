@@ -2,29 +2,29 @@ import {windowWidth} from "../utils/utils";
 import {Image, StyleSheet, View} from "react-native";
 import Swiper from "react-native-swiper";
 import React from "react";
+import {Box} from "native-base";
 
 
-export default function ImageSwiper({imageModels}) {
+
+/**
+ * @param {{
+ *   postImages: PostImage[];
+ * }} props
+ */
+export default function ImageSwiper({postImages}) {
 
     return (
         <Swiper
             height={windowWidth}
-            dot={<View style={styles.dot} />}
-            activeDot={<View style={styles.activeDot} />}
+            dot={<Box style={styles.dot} />}
+            activeDot={<Box style={styles.activeDot} />}
             loop={false}
         >
-            {imageModels.map((model, index) => (
+            {postImages.map((postImage, index) => (
                 <View key={index}>
                     <Image style={{width: windowWidth, height: windowWidth}}
-                           source={{uri: model.oDownloadUrl}}
+                           source={{uri: postImage.downloadUrlMid}}
                     />
-                    {/*<LinearGradient*/}
-                    {/*    // Background Linear Gradient*/}
-                    {/*    colors={['rgba(0,0,0,0.1)', 'transparent']}*/}
-                    {/*    start={{ x: 0, y: 0.2}}*/}
-                    {/*    end={{x: 0, y: 0.3}}*/}
-                    {/*    style={styles.background}*/}
-                    {/*/>*/}
                 </View>
             ))}
         </Swiper>
@@ -32,6 +32,6 @@ export default function ImageSwiper({imageModels}) {
 }
 
 const styles = StyleSheet.create({
-    dot:            { backgroundColor: "rgba(255,255,255,.5)", width: 7, height: 7, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
-    activeDot:      { backgroundColor: "#FFF", width: 8, height: 8, borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,},
+    dot:            { backgroundColor: "#ececec", width: 6, height: 6, borderRadius: 4, margin: 3, borderColor:"rgba(0,0,0,0.3)", borderWidth: 0.5},
+    activeDot:      { backgroundColor: "#ffffff", width: 8, height: 8, borderRadius: 4, margin: 3, borderColor:"rgba(0,0,0,0.3)", borderWidth: 0.5},
 });

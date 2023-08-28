@@ -35,8 +35,6 @@ import Loading from '../components/Loading';
 import {doc} from "firebase/firestore";
 import CreateChatroomModal from '../components/CreateChatroomModal';
 
-
-
 export default function Channel({ navigation: {navigate}}) {
     const { user, gUserModel } = useContext(GlobalContext);    
     const [modalVisible, setModalVisible] = useState(false);
@@ -54,12 +52,12 @@ export default function Channel({ navigation: {navigate}}) {
     
     useEffect(() => {
         if(chatroomRefs === null) return;
-        loadChatrooms();
+        loadChatrooms().then();
     },[chatroomRefs]);
 
     function handleRefresh() {
         setRefreshing(true)
-        loadChatrooms();
+        loadChatrooms().then();
     }
 
     function openCreateChatroomModal() {
@@ -108,6 +106,7 @@ if (loading) return <Loading/>
 
 
             <CreateChatroomModal state = {modalVisible} setState = {setModalVisible} email={email} setEmail = {setEmail} handleCreateChatroom = {handleCreateChatroom}/>
+
             <TopContainer>
                 <UsernameContainer>
                     <UsernameText>{user?.displayName}</UsernameText>
@@ -125,7 +124,7 @@ if (loading) return <Loading/>
             </TopContainer>
             <Divider />
             <TopContainer>
-                <MessageText>메시지</MessageText>
+                <MessageText>메세지</MessageText>
             </TopContainer>
             <ContentArea>
                 {Content}

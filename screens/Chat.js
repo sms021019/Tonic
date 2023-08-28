@@ -1,4 +1,3 @@
-
 import React, {
     useState,
     useEffect,
@@ -18,30 +17,17 @@ import {
     doc
 } from 'firebase/firestore';
 
+
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
-
-import { Menu, Pressable, HamburgerIcon } from 'native-base';
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
-import * as ImagePicker from 'expo-image-picker';
-import Icon from 'react-native-vector-icons/Octicons';
-import Icon2 from 'react-native-vector-icons/Feather';
 import ChatroomModel from '../models/ChatroomModel';
 import ErrorScreen from "./ErrorScreen";
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
-
-import PostModel from '../models/PostModel';
-import DBHelper from '../helpers/DBHelper';
-import Loading from '../components/Loading';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import UserModel from "../models/UserModel";
-
-
-
 
 export default function Chat({navigation, route}) {
     const { user, gUserModel } = useContext(GlobalContext);
@@ -197,7 +183,6 @@ export default function Chat({navigation, route}) {
                 
             />
         </SafeAreaView>
-            
     )
 }
 

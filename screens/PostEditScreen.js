@@ -1,123 +1,116 @@
 // React
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {Button, StyleSheet, Text} from 'react-native'
+import {Button, StyleSheet, Text, View} from 'react-native'
 // Design
 import styled from "styled-components/native";
 import {Divider, Flex} from "native-base";
-// Firebase
-import {auth} from "../firebase";
 // Utils
 import {LOG_ERROR, NavigatorType, PageMode, windowWidth} from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
 import AnimatedLoader from "react-native-animated-loader";
-// Model
-import PostModel from '../models/PostModel'
 // Context
 import GlobalContext from "../context/Context";
 import PostingImageUploader from "../components/PostingImageUploader";
-import Post from "../components/Post";
+import {PostCollect, PostCollection} from '../types/PostCollection'
+import TimeHelper from "../helpers/TimeHelper";
+import PostController from "../typeControllers/PostController";
+// Recoil
+import {postAtom} from "../recoli/postState";
+import {useRecoilState} from "recoil";
 
-export default function PostingScreen({navigation, mode, docId}) {
-    const {events} =                    useContext(GlobalContext);
-    const {postModelList} =             useContext(GlobalContext);
 
-    const [postModel, setPostModel] =   useState(null);
-    // Content
-    const [imageModels, setImageModels] = useState([]);
+export default function PostEditScreen({navigation, postId}) {
+    const {events} = useContext(GlobalContext);
+
+    const [post, setPost] = useRecoilState(postAtom(postId));
+
     const [title, setTitle] =           useState("");
-    const [price, setPrice] =           useState(null);
+    const [price, setPrice] =           useState(0);
     const [info, setInfo] =             useState("");
-    // Page State
+
+    const [postImages, setPostImages] = useState(/** @type {PostImage[]} */ []);
+
+    // Page Status
     const [ready, setReady] =           useState(false);
     const [loading, setLoading] =       useState(false);
     const [hasError, setHasError] =     useState(false);
-    const [user, setUser] =             useState(null);
-
-    useEffect(() => {
-        if (!user)
-            setUser(auth.currentUser);
-
-        if (mode === PageMode.EDIT) {
-            const postModel = postModelList.getOneByDocId(docId);
-            setPostModel(postModel)
-            setTitle(postModel.title)
-            setPrice(postModel.price.toString())
-            setInfo(postModel.info)
-            setImageModels(postModel.imageModels);
-        }
-        if (mode === PageMode.CREATE) {
-            let model = PostModel.newEmpty()
-            setPostModel(model);
-        }
-    }, [user])
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: (mode === PageMode.CREATE)? "Sell" : "Edit",
+            title: "Edit",
             headerRight: () => (
                 <Button
                     onPress={() => setReady(true)}
-                    title={(mode === PageMode.CREATE)? "Post" : "Save"}/>
+                    title="Save"/>
             ),
         });
     }, [navigation]);
+
+    useEffect(() => {
+        if (post) {
+            setTitle(post.title)
+            setPrice(post.price)
+            setInfo(post.info)
+            setPostImages(post.postImages)
+        }
+    }, [post])
 
     useEffect(() => {
         if (ready === false) return;
 
         if (loading === false) {
             setLoading(true);
-            postModel.setTitle(title)
-            postModel.setPrice(price)
-            postModel.setInfo(info)
-            savePost();
+            trySavePost();
         }
     }, [ready]);
-
-
-    if (postModel === null) {
-        return (<Text>Loading...</Text>);
-    }
-
 
 /* -----------------------------------
      Event Handlers (Post to DB)
  ------------------------------------*/
-    function savePost() {
-        if (postModel.isContentReady() === false) {
+    function trySavePost() {
+        if (title === "" || price <= 0 || info === "") {
             alert('Please fill everything.');
             setReady(false);
             setLoading(false);
-            return;
+            return false;
         }
 
-        asyncSavePost().then(() => {
-            // setReady(false)
-            // setLoading(false)
-        });
+        asyncSavePost().then();
     }
 
     async function asyncSavePost() {
-        postModel.setEmail(user?.email);
-        postModel.setImageModels(imageModels);
 
-        if (await postModel.asyncSave() === false) {
+        let /** @type PostDoc */ newPost = {
+            docId: post.docId,
+            ownerEmail: post.ownerEmail,
+            title,
+            price,
+            info,
+            postTime: post.postTime,
+            postImages
+        }
+
+        if (await PostController.asyncUpdate(post, newPost) === false) {
             setHasError(true);
             return LOG_ERROR("Unknown error occur while posting the images.");
         }
 
+        setPost(newPost);
+
         events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
     }
-
 
 /* ------------------
      Error Screen
  -------------------*/
     if (hasError) return <ErrorScreen/>
 
+    function onPriceChange(priceString) {
+        setPrice(Number(priceString.replace(/,/g, '')));
+    }
 /* -------------
      Render
  ---------------*/
@@ -130,19 +123,19 @@ export default function PostingScreen({navigation, mode, docId}) {
                 source={require("../assets/hand-loading.json")}
                 speed={1}
             >
-                <Text>{(mode === PageMode.CREATE)? "Uploading..." : "Updating..."}</Text>
+                <Text>Uploading...</Text>
             </AnimatedLoader>
             <Flex direction="column" style={styles.content}>
-                <PostingImageUploader imageModels={imageModels} setImageModels={setImageModels} postModel={postModel}/>
+                <PostingImageUploader postImages={postImages} setPostImages={setPostImages}/>
                 <Divider/>
-                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle}/>
+                <TitleInputField placeholder="Title" value={title} onChangeText={setTitle} autoCapitalize="none"/>
                 <Divider/>
                 <Flex direction="row" alignItems="center" justifyContent="left">
-                    <SignText style={{color: (!price)? "#bbbbbb" : "black"}}>$</SignText>
-                    <PriceInputField placeholder="Price" value={price} onChangeText={setPrice} keyboardType="numeric"/>
+                    <SignText style={{color: "black"}}>$</SignText>
+                    <PriceInputField placeholder="Price" value={price.toLocaleString()} onChangeText={onPriceChange} keyboardType="numeric" autoCapitalize="none"/>
                 </Flex>
                 <Divider/>
-                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} />
+                <InfoInputField placeholder="Explain your product." flex="1" multiline={true} value={info} onChangeText={setInfo} autoCapitalize="none"/>
             </Flex>
         </Container>
     )

@@ -1,7 +1,7 @@
 import {ProfileImageType} from "../utils/utils";
 
 
-export default class ImageHelper {
+export default class ProfileImageHelper {
 
     static getProfileImageUrl(type) {
         switch (type) {

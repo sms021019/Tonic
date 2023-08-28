@@ -3,56 +3,64 @@ import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {ScreenType, windowWidth} from "../utils/utils";
+import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 
-import errorHandler from '../errors/index';
-import UserModel from '../models/UserModel';
-import ErrorScreen from './ErrorScreen';
+import AuthController from "../typeControllers/AuthController";
+import {Center, Flex} from "native-base";
+import {useRecoilValue} from "recoil";
+import {userAtom, userAuthAtom} from "../recoli/userState";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [hasError, setHasError] = useState(false);
+    const [loginFail, setLoginFail] = useState(false);
+    const userAuth = useRecoilValue(userAuthAtom);
+    const user = useRecoilValue(userAtom);
 
-    const asyncHandleLogin = async () => {
+    useEffect(() => {
+        if (!userAuth) return;
 
-        if( await UserModel.asyncLogin(email, password) === false){
-            setHasError(true);
-            console.log('set error');
-            return;
+        if (userAuth.emailVerified === false) {
+            navigation.navigate(ScreenType.EMAIL_VERIFICATION);
         }
-       
-    }
+        if (user) {
+            navigation.navigate(NavigatorType.HOME);
+        }
+    }, [userAuth])
 
-    /* ------------------
-        Error Screen
-    -------------------*/
-    if (hasError) return <ErrorScreen/>    
+    async function asyncHandleLogin() {
+        if (await AuthController.asyncLogin(email, password) === false){
+            setLoginFail(true);
+        }
+    }
 
     return (
         <Container>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none"/>
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.buttonBorder, styles.buttonOutline,]}>
-                    <Text>
-                        이메일 찾기{'  '}
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.buttonOutline, styles.buttonBorder]}
+                <TouchableOpacity style={{...styles.buttonOutline, ...styles.buttonBorder}}
                                   onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>
-                    <Text>
-                        비밀번호 찾기 {'\t'}
+                    <Text style={styles.optionText}>
+                        Find Password {' '}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push(ScreenType.SIGNUP)}>
-                    <Text>
-                        회원가입
+                    <Text style={styles.optionText}>
+                        Create Account
                     </Text>
                 </TouchableOpacity>
             </View>
+            {
+                (loginFail) &&
+                <Center style={styles.loginFailMessageArea}>
+                    <Text style={styles.loginFailText}>
+                        Incorrect email or password
+                    </Text>
+                </Center>
+            }
             <StartButton onPress={asyncHandleLogin}>
-                <StartText>로그인</StartText>
+                <StartText>Login</StartText>
             </StartButton>
         </Container>
     )
@@ -87,13 +95,6 @@ const StartText = styled.Text`
     font-weight: 600;
 `;
 
-const OptionText = styled.Text`
-    color: black;
-    font-size: 12px;
-    margin-bottom: 10px;
-    color: ${theme.colors.foreground};
-`
-
 const Container = styled.View`
     ${flexCenter};
     background-color: #fff;
@@ -113,6 +114,12 @@ const styles = StyleSheet.create({
         borderRightWidth: 1,
     },
     buttonOutline: {
-        marginHorizontal: 4
+        marginHorizontal: 4,
     },
+    optionText: {
+        color: theme.colors.primary,
+    },
+    loginFailMessageArea: {width: windowWidth*0.9, padding:5, marginBottom: 10, backgroundColor:'#ffbdbd'},
+    loginFailText: {color:"#8a2020"},
+
 })

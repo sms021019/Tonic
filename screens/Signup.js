@@ -1,52 +1,82 @@
 
-import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
-import {flexCenter, TonicButton} from "../utils/styleComponents";
-import theme from '../utils/theme'
+import React, {useEffect, useState} from 'react'
+import {Text, StyleSheet} from "react-native";
+import {Center} from "native-base";
 import styled from "styled-components/native";
-import {windowWidth} from "../utils/utils";
-
-
-import { EMAIL_DOMAIN } from '../utils/utils';
+import theme from '../utils/theme'
+import UserController from "../typeControllers/UserController";
+import AuthController from "../typeControllers/AuthController";
+import {ProfileImageType, windowWidth} from "../utils/utils";
+import {flexCenter, TonicButton} from "../utils/styleComponents";
 import ErrorScreen from './ErrorScreen';
-import UserModel from '../models/UserModel';
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 
-const LoginScreen = () => {
-    const [email, setEmail] = useState(EMAIL_DOMAIN);
+const SignupScreen = () => {
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [hasError, setHasError] = useState(false);
+    const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
 
-
-    const handleSignUp = async () => {
-        // const userModel = new UserModel(username, email, password);
-        const userModel = UserModel.newSignup(username, email, password);
-        if(await userModel.asyncCreateUser() === false){
-            //TO DO
-            setHasError(true);
-            return;
+    useEffect(() => {
+        const regex = /\.edu$/i;
+        if (email === "" || regex.test(email)) {
+            setWrongEmailFormat(false);
         }
-    }
+        else {
+            setWrongEmailFormat(true);
+        }
+    }, [email])
 
-    /* ------------------
-        Error Screen
-    -------------------*/
-    if (hasError) return <ErrorScreen/>
+    async function handleSignUp() {
+        const /**@type {Account}*/ newAccount = {
+            uid: null,
+            email,
+            password,
+            username,
+        }
+        if (await AuthController.asyncCreateUserAuth(newAccount) === false) return false;
+
+        const /**@type UserDoc*/ newUser = {
+            uid: newAccount.uid,
+            email: newAccount.email,
+            username: newAccount.username,
+            profileImageType: ProfileImageHelper.getRandomProfileImageType(),
+            myPostIds: [],
+            chatrooms: [],
+            reportedUserEmails: [],
+            reportedPostIds: [],
+        }
+        if (await UserController.asyncAddUser(newUser) === false) return false;
+    }
 
     return (
         <Container>
-            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername}/>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry/>
+            <UsernameInputField placeholder="Username" value={username} onChangeText={setUsername} autoCapitalize="none"/>
+            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none"/>
+            {
+                (wrongEmailFormat) &&
+                <Center style={styles.warningArea}>
+                    <Text style={styles.warningText}>
+                        Email should ends with '.edu'
+                    </Text>
+                </Center>
+            }
+            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
             <StartButton onPress={handleSignUp}>
-                <StartText>가입하기</StartText>
+                <StartText>Sign up</StartText>
             </StartButton>
         </Container>
     )
 }
 
-export default LoginScreen;
+export default SignupScreen;
+
+
+const styles = StyleSheet.create({
+    warningArea: {width: windowWidth*0.9, padding:5, marginBottom: 10, backgroundColor:'#ffbdbd'},
+    warningText: {color:"#8a2020"},
+})
 
 
 const UsernameInputField = styled.TextInput`
@@ -62,7 +92,6 @@ const EmailInputField = styled.TextInput`
   border-bottom-width: 2px;
   width: ${windowWidth * 0.9}px;
   height: 50px;
-  margin-bottom: 20px;
   margin-top: 20px;
 `
 
@@ -71,6 +100,7 @@ const PasswordInputField = styled.TextInput`
   border-bottom-width: 2px;
   width: ${windowWidth * 0.9}px;
   height: 50px;
+  margin-top: 20px;
   margin-bottom: 20px;
 `
 const StartButton = styled.Pressable`
@@ -86,12 +116,6 @@ const StartText = styled.Text`
   font-weight: 600;
 `;
 
-const OptionText = styled.Text`
-  color: black;
-  font-size: 12px;
-  margin-bottom: 10px;
-  color: ${theme.colors.foreground};
-`
 
 const Container = styled.View`
   ${flexCenter};

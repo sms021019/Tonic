@@ -1,6 +1,6 @@
 // React
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {View, Text, TouchableOpacity, Button, StyleSheet, SafeAreaView, Image} from 'react-native'
+import React, {useLayoutEffect, useMemo} from 'react'
+import {View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image} from 'react-native'
 import styled from "styled-components/native";
 import {Feather, Ionicons} from "@expo/vector-icons";
 import {Box, Center, Flex, ScrollView} from "native-base";
@@ -8,24 +8,16 @@ import {Box, Center, Flex, ScrollView} from "native-base";
 import {flexCenter} from "../utils/styleComponents";
 import {NavigatorType, PageMode, windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
-// Firebase
-import {auth, db} from '../firebase';
-import { signOut } from 'firebase/auth';
-// Context
-import GlobalContext from '../context/Context';
 // Component
 import PostList from '../components/PostList';
-import ErrorScreen from "./ErrorScreen";
-// Model
-import PostModel from '../models/PostModel';
-import LoadingScreen from "./LoadingScreen";
 import CreatePostButton from "../components/CreatePostButton";
+import {useRecoilValue} from "recoil";
+import {userAtom} from "../recoli/userState";
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 
 export default function MyPage({navigation}) {
-    const { gUserModel } = useContext(GlobalContext);
-    const [postModelList, setPostModelList] = useState(null);
-    const [pageReady, setPageReady] = useState(false);
+    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -36,32 +28,15 @@ export default function MyPage({navigation}) {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        asyncLoadMyPosts().then();
-    }, []);
-
-    useEffect(() => {
-        if (gUserModel && postModelList) {
-            setPageReady(true);
-        }
-    }, [gUserModel, postModelList])
-
-    if (pageReady === false) {
-        return <LoadingScreen/>;
-    }
-
-    async function asyncLoadMyPosts() {
-        let models = await PostModel.loadAllByRefs(gUserModel.model?.postRefs);
-        if (models === null) return;
-
-        setPostModelList(models);
-    }
+    const userProfileUrl = useMemo(() => {
+        return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
+    }, [])
 
 /* ------------------
        Handlers
  -------------------*/
-    function handleContentClick(docId) {
-        navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: docId});
+    function handleContentClick(postId) {
+        navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: postId});
     }
 
     function handleEditProfileClick() {
@@ -69,7 +44,7 @@ export default function MyPage({navigation}) {
     }
 
     function handleCreatePost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.CREATE});
+        navigation.navigate(NavigatorType.POST_CREATE);
     }
 
 /* ------------------
@@ -81,14 +56,14 @@ export default function MyPage({navigation}) {
                 <ScrollView>
                     <View>
                         <Center style={styles.profileImageBox}>
-                            <Image source={gUserModel.model.profileImageUrl} style={styles.profileImage}/>
+                            <Image source={userProfileUrl} style={styles.profileImage}/>
                         </Center>
                         <Center style={styles.infoBox}>
                             <Text style={styles.nameText}>
-                                {gUserModel.model?.username}
+                                {user.username}
                             </Text>
                             <Text style={styles.emailText}>
-                                {gUserModel.model?.email}
+                                {user.email}
                             </Text>
                             <TouchableOpacity onPress={handleEditProfileClick}>
                                 <Text style={styles.editText}>
@@ -100,15 +75,21 @@ export default function MyPage({navigation}) {
                     <View style={styles.myPostView}>
                         <Flex direction="row" justifyContent={"space-between"} alignItems={"center"}>
                             <Text style={styles.myPostHeader}>My Posts</Text>
-                            <TouchableOpacity onPress={asyncLoadMyPosts}>
+                            <TouchableOpacity>
                                 <Ionicons name={"reload"} size={24} marginRight={15} />
                             </TouchableOpacity>
                         </Flex>
                         <Center>
-                            <PostList
-                                modelList={postModelList}
-                                handleClick={handleContentClick}
-                            />
+                            {
+                                (user?.myPostIds.length === 0)?
+                                <Text style={{marginTop: 50, color: 'gray'}}>No post</Text>
+                                :
+                                <PostList
+                                    postIds={user?.myPostIds}
+                                    handleClick={handleContentClick}
+                                />
+
+                            }
                         </Center>
                     </View>
                 </ScrollView>

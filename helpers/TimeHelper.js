@@ -41,4 +41,18 @@ export default class TimeHelper {
     static getTopElapsedStringUntilNow(startTime)  {
         return this.getTopElapsedString(startTime, this.getTimeNow());
     }
+
+
+    // DEBUG
+
+    static startTimer() {
+        return new Date().getTime();
+    }
+
+    static printElapsed(text, startTime) {
+        let endTime = new Date().getTime();
+        console.log(text, (endTime - startTime));
+    }
 }
+
+

@@ -1,11 +1,9 @@
 // React
 import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
+import {View, Text, StyleSheet} from 'react-native'
 import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
-import Swiper from "react-native-swiper";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-import {LinearGradient} from "expo-linear-gradient";
 // DB
 import { db } from '../firebase';
 import { doc, getDoc, collection } from 'firebase/firestore';
@@ -13,28 +11,37 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 import GlobalContext from '../context/Context';
 // Utils
 import {DBCollectionType, LOG_ERROR, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
+
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
-import MenuButton from '../components/MenuButton'
 import DeletePostModal from "../components/DeletePostModal";
 import ReportPostModal from "../components/ReportPostModal";
 // Model
 import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
-import LoadingScreen from "./LoadingScreen";
 import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
-import { showMessage, hideMessage } from "react-native-flash-message"
 import {showQuickMessage} from "../helpers/MessageHelper";
+
 import ChatroomController from '../typeControllers/ChatroomController';
 
+import {useRecoilValue} from "recoil";
+import {postAtom} from "../recoli/postState";
+import TimeHelper from "../helpers/TimeHelper";
+import PostController from "../typeControllers/PostController";
+import MenuButton from "../components/MenuButton";
+import {userAtom, userAtomByEmail} from "../recoli/userState";
+import UserController from "../typeControllers/UserController";
 
-export default function ContentDetailScreen({navigation, docId}) {
-    const {events, user, gUserModel, postModelList, chatroomModelList} = useContext(GlobalContext);
 
-    const [postModel, setPostModel] = useState(null);
-    const [owner, setPostOwner] = useState(null);
+
+export default function ContentDetailScreen({navigation, postId}) {
+    const {chatroomModelList, postStateManager} = useContext(GlobalContext);
+    const /**@type UserDoc*/ user = useRecoilValue(userAtom);
+    const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
+    const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post.ownerEmail));
+
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportPostModalOn, setReportPostModalOn] = useState(false);
     const [reportUserModalOn, setReportUserModalOn] = useState(false);
@@ -43,37 +50,16 @@ export default function ContentDetailScreen({navigation, docId}) {
         message: "",
     })
 
-    useEffect(() => {
-        setPostModel(() => postModelList.getOneByDocId(docId));
-    },[])
-
-    useEffect(() => {
-        if (postModel === null) return;
-
-        let userRef = doc(collection(db, DBCollectionType.USERS), postModel.email);
-
-        getDoc(userRef).then((doc) => {
-            if(doc.data() === null) {
-                // To Do : error handling.
-                console.log(" err no post user");
-                return;
-            }
-
-            setPostOwner(doc.data());
-        })
-    }, [postModel])
-
     useLayoutEffect(() => {
-        if (postModel === null) return;
-
         navigation.setOptions({
+            headerShown: true,
             headerTransparent: true,
             headerTitle: "",
-            headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)}/>,
+            headerLeft: () => <GoBackButton color={theme.colors.white} ml={15} callback={() => navigation.navigate(NavigatorType.HOME)} shadow={true}/>,
             headerRight: () => (
-                <MenuButton mr={5} size={6}
+                <MenuButton mr={5} size={6} shadow={true}
                     items={
-                        isMyPost() ?
+                        (user.email === post.ownerEmail) ?
                             [
                                 {name: "Edit", color: theme.colors.primary, callback: handleEditPost},
                                 {name: "Delete", color: theme.colors.alert, callback: OpenDeleteModal},
@@ -86,15 +72,7 @@ export default function ContentDetailScreen({navigation, docId}) {
                 />
             )
         });
-    }, [navigation, postModel]);
-
-    if (postModel === null) {
-        return <LoadingScreen/>
-    }
-
-    function isMyPost() {
-        return user.email === postModel.email;
-    }
+    }, [navigation]);
 
 
     async function handleChatClick() {
@@ -138,55 +116,46 @@ export default function ContentDetailScreen({navigation, docId}) {
 
     
     function handleEditPost() {
-        navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
+        navigation.navigate(NavigatorType.POST_EDIT, {postId: postId});
     }
 
-    function OpenDeleteModal() {
-        setDeleteModalOn(true);
-    }
-
-    function OpenReportPostModal() {
-        setReportPostModalOn(true);
-    }
-
-    function OpenReportUserModal() {
-        setReportUserModalOn(true);
-    }
+    function OpenDeleteModal() { setDeleteModalOn(true); }
+    function OpenReportPostModal() { setReportPostModalOn(true); }
+    function OpenReportUserModal() { setReportUserModalOn(true); }
 
     async function handleDeletePost() {
-        if (await postModel.asyncDelete() === false) {
-            console.log("Fail to delete data.");
+        if (await PostController.asyncDelete(post) === false) {
+            // show msg :: something went wrong. try again
             return;
         }
 
-        setDeleteModalOn(false);
-        events.invokeOnContentUpdate();
+        postStateManager.removeId(post.docId);
         showQuickMessage("The post is deleted successfully.");
+        setDeleteModalOn(false);
         navigation.navigate(ScreenType.CONTENT);
     }
 
     async function asyncHandleReportPost() {
-        await gUserModel.reportPost(postModel);
-
-        events.invokeOnContentUpdate();
+        if (await UserController.asyncReportPost(user.email, post.docId) === false) {
+            showQuickMessage("Fail to report post. Please try again.");
+        }
+        else {
+            showQuickMessage("The post is reported and blocked successfully.");
+        }
 
         setReportPostModalOn(false);
-
-        showQuickMessage("The post is reported and blocked successfully. You can unblock it in the setting.");
-
-        navigation.navigate(ScreenType.CONTENT);
     }
 
     async function asyncHandleReportUser() {
-        await gUserModel.reportUser(postModel.email);
-
-        events.invokeOnContentUpdate();
-
-        setReportUserModalOn(false);
-
-        showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
-
-        navigation.navigate(ScreenType.CONTENT);
+        // await gUserModel.reportUser(postModel.email);
+        //
+        // events.invokeOnContentUpdate();
+        //
+        // setReportUserModalOn(false);
+        //
+        // showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
+        //
+        // navigation.navigate(ScreenType.CONTENT);
     }
 
     function handleDismissConfirmMessageModal() {
@@ -200,22 +169,22 @@ export default function ContentDetailScreen({navigation, docId}) {
             <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
             <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
             <ScrollView>
-                <ImageSwiper imageModels={postModel.imageModels} />
+                <ImageSwiper postImages={post.postImages} />
                 <View style={styles.contentArea}>
                     <Box style={styles.titleBox}>
-                        <Text style={styles.titleText}>{postModel.title}</Text>
+                        <Text style={styles.titleText}>{post.title}</Text>
                     </Box>
                     <Flex w="100%" h="30px" mb="50px" direction="row" alignItems="center">
-                        <Text style={styles.userNameText}>{`@${owner?.username}`}</Text>
-                        <Text style={{color:'gray'}}>{postModel.getElapsedString()} ago</Text>
+                        <Text style={styles.userNameText}>{`@${postOwner?.username}`}</Text>
+                        <Text style={{color:'gray'}}>{TimeHelper.getTopElapsedStringUntilNow(post.postTime)} ago</Text>
                     </Flex>
-                    <Text style={styles.contentText}>{postModel.info}</Text>
+                    <Text style={styles.contentText}>{post.info}</Text>
                 </View>
             </ScrollView>
             <View style={styles.footerArea}>
                 <Flex direction="row" alignItems='center'>
                     <Text flex="1" style={styles.priceText}>
-                        ${postModel.price.toLocaleString()}
+                        ${post.price.toLocaleString()}
                     </Text>
                     <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
                         <TonicText>Chat</TonicText>

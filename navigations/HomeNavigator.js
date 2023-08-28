@@ -6,6 +6,7 @@ import Chat from "../screens/Chat";
 import MyPage from '../screens/MyPage';
 import ChatNavigator from './ChatNavigator';
 import {NavigatorType, ScreenType} from '../utils/utils';
+import TestA from "../screens/TestA";
 
 function getIconNameByType(type) {
     if (type === ScreenType.CONTENT)

@@ -22,7 +22,7 @@ export default PasswordResetScreen = () => {
         }
         setEmail('');
         setEmailSent('block');
-        
+
     }
 
     /* ------------------
@@ -32,7 +32,7 @@ export default PasswordResetScreen = () => {
 
     return (
         <Container>
-            <PasswordResetText>가입 시 사용한 이메일을 입력해주세요.</PasswordResetText>
+            <PasswordResetText>Enter your email.</PasswordResetText>
             <EmailInputField placeholder="Email" value={email} onChangeText={setEmail}/>
             <StartButton onPress={handleReset}>
                 <StartText>SEND</StartText>

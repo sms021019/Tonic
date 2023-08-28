@@ -6,7 +6,8 @@ export const NavigatorType = {
     LOGIN:              "loginNavigator",
     HOME:               "homeNavigator",
     CONTENT_DETAIL:     "contentDetailNavigator",
-    POSTING:            "postingNavigator",
+    POST_CREATE:        "postCreateNavigator",
+    POST_EDIT:          "postEditNavigator",
     START:              "startNavigator",
     SEARCH:             "searchNavigator",
     EMAIL:              "emailVerification",
@@ -28,7 +29,8 @@ export const ScreenType = {
     CHANNEL:            "channelScreen",
     USER_SEARCH:        "userSearchScreen",
     MYPAGE:             "mypageScreen",
-    POSTING:            "postingScreen",
+    POST_CREATE:        "postCreateScreen",
+    POST_EDIT:          "postEditScreen",
     SEARCH:             "searchScreen",
     ERROR:              "errorScreen",
     SETTING:            "settingScreen",
@@ -73,13 +75,6 @@ export const ProfileImageType = {
 
 export const windowWidth = Dimensions.get("window").width;
 export const windowHeight = Dimensions.get("window").height;
-export const IMAGE_SIZE = {
-    shortCardWidth: windowWidth * 0.44,
-    shortCardHeight: windowWidth * 0.34,
-    itemDetailWidth: windowWidth,
-    itemDetailHeight: windowHeight * 0.5,
-};
-
 
 
 export function LOG(message) {
