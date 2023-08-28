@@ -8,7 +8,7 @@ import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import AuthController from "../typeControllers/AuthController";
 import {Center, Flex} from "native-base";
 import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");

@@ -5,7 +5,7 @@ import styled from "styled-components/native";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState";
 import GlobalContext from "../context/Context";
 
 export default function Intro({navigation}) {
@@ -15,10 +15,9 @@ export default function Intro({navigation}) {
 
     useEffect(() => {
         if (userAuth && userAuth?.emailVerified) {
-            console.log("go to home");
             navigation.navigate(NavigatorType.HOME);
         }
-    }, [userAuth, user])
+    }, [userAuth])
 
     const goLogin = () => {
         navigation.push(ScreenType.LOGIN);

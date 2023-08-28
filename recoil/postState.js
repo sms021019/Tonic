@@ -1,5 +1,6 @@
 import {atom, atomFamily, selector, selectorFamily} from "recoil";
 import PostController from "../typeControllers/PostController";
+import {userAtom} from "./userState";
 
 
 /* ---------------

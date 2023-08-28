@@ -191,7 +191,6 @@ export default class DBHelper {
                 });
                 return transactionResult;
             }
-
         }
         catch(error) {
             LOG_ERROR(collectionType, "Error occurs while adding data to DB.");

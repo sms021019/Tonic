@@ -3,25 +3,36 @@ import {Box, Flex, Center, Image, Text, Divider} from "native-base";
 import {windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
 import {useRecoilValue} from "recoil";
-import {postAtom} from "../recoli/postState";
+import {postAtom} from "../recoil/postState";
 import {TouchableOpacity, View} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
-import {userAtom} from "../recoli/userState";
+import {userAtom} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
-export default function Post({id, onClickHandler}) {
-    const user = useRecoilValue(userAtom);
-    const post = useRecoilValue(postAtom(id));
+/**
+ *
+ * @param {string} id
+ * @param {function} onClickHandler
+ * @param {bool} showBlockedOnly
+ * @returns {JSX.Element}
+ * @constructor
+ */
+export default function Post({id, onClickHandler, filterBlockedPost}) {
+    const /**@type {UserDoc} */ user = useRecoilValue(userAtom);
+    const /**@type {PostDoc} */ post = useRecoilValue(postAtom(id));
 
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 
-    if (UserController.isReportedPostId(user, id)) {
-        return <></>
-    }
+    filterBlockedPost = filterBlockedPost ?? true;
 
     function handlePostClick() {
         onClickHandler();
+    }
+
+
+    if (filterBlockedPost === true && UserController.isPostBlockedByUser(user, post)) {
+        return <></>
     }
 
     return (

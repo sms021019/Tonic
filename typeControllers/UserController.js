@@ -2,6 +2,7 @@ import {DBCollectionType, LOG_ERROR} from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 import {arrayUnion, writeBatch} from "firebase/firestore";
 import {db} from "../firebase";
+import {arrayRemove} from "@firebase/firestore";
 
 
 export default class UserController {
@@ -38,10 +39,53 @@ export default class UserController {
 
     /**
      *
-     * @param {UserDoc} user
-     * @param {string} postId
+     * @param {string} reporterEmail
+     * @param {string} targetPostId
+     * @returns {Promise<boolean>}
      */
-    static isReportedPostId(user, postId) {
-        return user.reportedPostIds.includes(postId);
+    static async asyncUnblockPost(reporterEmail, targetPostId) {
+        if (false === await FirebaseHelper.updateDoc(DBCollectionType.USERS, reporterEmail, {reportedPostIds: arrayRemove(targetPostId)})) {
+            console.log("Err: UserController.asyncUnblockPost");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param {string} reporterEmail
+     * @param {string} targetUserEmail
+     * @returns {Promise<boolean>}
+     */
+    static async asyncReportUser(reporterEmail, targetUserEmail) {
+        if (false === await FirebaseHelper.updateDoc(DBCollectionType.USERS, reporterEmail, {reportedUserEmails: arrayUnion(targetUserEmail)})) {
+            console.log("Err: UserController.asyncReportUser");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param {string} reporterEmail
+     * @param {string} targetUserEmail
+     * @returns {Promise<boolean>}
+     */
+    static async asyncUnblockUser(reporterEmail, targetUserEmail) {
+        if (false === await FirebaseHelper.updateDoc(DBCollectionType.USERS, reporterEmail, {reportedUserEmails: arrayRemove(targetUserEmail)})) {
+            console.log("Err: UserController.asyncUnblockUser");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param {UserDoc} user
+     * @param {PostDoc} post
+     * @returns {boolean}
+     */
+    static isPostBlockedByUser(user, post) {
+        return (user.reportedPostIds.includes(post.docId) || user.reportedUserEmails.includes(post.ownerEmail))
     }
 }

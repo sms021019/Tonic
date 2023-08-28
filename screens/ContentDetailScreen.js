@@ -1,16 +1,13 @@
 // React
-import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
+import React, {useLayoutEffect, useState, useContext} from 'react'
 import {View, Text, StyleSheet} from 'react-native'
 import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
-// DB
-import { db } from '../firebase';
-import { doc, getDoc, collection } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {DBCollectionType, NavigatorType, ScreenType} from "../utils/utils";
+import {NavigatorType, ScreenType} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
@@ -23,16 +20,16 @@ import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {useRecoilValue} from "recoil";
-import {postAtom} from "../recoli/postState";
+import {postAtom} from "../recoil/postState";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
-import {userAtom, userAtomByEmail} from "../recoli/userState";
+import {userAtom, userAtomByEmail} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {chatroomModelList, postStateManager} = useContext(GlobalContext);
+    const {chatroomModelList, postStateManager, userStateManager} = useContext(GlobalContext);
     const /**@type UserDoc*/ user = useRecoilValue(userAtom);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
     const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post.ownerEmail));
@@ -97,7 +94,7 @@ export default function ContentDetailScreen({navigation, postId}) {
 
     async function handleDeletePost() {
         if (await PostController.asyncDelete(post) === false) {
-            // show msg :: something went wrong. try again
+            showQuickMessage("Fail to delete this post. Please try again.");
             return;
         }
 
@@ -109,24 +106,27 @@ export default function ContentDetailScreen({navigation, postId}) {
 
     async function asyncHandleReportPost() {
         if (await UserController.asyncReportPost(user.email, post.docId) === false) {
-            showQuickMessage("Fail to report post. Please try again.");
+            showQuickMessage("Fail to report this post. Please try again.");
         }
         else {
-            showQuickMessage("The post is reported and blocked successfully.");
+            showQuickMessage("Successfully reported this post.");
+            userStateManager.refreshUser();
         }
         setReportPostModalOn(false);
+        navigation.navigate(ScreenType.CONTENT);
+
     }
 
     async function asyncHandleReportUser() {
-        // await gUserModel.reportUser(postModel.email);
-        //
-        // events.invokeOnContentUpdate();
-        //
-        // setReportUserModalOn(false);
-        //
-        // showQuickMessage("The user is reported and blocked successfully. You can unblock it in the setting.");
-        //
-        // navigation.navigate(ScreenType.CONTENT);
+        if (await UserController.asyncReportUser(user.email, post.ownerEmail) === false) {
+            showQuickMessage("Fail to report this user. Please try again.");
+        }
+        else {
+            showQuickMessage("Successfully reported this user.");
+            userStateManager.refreshUser();
+        }
+        setReportUserModalOn(false);
+        navigation.navigate(ScreenType.CONTENT);
     }
 
     function handleDismissConfirmMessageModal() {

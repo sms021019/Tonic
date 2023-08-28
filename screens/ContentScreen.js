@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
+import React, {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState} from 'react'
 import {Text, TouchableOpacity, View, Button} from 'react-native'
 import {Center, FlatList, Input, Icon, Divider, Flex, Image, Box} from "native-base";
 import styled from "styled-components/native";
@@ -10,13 +10,11 @@ import PostFlatList from "../components/PostFlatList";
 import {errorHandler} from '../errors';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
-import {postIdsAtom} from "../recoli/postState";
+import {postIdsAtom} from "../recoil/postState";
 
 export default function ContentScreen({navigation}) {
     const [refreshing, setRefreshing] = useState(false);
     const postIds = useRecoilValue(postIdsAtom);
-
-    console.log("postIDs:", postIds);
 
     useLayoutEffect(() => {
         navigation.setOptions({

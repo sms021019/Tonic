@@ -1,5 +1,5 @@
 import {useRecoilState} from "recoil";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
@@ -11,7 +11,10 @@ export default function UserStateManager({userStateManager}) {
         setUserAuth(userAuth);
 
         const userDoc = await UserController.asyncGetUser(userAuth.email);
-        if (!userDoc) return false;
+        if (!userDoc) {
+            console.log("Err: UserStateManager.login");
+            return false;
+        }
 
         setUser(userDoc);
         return true;
@@ -25,9 +28,17 @@ export default function UserStateManager({userStateManager}) {
         return (userAuth && userAuth?.emailVerified && user);
     }
 
-    userStateManager.refreshUser = async (email) => {
-        const userDoc = await UserController.asyncGetUser(email);
-        if (!userDoc) return false;
+    userStateManager.refreshUser = async () => {
+        if (!user) {
+            console.log("Err: UserStateManager.refreshUser (1)");
+            return false;
+        }
+
+        const userDoc = await UserController.asyncGetUser(user.email);
+        if (!userDoc) {
+            console.log("Err: UserStateManager.refreshUser (2)");
+            return false;
+        }
 
         setUser(userDoc);
         return true;

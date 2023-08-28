@@ -1,5 +1,5 @@
 import {useRecoilState, useRecoilValue} from "recoil";
-import {postIdsAtom, postAtom} from '../recoli/postState'
+import {postIdsAtom, postAtom} from '../recoil/postState'
 
 
 export default function PostStateManager({postStateManager}) {

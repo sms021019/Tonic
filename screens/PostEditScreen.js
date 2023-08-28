@@ -17,7 +17,7 @@ import {PostCollect, PostCollection} from '../types/PostCollection'
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
-import {postAtom} from "../recoli/postState";
+import {postAtom} from "../recoil/postState";
 import {useRecoilState} from "recoil";
 
 
