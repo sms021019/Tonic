@@ -12,7 +12,7 @@ import { doc, getDoc, collection } from 'firebase/firestore';
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {DBCollectionType, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
+import {DBCollectionType, LOG_ERROR, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
@@ -27,6 +27,7 @@ import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
 import { showMessage, hideMessage } from "react-native-flash-message"
 import {showQuickMessage} from "../helpers/MessageHelper";
+import ChatroomController from '../typeControllers/ChatroomController';
 
 
 export default function ContentDetailScreen({navigation, docId}) {
@@ -95,28 +96,47 @@ export default function ContentDetailScreen({navigation, docId}) {
         return user.email === postModel.email;
     }
 
+
     async function handleChatClick() {
-        if(postModel === false || isMyPost()) return;
-
-        const chatroomModel = ChatroomModel.newEmpty();
-        if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postModel.doc_id, owner, user) === false) return;
-
-        chatroomModelList.addOne(chatroomModel);
+        if(!isMyPost()) return;
         
-
-
-        if( await chatroomModel.asyncSaveData() === false) {
-            // TO DO
-            console.log("Failed to create chatroom")
-            return false;
+        let newChatroom = createNewChatroomDoc();
+        if(await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
+            return LOG_ERROR("Unkown error occur while creaeting new chatroom");
         }
 
-        navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
-
-        return true;
         
+
+        
+
+        // const chatroomModel = ChatroomModel.newEmpty();
+        // if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postModel.doc_id, owner, user) === false) return;
+
+        // chatroomModelList.addOne(chatroomModel);
+        
+
+
+        // if( await chatroomModel.asyncSaveData() === false) {
+        //     // TO DO
+        //     console.log("Failed to create chatroom")
+        //     return false;
+        // }
+
+        // navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
+
+        // return true;
+    }
+    function createNewChatroomDoc() {
+        let /** @type {ChatroomDoc} */ newChatroomDoc = {
+            docId: null,
+            ownerEmail: postModel.email,
+            customerEmail: gUserModel.email,
+            postModelId: postModel.id,
+        }
+        return newChatroomDoc;
     }
 
+    
     function handleEditPost() {
         navigation.navigate(NavigatorType.POSTING, {mode: PageMode.EDIT, docId: docId});
     }

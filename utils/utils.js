@@ -46,6 +46,7 @@ export const DBCollectionType = {
     POSTS:      "posts",
     MESSAGES:   "messages",
     CHATROOMS:  "chatrooms",
+    CHATROOMHEADERS: "chatroomHeaders",
     IMAGE:      "images",
     REPORTED_USERS: "reportedUsers",
 }

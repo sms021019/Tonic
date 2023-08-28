@@ -10,18 +10,23 @@ import theme from './utils/theme'
 import {NativeBaseProvider} from "native-base";
 import React from "react";
 import FlashMessage from "react-native-flash-message";
+import {
+  RecoilRoot,
+} from 'recoil';
 
 export default function App() {
   return (
-    <ContextWrapper>
-      <NativeBaseProvider>
-          <ThemeProvider theme={theme}>
-            <FlashMessage position="top" />
-            <NavigationContainer>
-              <MainNavigator/>
-            </NavigationContainer>
-          </ThemeProvider>
-      </NativeBaseProvider>
-    </ContextWrapper>
+    <RecoilRoot>
+      <ContextWrapper>
+        <NativeBaseProvider>
+            <ThemeProvider theme={theme}>
+              <FlashMessage position="top" />
+              <NavigationContainer>
+                <MainNavigator/>
+              </NavigationContainer>
+            </ThemeProvider>
+        </NativeBaseProvider>
+      </ContextWrapper>
+    </RecoilRoot>
   );
 }
