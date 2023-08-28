@@ -12,7 +12,7 @@ import PostEditNavigator from "./PostEditNavigator";
 import SearchNavigator from './SearchNavigator'
 import SettingNavigator from "./SettingNavigator";
 import EditProfileNavigator from "./EditProfileNavigator";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState.js";
 import {useRecoilValue} from "recoil";
 
 const Stack = createStackNavigator();

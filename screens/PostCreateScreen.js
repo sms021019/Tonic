@@ -16,9 +16,9 @@ import PostingImageUploader from "../components/PostingImageUploader";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
-import {postIdsAtom} from "../recoli/postState";
+import {postIdsAtom} from "../recoil/postState";
 import {useRecoilValue, useSetRecoilState} from "recoil";
-import {userAtom} from "../recoli/userState";
+import {userAtom} from "../recoil/userState";
 
 
 export default function PostCreateScreen({navigation}) {

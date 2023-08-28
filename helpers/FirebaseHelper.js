@@ -48,6 +48,14 @@ export default class FirebaseHelper {
         return snapshots.docs.map((doc) => doc.id);
     }
 
+    static async getDocIdsByCollectionRef(collectionRef) {
+        const q = query(collectionRef);
+        
+        const snapshots = await getDocs(q);
+
+        return snapshots.docs.map((doc) => doc.id);
+    }
+
     /**
      *
      * @param collectionType

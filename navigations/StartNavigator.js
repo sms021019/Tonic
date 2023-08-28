@@ -10,7 +10,7 @@ import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "../firebase";
 import GlobalContext from "../context/Context";
 import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState";
 
 
 const Stack = createStackNavigator();

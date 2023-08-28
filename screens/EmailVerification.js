@@ -6,7 +6,7 @@ import styled from "styled-components/native";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 import UserModel from '../models/UserModel';
-import {userAuthAtom} from "../recoli/userState";
+import {userAuthAtom} from "../recoil/userState";
 import {useRecoilState, useRecoilValue} from "recoil";
 import {View, Image, StyleSheet, Text, TouchableOpacity} from "react-native";
 import {Divider, Center, Flex, Box} from 'native-base'

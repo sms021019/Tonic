@@ -10,7 +10,7 @@ import PostFlatList from "../components/PostFlatList";
 import {errorHandler} from '../errors';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
-import {postIdsAtom} from "../recoli/postState";
+import {postIdsAtom} from "../recoil/postState";
 
 export default function ContentScreen({navigation}) {
     const [refreshing, setRefreshing] = useState(false);

@@ -1,8 +1,12 @@
 import { collection, onSnapshot, query } from "firebase/firestore";
-import { atom, selector } from "recoil";
+import { atom, atomFamily, selector, selectorFamily } from "recoil";
 import { db } from "../firebase";
 import { DBCollectionType } from "../utils/utils";
 import DBHelper from "../helpers/DBHelper";
+import { userAtom } from "./userState";
+import FirebaseHelper from "../helpers/FirebaseHelper";
+import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
+
 
 
 export const chatroomHeaderIdsState = atom({
@@ -10,38 +14,43 @@ export const chatroomHeaderIdsState = atom({
     default: selector({
         key: 'chatroomHeaderIdsState/Default',
         get: async () => {
-            return await asyncGetChatroomHeaderIds();
+            return await ChatroomHeaderController.asyncGetChatroomHeaderIds();
         },
     }),
-    effects: [
-        ({setSelf}) => {
+    // effects: [
+    //     ({setSelf}) => {
 
-            const user = get(userAtom); //needs to be updated
-            const chatroomHeaderRef = collection(db, DBCollectionType.USERS, user.email, DBCollectionType.CHATROOMHEADERS);
+    //         const chatroomHeaderRef = ChatroomHeaderController.getChatroomHeaderRef;
             
-            const q = query(chatroomHeaderRef);
+    //         const q = query(chatroomHeaderRef);
 
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if(change.type === 'added') {
-                        setSelf((prev) => [change.doc.data().id, ...prev]);
-                    }
+    //         const unsubscribe = onSnapshot(q, (snapshot) => {
+    //             snapshot.docChanges().forEach((change) => {
+    //                 if(change.type === 'added') {
+    //                     setSelf((prev) => [change.doc.data().id, ...prev]);
+    //                 }
 
-                    if(change.type === 'removed') {
-                        setSelf((prev) => prev.filter((elm) => elm !== change.doc.data().id));
-                    }
-                });
-            });
-
-            return unsubscribe;
-
-        }
-    ]
+    //                 if(change.type === 'removed') {
+    //                     setSelf((prev) => prev.filter((elm) => elm !== change.doc.data().id));
+    //                 }
+    //             });
+    //         });
+      
+    //         return unsubscribe;
+    //     },
+    // ],
 });
 
-async function asyncGetChatroomHeaderIds() {
-    const user = get(userAtom) // need to be updated
-    const chatroomHeaderRef = collection(db, DBCollectionType.USERS, user.email, DBCollectionType.CHATROOMHEADERS);
-    const userChatroomHeaderIds = await DBHelper.loadDataByQuery(chatroomHeaderRef);
-    return userChatroomHeaderIds;
-}
+export const chatroomHeaderAtom = atomFamily({
+    key: 'chatroomHeaderAtom',
+    default: selectorFamily({
+        key: 'chatroomHeaderAtom/Default',
+        get: (id) => async () => {
+            return await ChatroomHeaderController.asyncGetChatroomHeader(id);
+        }
+    })
+})
+
+
+
+

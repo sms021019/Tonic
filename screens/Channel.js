@@ -1,63 +1,34 @@
 
 // React
-import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet } from "react-native";
+import React, { useState } from 'react';
 // Design
 import { Icon, Button, Divider } from '@rneui/base';
 import { Center } from "../utils/styleComponents";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-    Input,
-    Box,
-    HStack,
-    FlatList,
-    VStack,
-    Text,
-    Avatar,
-    Spacer
-} from 'native-base';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import styled from "styled-components/native";
-// Modal
-import Modal from '../utils/modal';
-import GlobalContext from '../context/Context';
+
 // Util
-import { DBCollectionType } from '../utils/utils';
 import { ScreenType } from '../utils/utils';
-import ErrorScreen from "./ErrorScreen";
-import DBHelper from '../helpers/DBHelper';
-import { useIsFocused } from '@react-navigation/native'
-// Model
-import ChatroomModel from '../models/ChatroomModel';
-import ChatList from '../components/ChatList';
-import Loading from '../components/Loading';
-
-import {doc} from "firebase/firestore";
 import CreateChatroomModal from '../components/CreateChatroomModal';
+// recoil
+import { useRecoilValue } from 'recoil';
+import { chatroomHeaderIdsState } from '../recoil/chatroomHeaderState';
+import {userAtom, userAtomByEmail} from "../recoil/userState";
 
-export default function Channel({ navigation: {navigate}}) {
-    const { user, gUserModel } = useContext(GlobalContext);    
-    const [modalVisible, setModalVisible] = useState(false);
-    const [email, setEmail] = useState("");
-    const {chatroomModelList} = useContext(GlobalContext);
-    const [loading, setLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
+import ChatroomHeaderFlatList from '../components/ChatroomHeaderFlatList';
+
+export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [email, setEmail] = useState('');
 
-    const [chatroomRefs, setChatroomRefs] = useState(null);
+    const user = useRecoilValue(userAtom);
+    const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsState);
 
-    useEffect(() => {
-        ChatroomModel.onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs);
-    }, []);
-    
-    useEffect(() => {
-        if(chatroomRefs === null) return;
-        loadChatrooms().then();
-    },[chatroomRefs]);
+    console.log("chatroomHeaderIds:", chatroomHeaderIds);
 
     function handleRefresh() {
         setRefreshing(true)
-        loadChatrooms().then();
     }
 
     function openCreateChatroomModal() {
@@ -68,48 +39,30 @@ export default function Channel({ navigation: {navigate}}) {
         return;
     }
 
-    async function loadChatrooms() {
-        let chatroomModelListBeforeSorting = await ChatroomModel.asyncChatroomRefsToModel(chatroomRefs);
-        let sortedChatroomList = await ChatroomModel.sortChatroomModelsByRecentText(chatroomModelListBeforeSorting);
-        chatroomModelList.set(sortedChatroomList);
 
-        setLoading(false);
-        setRefreshing(false);
+    function handleContentClick(chatroomHeaderId) {
+        if (!chatroomHeaderId) return;
+        navigation.navigate(ScreenType.CHAT, {chatroomHeaderId: chatroomHeaderId});
     }
 
-    function handleContentClick(doc_id, index) {
-        if (doc_id === -1 || !doc_id) return;
-        navigate(ScreenType.CHAT, {doc_id: doc_id, index: index});
-    }
-
-    const LoadingView = <View><Text>Loading...</Text></View>
-
-    const ContentView = (
-        <ChatList
-            modelList={chatroomModelList}
-            handleClick={handleContentClick}
-            handleRefresh={handleRefresh}
-            refreshing={refreshing}
-        />
-    )
+  
         
-    const Content = !user ? LoadingView : ContentView;
 
 /* ------------------
-    Error Screen
+    Render
 -------------------*/
-if (hasError) return <ErrorScreen/>
-if (loading) return <Loading/>
-
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
-
-
-            <CreateChatroomModal state = {modalVisible} setState = {setModalVisible} email={email} setEmail = {setEmail} handleCreateChatroom = {handleCreateChatroom}/>
-
+            <CreateChatroomModal 
+                state = {modalVisible} 
+                setState = {setModalVisible} 
+                email={email} 
+                setEmail = {setEmail} 
+                handleCreateChatroom = {handleCreateChatroom}
+            />
             <TopContainer>
                 <UsernameContainer>
-                    <UsernameText>{user?.displayName}</UsernameText>
+                    <UsernameText>{user?.username}</UsernameText>
                 </UsernameContainer>
                 <FormButtonContainer>
                     <Button type="clear" onPress={openCreateChatroomModal}>
@@ -124,10 +77,15 @@ if (loading) return <Loading/>
             </TopContainer>
             <Divider />
             <TopContainer>
-                <MessageText>메세지</MessageText>
+                <MessageText>Message</MessageText>
             </TopContainer>
             <ContentArea>
-                {Content}
+                <ChatroomHeaderFlatList
+                    chatroomHeaderIds={chatroomHeaderIds}
+                    handleClick={handleContentClick}
+                    handleRefresh={handleRefresh}
+                    refreshing={refreshing}
+                />
             </ContentArea>
         </SafeAreaView>
     );

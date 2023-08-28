@@ -23,45 +23,31 @@ import TimeHelper from "../helpers/TimeHelper";
 import DBHelper from "../helpers/DBHelper";
 import UserModel from "../models/UserModel";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
+import { useRecoilValue } from "recoil";
 
 
-export default function Chat(id, onClickHandler) {
-    // const { user, gUserModel } = useContext(GlobalContext);
-    // const [recentText, setRecentText] = useState(null);
-    // const [photoURL, setPhotoURL] = useState(null);
-    
-    // const [opponentUsername, setOpponentUsername] = useState(null);
-    // const [opponentProfileImageUrl, setOpponentprofileImageUrl] = useState(null);
+export default function ChatroomHeader(id, onClickHandler) {
 
-    
+    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(id));
 
-    if (props.model === null) {
-        return (
-            <View> no model data </View>
-        )
-    }
 
-    const chatroomModel = props.model;
-    const index = props.index;
-    const chatroomModelList = props.modelList;
+    // useEffect(() => {
+    //     if(chatroomModel === undefined) return;
 
-    useEffect(() => {
-        if(chatroomModel === undefined) return;
+    //     // setRecentText(chatroomModel.recentText);
+    //     if(chatroomModel.getRecentText(setRecentText, index ) === false){
+    //         //TO DO
+    //         console.log("Error when getting a recent text")
+    //         return;
+    //     }            
 
-        // setRecentText(chatroomModel.recentText);
-        if(chatroomModel.getRecentText(setRecentText, index ) === false){
-            //TO DO
-            console.log("Error when getting a recent text")
-            return;
-        }            
-
-        setOpponentprofileImageUrl(ProfileImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
-        setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
-    },[])
+    //     setOpponentprofileImageUrl(ProfileImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
+    //     setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
+    // },[])
 
 
     function handlePostClick() {
-        props.onClickHandler();
+        onClickHandler();
     }
 
     return (
@@ -76,7 +62,7 @@ export default function Chat(id, onClickHandler) {
                                 <Text _dark={{
                                     color: "warmGray.50"
                                 }} color="coolGray.800" bold>
-                                    {opponentUsername}
+                                    {chatroomHeader.opponentData.username}
                                 </Text>
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"

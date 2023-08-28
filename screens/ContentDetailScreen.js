@@ -27,11 +27,11 @@ import {showQuickMessage} from "../helpers/MessageHelper";
 import ChatroomController from '../typeControllers/ChatroomController';
 
 import {useRecoilValue} from "recoil";
-import {postAtom} from "../recoli/postState";
+import {postAtom} from "../recoil/postState";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
-import {userAtom, userAtomByEmail} from "../recoli/userState";
+import {userAtom, userAtomByEmail} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
@@ -74,44 +74,28 @@ export default function ContentDetailScreen({navigation, postId}) {
         });
     }, [navigation]);
 
+   
 
     async function handleChatClick() {
-        if(!isMyPost()) return;
+        // if(!isMyPost()) return;
         
         let newChatroom = createNewChatroomDoc();
         if(await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
             return LOG_ERROR("Unkown error occur while creaeting new chatroom");
         }
 
-        
-
-        
-
-        // const chatroomModel = ChatroomModel.newEmpty();
-        // if(await chatroomModel.asyncSetNewChatroomData(owner?.username, postModel.doc_id, owner, user) === false) return;
-
-        // chatroomModelList.addOne(chatroomModel);
-        
+        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: chatroomHeaderId})
 
 
-        // if( await chatroomModel.asyncSaveData() === false) {
-        //     // TO DO
-        //     console.log("Failed to create chatroom")
-        //     return false;
-        // }
-
-        // navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
-
-        // return true;
     }
-    function createNewChatroomDoc() {
-        let /** @type {ChatroomDoc} */ newChatroomDoc = {
+    function createNewChatroomDoc() { //PostModel 바꾸기
+        let /** @type {ChatroomDoc} */ ChatroomDoc = {
             docId: null,
             ownerEmail: postModel.email,
             customerEmail: gUserModel.email,
             postModelId: postModel.id,
         }
-        return newChatroomDoc;
+        return ChatroomDoc;
     }
 
     

@@ -12,7 +12,7 @@ import theme from "../utils/theme";
 import PostList from '../components/PostList';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
-import {userAtom} from "../recoli/userState";
+import {userAtom} from "../recoil/userState";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 

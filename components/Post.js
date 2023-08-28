@@ -3,7 +3,7 @@ import {Pressable, Box, Flex, Center, Image, Text} from "native-base";
 import {windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
 import {useRecoilValue} from "recoil";
-import {postAtom} from "../recoli/postState";
+import {postAtom} from "../recoil/postState";
 import {TouchableOpacity} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
 

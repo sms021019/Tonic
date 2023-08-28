@@ -4,7 +4,7 @@ import { collection, query, orderBy, onSnapshot, runTransaction, writeBatch, lim
 import { db } from "../firebase";
 import { arrayUnion, arrayRemove } from "firebase/firestore";
 import { useCallback } from "react";
-import ImageHelper from "../helpers/ImageHelper";
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 /*----------DB COLLECTION STRUCT----------------
 {

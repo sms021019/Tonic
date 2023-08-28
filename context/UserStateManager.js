@@ -1,5 +1,5 @@
 import {useRecoilState} from "recoil";
-import {userAtom, userAuthAtom} from "../recoli/userState";
+import {userAtom, userAuthAtom} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
