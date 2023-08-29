@@ -1,37 +1,35 @@
-import { arrayUnion, collection } from "firebase/firestore";
+import { arrayUnion, collection, doc } from "firebase/firestore";
 import DBHelper from "../helpers/DBHelper";
 import { DBCollectionType } from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 import UserController from "./UserController";
-import { userAtom } from "../recoil/userState";
-import { useRecoilValue } from "recoil";
 import { db } from "../firebase";
 
 
 export default class ChatroomHeaderController {
 
     static async asyncSetNewChatroomHeader(batch, chatroom) {
-
-        let /** @type {ChatroomHeaderDoc} */ newOwnerChatroomHeader = {
-            docId: null,
-            opponentEmail: chatroom.customerEmail,
-            email: chatroom.ownerEmail,
-            chatroomId: chatroom.docId,
-            recentText: null,
-            recentTextTimeStamp: null,
-        }
-
-        let /** @type {ChatroomHeaderDoc} */ newCustomerChatroomHeader = {
-            docId: null,
-            opponentEmail: chatroom.ownerEmail,
-            email: chatroom.customerEmail,
-            chatroomId: chatroom.docId,
-            recentText: null,
-            recentTextTimeStamp: null,
-        }
-        
         try{
-            if(await asyncSetAddChatroomHeaders(batch, newOwnerChatroomHeader, newCustomerChatroomHeader) === false) return false;
+            let /** @type ChatroomHeaderDoc */ newOwnerChatroomHeader = {
+                docId: null,
+                opponentEmail: chatroom.customerEmail,
+                email: chatroom.ownerEmail,
+                chatroomId: chatroom.docId,
+                recentText: null,
+                recentTextTimeStamp: null,
+            }
+
+            let /** @type ChatroomHeaderDoc */ newCustomerChatroomHeader = {
+                docId: null,
+                opponentEmail: chatroom.ownerEmail,
+                email: chatroom.customerEmail,
+                chatroomId: chatroom.docId,
+                recentText: null,
+                recentTextTimeStamp: null,
+            }
+        
+        
+            if(await this.asyncSetAddChatroomHeaders(batch, newOwnerChatroomHeader, newCustomerChatroomHeader) === false) return false;
     
             return true;
 
@@ -46,8 +44,19 @@ export default class ChatroomHeaderController {
             const ownerRef = DBHelper.getRef(DBCollectionType.USERS, OwnerChatroomHeader.email);
             const customerRef = DBHelper.getRef(DBCollectionType.USERS, CustomerChatroomHeader.email);
 
-            batch.update(ownerRef, {chatrooms: arrayUnion(OwnerChatroomHeader)});
-            batch.update(customerRef, {chatrooms: arrayUnion(CustomerChatroomHeader)});
+            // ----firebase 함수를 최대한 Helper class에서 총괄할 수 있도록 개편 요함.----
+            const ownerChatroomHeaderRef = collection(ownerRef, DBCollectionType.CHATROOMHEADERS);
+            const customerChatroomHeaderRef = collection(customerRef, DBCollectionType.CHATROOMHEADERS);
+
+            const newOwnerChatroomHeaderDoc = doc(ownerChatroomHeaderRef);
+            const newCustomerChatroomHeaderDoc = doc(customerChatroomHeaderRef);
+
+            OwnerChatroomHeader.docId = newOwnerChatroomHeaderDoc.id;
+            CustomerChatroomHeader.docId = newCustomerChatroomHeaderDoc.id;
+            // -----------------------------------------------------------------
+
+            batch.set(newOwnerChatroomHeaderDoc, OwnerChatroomHeader);
+            batch.set(newCustomerChatroomHeaderDoc, CustomerChatroomHeader);
 
             return true;
         }catch(err) {
@@ -56,37 +65,27 @@ export default class ChatroomHeaderController {
         }
     }
 
-    static async asyncLoadOpponentData(chatroomHeaderIds) {
+    static async asyncLoadOpponentData(chatroomHeader) {
         try{
-            chatroomHeaderIds.map( async (chatroomHeaderId) => {
-                const opponentData = await UserController.asyncGetUser(chatroomHeaderId.opponentEmail);
-                chatroomHeaderId['opponentData'] = opponentData;
-                return chatroomHeaderId;
-            });
-
+            console.log("1");
+            const opponentData = await UserController.asyncGetUser(chatroomHeader.opponentEmail);
+            chatroomHeader['opponentData'] = opponentData;
+            return chatroomHeader;
         }catch(err) {
             console.log("Err: ChatroomHeaderController.asyncLoadOpponentData");
-            return false;
+            return null;
         }
-
-        return true;
     }
 
-    
-    static async asyncGetChatroomHeaderIds() {
-        const chatroomHeaderRef = this.getChatroomHeaderRef();
+    static async asyncGetChatroomHeaderIdsByEmail(email) {
+        const chatroomHeaderRef = collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
         const userChatroomHeaderIds = await FirebaseHelper.getDocIdsByCollectionRef(chatroomHeaderRef);
         return userChatroomHeaderIds;
-    }
-    
-    static async asyncGetChatroomHeader(id) {
-        const chatroomHeaderRef = this.getChatroomHeaderRef();
-        return /** @type {PostDoc} */ await FirebaseHelper.getDocDataById(chatroomHeaderRef, id);
-    }
+    }   
 
-    static getChatroomHeaderRef() {
-        const user = useRecoilValue(userAtom);
-        return collection(db, DBCollectionType.USERS, user.email, DBCollectionType.CHATROOMHEADERS);
+    static async asyncGetChatroomHeaderByEmailAndId(email, id) {
+        const chatroomHeaderRef = collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
+        return await FirebaseHelper.getDocDataByCollectionRefAndId(chatroomHeaderRef, id); // 얘 문제있음
     }
 
 

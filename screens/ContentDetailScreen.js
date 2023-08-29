@@ -50,6 +50,8 @@ export default function ContentDetailScreen({navigation, postId}) {
         message: "",
     })
 
+    const [isChatButtonClicked, setChatbuttonClicked] = useState(false);
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: true,
@@ -74,29 +76,44 @@ export default function ContentDetailScreen({navigation, postId}) {
         });
     }, [navigation]);
 
-   
+    useEffect(() => {
+        if(!isChatButtonClicked) return;
+        tryCreateChat();
 
-    async function handleChatClick() {
+    }, [isChatButtonClicked]);
+
+
+    function tryCreateChat() {
+        asyncHandleChatClick().then();
+    }
+
+
+    async function asyncHandleChatClick() {
         // if(!isMyPost()) return;
         
-        let newChatroom = createNewChatroomDoc();
+        let /** @type ChatroomDoc */ newChatroom = {
+            docId: null,
+            ownerEmail: postOwner.email,
+            customerEmail: user.email,
+            postId: post.docId,
+        }
         if(await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
             return LOG_ERROR("Unkown error occur while creaeting new chatroom");
         }
 
-        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: chatroomHeaderId})
-
+        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: newChatroom.docId})
 
     }
-    function createNewChatroomDoc() { //PostModel 바꾸기
-        let /** @type {ChatroomDoc} */ ChatroomDoc = {
-            docId: null,
-            ownerEmail: postModel.email,
-            customerEmail: gUserModel.email,
-            postModelId: postModel.id,
-        }
-        return ChatroomDoc;
-    }
+    
+    // function createNewChatroomDoc() { //PostModel 바꾸기
+    //     let /** @type ChatroomDoc */ ChatroomDoc = {
+    //         docId: null,
+    //         ownerEmail: postOwner.email,
+    //         customerEmail: user.email,
+    //         postId: post.docId,
+    //     }
+    //     return ChatroomDoc;
+    // }
 
     
     function handleEditPost() {
@@ -170,7 +187,7 @@ export default function ContentDetailScreen({navigation, postId}) {
                     <Text flex="1" style={styles.priceText}>
                         ${post.price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
+                    <ChatButton style={{marginRight:10}} onPress={() => setChatbuttonClicked(true)}>
                         <TonicText>Chat</TonicText>
                     </ChatButton>
                 </Flex>

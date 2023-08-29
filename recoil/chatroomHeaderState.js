@@ -9,13 +9,30 @@ import ChatroomHeaderController from "../typeControllers/ChatroomHeaderControlle
 
 
 
-export const chatroomHeaderIdsState = atom({
-    key: 'chatroomHeaderIdsState',
-    default: selector({
-        key: 'chatroomHeaderIdsState/Default',
-        get: async () => {
-            return await ChatroomHeaderController.asyncGetChatroomHeaderIds();
-        },
+
+
+export const chatroomHeaderAtom = atomFamily({
+    key: 'chatroomHeaderAtom',
+    default: selectorFamily({
+        key: 'chatroomHeaderAtom/Default',
+        get: (email, id) => async () => {
+            return await ChatroomHeaderController.asyncGetChatroomHeaderByEmailAndId(email, id);
+        }
+    }),
+});
+
+// export const chatroomHeaderAtom = atom({
+//     key: 'chatroomHeaderAtom',
+//     default: /**@type {ChatroomHeaderDoc} */ null,
+// })
+
+export const chatroomHeaderIdsAtomByEmail = atomFamily({
+    key: 'chatroomHeaderAtomFamily',
+    default: selectorFamily({
+        key: 'chatroomHeaderIdsSelectorFamily/email',
+        get: (userEmail) => async () => {
+            return await ChatroomHeaderController.asyncGetChatroomHeaderIdsByEmail(userEmail);
+        }
     }),
     // effects: [
     //     ({setSelf}) => {
@@ -39,16 +56,6 @@ export const chatroomHeaderIdsState = atom({
     //         return unsubscribe;
     //     },
     // ],
-});
-
-export const chatroomHeaderAtom = atomFamily({
-    key: 'chatroomHeaderAtom',
-    default: selectorFamily({
-        key: 'chatroomHeaderAtom/Default',
-        get: (id) => async () => {
-            return await ChatroomHeaderController.asyncGetChatroomHeader(id);
-        }
-    })
 })
 
 

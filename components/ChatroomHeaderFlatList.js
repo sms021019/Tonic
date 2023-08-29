@@ -3,6 +3,7 @@ import {View} from "react-native";
 import Chat from "./Chat";
 import React, { useEffect, useState } from "react";
 import ChatroomModel from "../models/ChatroomModel";
+import ChatroomHeader from "./ChatroomHeader";
 
 export default function ChatFlatList(props) {
 
@@ -20,11 +21,11 @@ export default function ChatFlatList(props) {
                 data={chatroomHeaderIds}
                 renderItem={({chatroomHeaderId}) => {
                     return (
-                        <View key={chatroomHeaderId.item}>
+                        <View key={chatroomHeaderId}>
                             <View style={{margin: margin}}>
-                                <Chat 
-                                    onClickHandler={() => handleClick(chatroomHeaderId.item)} 
-                                    id={chatroomHeaderId.item} 
+                                <ChatroomHeader 
+                                    onClickHandler={() => handleClick(chatroomHeaderId)} 
+                                    id={chatroomHeaderId} 
                                 />
                             </View>
                         </View>

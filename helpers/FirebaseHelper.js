@@ -74,6 +74,19 @@ export default class FirebaseHelper {
             return null
         }
     }
+    
+    // chatroomHeader 콜랙션에서 문서 읽기 위해서 임시로 만든 함수
+    static async getDocDataByCollectionRefAndId(collectionRef, id) {
+        try{
+            const dRef = doc(collectionRef, id);
+            const _doc = await getDoc(dRef);
+            if(!_doc.data()) return null;
+            return _doc.data();
+        }catch (e) {
+            console.log("Err FirebaseHelper.getDocDataByCollectionRefAndId");
+            return null
+        }
+    }
 
     static async updateDoc(collectionType, id, data) {
         try {

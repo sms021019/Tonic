@@ -7,6 +7,7 @@ import ChatroomHeaderController from "./ChatroomHeaderController";
 
 
 export default class ChatroomController {
+    
 
     static async asyncGetChatroom (id) {
         return /**@type {ChatroomDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.CHATROOMS, id);
@@ -15,8 +16,8 @@ export default class ChatroomController {
     static async asyncCreateNewChatroom (chatroom) {
         try{
             let batch = writeBatch(db);
-
-            if(await asyncSetNewChatroom(batch, chatroom) === false) return false;
+            
+            if(await this.asyncSetNewChatroom(batch, chatroom) === false) return false;
             if(await ChatroomHeaderController.asyncSetNewChatroomHeader(batch, chatroom) === false) return false;
 
             await batch.commit();
@@ -43,4 +44,6 @@ export default class ChatroomController {
         }
 
     }
+
+    
 }

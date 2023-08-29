@@ -12,8 +12,8 @@ const Stack = createStackNavigator();
 export default function ChatNavigator() {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name = {ScreenType.CHAT}>
-                {props => <Chat {...props} chatroomHeaderId = {chatroomHeaderId}/>}
+            <Stack.Screen name = {ScreenType.CHANNEL}>
+                {props => <Chat {...props} chatroomId = {chatroomId}/>}
             </Stack.Screen>
         </Stack.Navigator>
     )

@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Feather, Ionicons} from "@expo/vector-icons";
 import Content from '../screens/ContentScreen';
-import Chat from "../screens/Channel";
+import Channel from "../screens/Channel";
 import MyPage from '../screens/MyPage';
 import ChatNavigator from './ChatNavigator';
 import {NavigatorType, ScreenType} from '../utils/utils';
@@ -31,7 +31,7 @@ export default function HomeNavigator({route}) {
                 {props => <Content {...props} />}
             </Tab.Screen>
             <Tab.Screen name={ScreenType.CHANNEL} options={{headerShown: false, title: "Chat"}}>
-                {props => <Chat {...props}/>}
+                {props => <Channel {...props}/>}
             </Tab.Screen>
             <Tab.Screen name={ScreenType.MYPAGE} options={{headerTransparent: true, title: "My", headerTitle: ""}}>
                 {props => <MyPage {...props} />}

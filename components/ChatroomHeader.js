@@ -25,25 +25,21 @@ import UserModel from "../models/UserModel";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import { useRecoilValue } from "recoil";
 
+import { chatroomHeaderAtom } from "../recoil/chatroomHeaderState";
+import { userAtom } from "../recoil/userState";
+import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
+
 
 export default function ChatroomHeader(id, onClickHandler) {
 
-    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(id));
+    const user = useRecoilValue(userAtom);
+    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(user.email,id));
 
-
-    // useEffect(() => {
-    //     if(chatroomModel === undefined) return;
-
-    //     // setRecentText(chatroomModel.recentText);
-    //     if(chatroomModel.getRecentText(setRecentText, index ) === false){
-    //         //TO DO
-    //         console.log("Error when getting a recent text")
-    //         return;
-    //     }            
-
-    //     setOpponentprofileImageUrl(ProfileImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
-    //     setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
-    // },[])
+    useEffect(() => {
+        if(!chatroomHeader) return;
+        
+        ChatroomHeaderController.asyncLoadOpponentData(chatroomHeader)
+    },chatroomHeader)
 
 
     function handlePostClick() {
@@ -57,7 +53,7 @@ export default function ChatroomHeader(id, onClickHandler) {
                         borderColor: "muted.50"
                     }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
                         <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={opponentProfileImageUrl} />
+                            <Avatar size="48px" source={''} />
                             <VStack>
                                 <Text _dark={{
                                     color: "warmGray.50"

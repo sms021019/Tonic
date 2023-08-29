@@ -1,6 +1,6 @@
 
 // React
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // Design
 import { Icon, Button, Divider } from '@rneui/base';
 import { Center } from "../utils/styleComponents";
@@ -12,10 +12,11 @@ import { ScreenType } from '../utils/utils';
 import CreateChatroomModal from '../components/CreateChatroomModal';
 // recoil
 import { useRecoilValue } from 'recoil';
-import { chatroomHeaderIdsState } from '../recoil/chatroomHeaderState';
+import { chatroomHeaderIdsAtomByEmail } from '../recoil/chatroomHeaderState';
 import {userAtom, userAtomByEmail} from "../recoil/userState";
 
 import ChatroomHeaderFlatList from '../components/ChatroomHeaderFlatList';
+import ChatroomHeaderController from '../typeControllers/ChatroomHeaderController';
 
 export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
@@ -23,8 +24,10 @@ export default function Channel({ navigation }) {
     const [email, setEmail] = useState('');
 
     const user = useRecoilValue(userAtom);
-    const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsState);
+    const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsAtomByEmail(user.email));
 
+
+    console.log(user.email);
     console.log("chatroomHeaderIds:", chatroomHeaderIds);
 
     function handleRefresh() {
