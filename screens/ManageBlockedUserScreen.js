@@ -25,7 +25,7 @@ export default function ManageBlockedUserScreen({navigation}) {
             {
                 (user.reportedUserEmails.length === 0) ?
                     <Center style={{top: 300}}>
-                        <Text style={{color:'gray'}}>No blocked users.</Text>
+                        <Text style={{color:'gray'}}>No blocked user.</Text>
                     </Center>
                 :
                 <ScrollView>
