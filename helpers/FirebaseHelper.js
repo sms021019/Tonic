@@ -69,7 +69,7 @@ export default class FirebaseHelper {
 
     static async updateDoc(collectionType, id, data) {
         try {
-            console.log(collectionType, id, data);
+            console.log("updateDoc:", collectionType, id, data);
             const dRef = this.getRef(collectionType, id);
             await updateDoc(dRef, data);
             return true;

@@ -3,6 +3,7 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 import {arrayUnion, writeBatch} from "firebase/firestore";
 import {db} from "../firebase";
 import {arrayRemove} from "@firebase/firestore";
+import DBHelper from "../helpers/DBHelper";
 
 
 export default class UserController {
@@ -87,5 +88,27 @@ export default class UserController {
      */
     static isPostBlockedByUser(user, post) {
         return (user.reportedPostIds.includes(post.docId) || user.reportedUserEmails.includes(post.ownerEmail))
+    }
+
+    /**
+     *
+     * @param {string} email
+     * @param {string} profileImageType
+     * @returns {Promise<boolean>}
+     */
+    static async asyncUpdateProfile(email, profileImageType) {
+        if (await FirebaseHelper.updateDoc(DBCollectionType.USERS, email,{profileImageType: profileImageType}) === false) {
+            console.log("Err: UserController.asyncUpdateProfile");
+            return false;
+        }
+        return true;
+    }
+
+    static async asyncUpdateUsername(email, username) {
+        if (await FirebaseHelper.updateDoc(DBCollectionType.USERS, email,{username: username}) === false) {
+            console.log("Err: UserController.asyncUpdateUsername");
+            return false;
+        }
+        return true;
     }
 }

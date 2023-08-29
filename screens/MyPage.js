@@ -30,7 +30,7 @@ export default function MyPage({navigation}) {
 
     const userProfileUrl = useMemo(() => {
         return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
-    }, [])
+    }, [user])
 
 /* ------------------
        Handlers
