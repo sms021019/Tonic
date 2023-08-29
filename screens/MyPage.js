@@ -73,12 +73,7 @@ export default function MyPage({navigation}) {
                         </Center>
                     </View>
                     <View style={styles.myPostView}>
-                        <Flex direction="row" justifyContent={"space-between"} alignItems={"center"}>
-                            <Text style={styles.myPostHeader}>My Posts</Text>
-                            <TouchableOpacity>
-                                <Ionicons name={"reload"} size={24} marginRight={15} />
-                            </TouchableOpacity>
-                        </Flex>
+                        <Text style={styles.myPostHeader}>My Posts</Text>
                         <Center>
                             {
                                 (user?.myPostIds.length === 0)?
