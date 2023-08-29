@@ -83,7 +83,6 @@ export default function MyPage({navigation}) {
                                     postIds={user?.myPostIds}
                                     handleClick={handleContentClick}
                                 />
-
                             }
                         </Center>
                     </View>

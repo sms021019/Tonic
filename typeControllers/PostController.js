@@ -84,7 +84,7 @@ export default class PostController {
 // -------------- BATCH POST --------------------
     /**
      * @param batch
-     * @param {PostDoc}post
+     * @param {PostDoc} post
      * @returns {Promise<boolean>}
      *
      * This function will create and set new 'docId' to the post.

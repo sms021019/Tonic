@@ -1,28 +1,40 @@
-import React, {useLayoutEffect} from 'react'
+import React, {useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import {signOut} from "firebase/auth";
-import {auth} from "../firebase";
 import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import packageJson from '../package.json';
+import AuthController from "../typeControllers/AuthController";
+import {showQuickMessage} from "../helpers/MessageHelper";
+import DeleteAccountModal from "../components/DeleteAccountModal";
 
 export default function SettingScreen({navigation}) {
+
+    const [deleteAccountModalOn, setDeleteAccountModalOn] = useState(false);
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTitle:'Setting',
         });
     }, [navigation]);
 
-    function handleSignOut() {
-        signOut(auth).then(() => {
-            console.log('signed out')
-        }).catch((error) => {
-            console.log(error);
-        })
+    async function handleSignOut() {
+        if (await AuthController.asyncSignOut() === false) {
+            showQuickMessage("Fail to sign out. Please try again.");
+        }
+        else {
+            showQuickMessage("Successfully signed out.")
+            navigation.navigate(NavigatorType.LOGIN);
+        }
+    }
 
-        navigation.navigate(NavigatorType.LOGIN);
+    async function onDeleteAccount() {
+
+    }
+
+    function onDeleteAccountTrigger() {
+        setDeleteAccountModalOn(true);
     }
 
     function handleManageBlockedUserClick() {
@@ -35,6 +47,7 @@ export default function SettingScreen({navigation}) {
 
     return (
         <View style={styles.container}>
+            <DeleteAccountModal state={deleteAccountModalOn} setState={setDeleteAccountModalOn} onDeleteAccount={onDeleteAccount}/>
             <ScrollView>
                 <TouchableOpacity onPress={handleManageBlockedUserClick}>
                     <Box style={styles.menu}>
@@ -64,7 +77,7 @@ export default function SettingScreen({navigation}) {
                         </Flex>
                     </Box>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={onDeleteAccountTrigger}>
                     <Box style={styles.menu}>
                         <Flex direction={'row'}>
                             <Text style={styles.menuTextRed}>Delete Account</Text>
