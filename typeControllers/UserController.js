@@ -104,6 +104,12 @@ export default class UserController {
         return true;
     }
 
+    /**
+     *
+     * @param {string} email
+     * @param {string} username
+     * @returns {Promise<boolean>}
+     */
     static async asyncUpdateUsername(email, username) {
         if (await FirebaseHelper.updateDoc(DBCollectionType.USERS, email,{username: username}) === false) {
             console.log("Err: UserController.asyncUpdateUsername");

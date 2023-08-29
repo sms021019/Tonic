@@ -1,5 +1,6 @@
 import {useRecoilState, useRecoilValue} from "recoil";
 import {postIdsAtom, postAtom} from '../recoil/postState'
+import PostController from "../typeControllers/PostController";
 
 
 export default function PostStateManager({postStateManager}) {
@@ -11,6 +12,14 @@ export default function PostStateManager({postStateManager}) {
 
     postStateManager.removeId = (id) => {
         setPostIds(postIds.filter((postId) => postId !== id));
+    }
+
+    postStateManager.refreshPostIds = async () => {
+        const newPostIds = await PostController.asyncGetPostIds();
+        if (!newPostIds) return false;
+
+        setPostIds(await PostController.asyncGetPostIds());
+        return true;
     }
 
     return (<></>)

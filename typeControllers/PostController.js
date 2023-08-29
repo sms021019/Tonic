@@ -7,7 +7,6 @@ import {arrayRemove} from "@firebase/firestore";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class PostController {
-
     static async asyncGetPostIds() {
         return await FirebaseHelper.getDocIds(DBCollectionType.POSTS);
     }
@@ -16,6 +15,11 @@ export default class PostController {
         return /**@type {PostDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.POSTS, id);
     }
 
+    /**
+     *
+     * @param {PostDoc} post
+     * @returns {Promise<boolean>}
+     */
     static async asyncAdd(post) {
         if (!this.isValid(post)) return false;
 
@@ -27,12 +31,18 @@ export default class PostController {
             await batch.commit();
             return true;
         }
-        catch (err) {
-            console.log("Err: PostController.asyncAdd")
+        catch (e) {
+            console.log(e, "Err: PostController.asyncAdd")
             return false;
         }
     }
 
+    /**
+     *
+     * @param {PostDoc} oldPost
+     * @param {PostDoc} newPost
+     * @returns {Promise<boolean>}
+     */
     static async asyncUpdate(oldPost, newPost) {
         if (!this.isValid(newPost)) return false;
 
@@ -43,14 +53,18 @@ export default class PostController {
 
             await batch.commit();
             return true;
-
         }
-        catch (err) {
-            console.log("Err: PostController.asyncUpdate")
+        catch (e) {
+            console.log(e, "Err: PostController.asyncUpdate")
             return false;
         }
     }
 
+    /**
+     *
+     * @param {PostDoc} post
+     * @returns {Promise<boolean>}
+     */
     static async asyncDelete(post) {
         try {
             let batch = writeBatch(db);
@@ -61,8 +75,8 @@ export default class PostController {
             console.log("Done: PostController.asyncDelete.")
             return true;
         }
-        catch (err) {
-            console.log("Err: PostController.asyncDelete")
+        catch (e) {
+            console.log(e, "Err: PostController.asyncDelete")
             return false;
         }
     }
@@ -88,8 +102,8 @@ export default class PostController {
 
             return true;
         }
-        catch(err) {
-            console.log("Err: PostController.asyncSetAddPostActionToBatch")
+        catch(e) {
+            console.log(e, "Err: PostController.asyncSetAddPostActionToBatch")
             return false;
         }
     }
@@ -115,7 +129,7 @@ export default class PostController {
             return true;
         }
         catch (e) {
-            console.log("Err: PostController.asyncSetUpdatePostActionToBatch")
+            console.log(e, "Err: PostController.asyncSetUpdatePostActionToBatch")
             return false;
         }
     }
@@ -135,7 +149,7 @@ export default class PostController {
             return true;
         }
         catch(e) {
-            console.log("Err: PostController.asyncSetDeletePostActionToBatch")
+            console.log(e, "Err: PostController.asyncSetDeletePostActionToBatch")
             return false;
         }
     }
@@ -157,8 +171,8 @@ export default class PostController {
             }
             return true
         }
-        catch(err) {
-            console.log("Err: PostController.asyncUploadPostImagesToStorage")
+        catch(e) {
+            console.log(e, "Err: PostController.asyncUploadPostImagesToStorage")
             return false
         }
     }
@@ -176,7 +190,7 @@ export default class PostController {
             return true;
         }
         catch(e) {
-            console.log("Err: PostController.asyncDeletePostImagesFromStorage")
+            console.log(e, "Err: PostController.asyncDeletePostImagesFromStorage")
             return false;
         }
     }
@@ -195,6 +209,11 @@ export default class PostController {
         }
     }
 
+    /**
+     *
+     * @param {PostDoc} post
+     * @returns {boolean}
+     */
     static isValid(post) {
         if (!post) return false;
         if (!post.title || !post.price || !post.info || !post.postImages) return false;

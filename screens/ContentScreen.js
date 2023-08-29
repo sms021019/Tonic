@@ -1,18 +1,19 @@
-import React, {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState} from 'react'
-import {Text, TouchableOpacity, View, Button} from 'react-native'
-import {Center, FlatList, Input, Icon, Divider, Flex, Image, Box} from "native-base";
+import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import {Text} from 'react-native'
+import {Center, Flex} from "native-base";
 import styled from "styled-components/native";
 // util
 import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 // components
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
 import PostFlatList from "../components/PostFlatList";
-import {errorHandler} from '../errors';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
 import {postIdsAtom} from "../recoil/postState";
+import GlobalContext from "../context/Context";
 
 export default function ContentScreen({navigation}) {
+    const {postStateManager} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);
     const postIds = useRecoilValue(postIdsAtom);
 
@@ -23,9 +24,15 @@ export default function ContentScreen({navigation}) {
         });
     }, [navigation]);
 
-/* ------------------
-       Handlers
- -------------------*/
+    useEffect(() => {
+        refreshPostIds().then();
+    }, [refreshing])
+
+    async function refreshPostIds() {
+        await postStateManager.refreshPostIds();
+        setRefreshing(false);
+    }
+
     function handleContentClick(postId) {
         if (!postId) return;
         navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: postId})
@@ -35,9 +42,10 @@ export default function ContentScreen({navigation}) {
         navigation.navigate(NavigatorType.POST_CREATE);
     }
 
-    function handleRefresh() {
+    function onRefreshTrigger() {
         setRefreshing(true)
     }
+
 /* ------------------
       Render
 -------------------*/
@@ -55,7 +63,7 @@ export default function ContentScreen({navigation}) {
                     <PostFlatList
                         postIds={postIds}
                         handleClick={handleContentClick}
-                        handleRefresh={handleRefresh}
+                        handleRefresh={onRefreshTrigger}
                         refreshing={refreshing}
                     />
                 }

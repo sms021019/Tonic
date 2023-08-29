@@ -32,20 +32,23 @@ export default class FirebaseHelper {
             await setDoc(dRef, data);
             return true;
         }
-        catch(error) {
-            console.log("Err: FirebaseHelper.addDocByRef");
+        catch(e) {
+            console.log(e, "Err: FirebaseHelper.addDocByRef");
             return false;
         }
     }
 
     static async getDocIds(collectionType) {
-        const cRef = collection(db, collectionType);
-
-        const q = query(cRef);
-
-        const snapshots = await getDocs(q);
-
-        return snapshots.docs.map((doc) => doc.id);
+        try {
+            const cRef = collection(db, collectionType);
+            const q = query(cRef);
+            const snapshots = await getDocs(q);
+            return snapshots.docs.map((doc) => doc.id);
+        }
+        catch (e) {
+            console.log(e, "Err: FirebaseHelper.getDocIds");
+            return null;
+        }
     }
 
     /**
@@ -62,7 +65,7 @@ export default class FirebaseHelper {
             return _doc.data();
         }
         catch (e) {
-            console.log("Err: FirebaseHelper.getDocDataById");
+            console.log(e, "Err: FirebaseHelper.getDocDataById");
             return null
         }
     }
@@ -94,8 +97,8 @@ export default class FirebaseHelper {
 
             return {storageUrl: storageUrl, downloadUrl: downloadUrl};
         }
-        catch(error) {
-            console.log("Error occurs while upload Image to Storage.");
+        catch(e) {
+            console.log(e, "Err: FirebaseHelper.asyncUploadImageStorage");
             return null;
         }
     }
@@ -125,7 +128,7 @@ export default class FirebaseHelper {
             await deleteObject(_ref);
             return true;
         }
-        catch(error) {
+        catch(e) {
             console.log("Error occurs while delete image from Storage.");
             return false;
         }

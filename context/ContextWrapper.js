@@ -12,8 +12,8 @@ export default function ContextWrapper(props) {
         ready: false,
     })
 
-    const [postStateManager, setPostStateManager] = useState({});
-    const [userStateManager, setUserStateManager] = useState({});
+    const [postStateManager] = useState({});
+    const [userStateManager] = useState({});
 
     const [events, setEvents] = useState({
         onContentChange: [],
