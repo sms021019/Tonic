@@ -47,7 +47,9 @@ export default function ManageBlockedPostScreen({navigation}) {
                 <Center>
                     {
                         (user.reportedPostIds.length === 0) ?
-                        <Text>No blocked post.</Text>
+                            <View style={{top: 300}}>
+                                <Text style={{color:'gray'}}>No blocked post.</Text>
+                            </View>
                         :
                         <PostList
                             postIds={user.reportedPostIds}

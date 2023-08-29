@@ -18,7 +18,7 @@ export const userAtomByEmail = atomFamily({
     default: selectorFamily({
         key: 'postAtom/Default',
         get: (email) => async () => {
-            return await UserController.asyncGetUser(email);
+            return /**@type {UserDoc}*/ await UserController.asyncGetUser(email);
         },
     })
 })

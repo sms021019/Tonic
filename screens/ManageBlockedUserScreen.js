@@ -3,20 +3,15 @@ import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
 import {Box, Center, Divider, Flex, ScrollView} from "native-base";
 import {windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
-import GlobalContext from "../context/Context";
-import UserModel from "../models/UserModel";
-import LoadingScreen from "./LoadingScreen";
-import UnblockPostModal from "../components/UnblockPostModal";
 import UnblockUserModal from "../components/UnblockUserModal";
+import {userAtom, userAtomByEmail} from "../recoil/userState";
+import {useRecoilValue} from "recoil";
+import UserController from "../typeControllers/UserController";
+import {showQuickMessage} from "../helpers/MessageHelper";
+import GlobalContext from "../context/Context";
 
 export default function ManageBlockedUserScreen({navigation}) {
-    const {gUserModel, events} = useContext(GlobalContext);
-    const [userModelsWrapper, setUserModelsWrapper] = useState({
-        models: [],
-        ready: false,
-    });
-    const [unblockModalOn, setUnblockModalOn] = useState(false);
-    const [selectedUserModel, setSelectedUserModel] = useState(null);
+    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -24,62 +19,61 @@ export default function ManageBlockedUserScreen({navigation}) {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        asyncLoadUserModels().then();
-    }, [gUserModel])
-
-    if (userModelsWrapper.ready === false) {
-        return <LoadingScreen/>
-    }
-
-    async function asyncLoadUserModels() {
-        let userModels = [];
-
-        for (let email of gUserModel.model.userReports) {
-            userModels.push(await UserModel.loadDataById(email));
-        }
-        setUserModelsWrapper({models: userModels, ready: true});
-    }
-
-    async function OnUnblockUserButtonClick(model) {
-        setSelectedUserModel(model);
-        setUnblockModalOn(true);
-    }
-
-    async function unblockUser() {
-        await gUserModel.unblockUser(selectedUserModel?.email);
-
-        events.invokeOnContentUpdate();
-        setUnblockModalOn(false);
-    }
 
     return (
         <View style={styles.container}>
-            <UnblockUserModal state={unblockModalOn} setState={setUnblockModalOn} username={selectedUserModel?.username} handleUnblockUser={unblockUser}/>
             {
-                userModelsWrapper.models.length === 0 ?
-                <Center minHeight={windowHeight / 2}>
-                    <Text style={styles.grayText}>No blocked users.</Text>
-                </Center>
+                (user.reportedUserEmails.length === 0) ?
+                    <Center style={{top: 300}}>
+                        <Text style={{color:'gray'}}>No blocked users.</Text>
+                    </Center>
                 :
                 <ScrollView>
                     {
-                        userModelsWrapper.models.map((model) => (
-                        <>
-                            <Box style={styles.menu}>
-                                <Flex direction={'row'}>
-                                    <Text style={styles.menuText}>{model.username}</Text>
-                                    <TouchableOpacity onPress={() => OnUnblockUserButtonClick(model)}>
-                                        <Text style={styles.menuTextRed}>Unblock</Text>
-                                    </TouchableOpacity>
-                                </Flex>
-                            </Box>
-                            <Divider/>
-                        </>
+                        user.reportedUserEmails.map((reportedUserEmail) => (
+                            <View key={reportedUserEmail}>
+                                <ReportedUser reporterEmail={user.email} reportedUserEmail={reportedUserEmail}/>
+                                <Divider/>
+                            </View>
                         ))
                     }
                 </ScrollView>
             }
+        </View>
+    )
+}
+
+
+function ReportedUser({reporterEmail, reportedUserEmail}) {
+    const {userStateManager} = useContext(GlobalContext);
+    const /**@type {UserDoc}*/ reportedUser = useRecoilValue(userAtomByEmail(reportedUserEmail));
+    const [unblockModalOn, setUnblockModalOn] = useState(false);
+
+    async function asyncUnblockUser() {
+        if (await UserController.asyncUnblockUser(reporterEmail, reportedUserEmail) === false) {
+            showQuickMessage("Fail to unblock user. Please try again.");
+        }
+        else {
+            showQuickMessage("Successfully unblocked the user.");
+            userStateManager.refreshUser();
+        }
+    }
+
+    async function onUnblockButtonClick() {
+        setUnblockModalOn(true);
+    }
+
+    return (
+        <View>
+            <UnblockUserModal state={unblockModalOn} setState={setUnblockModalOn} username={reportedUser.username} onUnblockUser={asyncUnblockUser}/>
+            <Box style={styles.menu}>
+                <Flex direction={'row'}>
+                    <Text style={styles.menuText}>{reportedUser.username}</Text>
+                    <TouchableOpacity onPress={onUnblockButtonClick}>
+                        <Text style={styles.menuTextRed}>Unblock</Text>
+                    </TouchableOpacity>
+                </Flex>
+            </Box>
         </View>
     )
 }
