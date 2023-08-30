@@ -13,6 +13,19 @@ export const userAtom = atom({
     default: /**@type {UserDoc}*/ null,
 })
 
+export const userState = selector({
+    key: 'userState',
+    get: async ({get}) => {
+        console.log("us _1");
+        const userAuth = get(userAuthAtom);
+        if (!userAuth) return null;
+
+        console.log("us _2");
+        return await UserController.asyncGetUser(userAuth.email);
+    }
+})
+
+
 export const userAtomByEmail = atomFamily({
     key: 'userAtomFamily',
     default: selectorFamily({

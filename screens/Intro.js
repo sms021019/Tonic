@@ -9,15 +9,15 @@ import {userAtom, userAuthAtom} from "../recoil/userState";
 import GlobalContext from "../context/Context";
 
 export default function Intro({navigation}) {
-    const {userStateManager} = useContext(GlobalContext);
-    const userAuth = useRecoilValue(userAuthAtom);
-    const user = useRecoilValue(userAtom);
+    // const userAuth = useRecoilValue(userAuthAtom);
 
-    useEffect(() => {
-        if (userAuth && userAuth?.emailVerified) {
-            navigation.navigate(NavigatorType.HOME);
-        }
-    }, [userAuth])
+    // useEffect(() => {
+    //     if (userAuth) {
+    //         navigation.navigate(NavigatorType.HOME);
+    //     }
+    // }, [userAuth])
+
+    console.log("2");
 
     const goLogin = () => {
         navigation.push(ScreenType.LOGIN);

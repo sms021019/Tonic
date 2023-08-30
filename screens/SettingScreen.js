@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useState} from 'react'
+import React, {useContext, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
@@ -8,9 +8,13 @@ import packageJson from '../package.json';
 import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import DeleteAccountModal from "../components/DeleteAccountModal";
+import {useRecoilValue} from "recoil";
+import {userAuthAtom} from "../recoil/userState";
+import GlobalContext from "../context/Context";
 
 export default function SettingScreen({navigation}) {
-
+    const {userStateManager} = useContext(GlobalContext);
+    const userAuth = useRecoilValue(userAuthAtom);
     const [deleteAccountModalOn, setDeleteAccountModalOn] = useState(false);
 
     useLayoutEffect(() => {
@@ -24,13 +28,21 @@ export default function SettingScreen({navigation}) {
             showQuickMessage("Fail to sign out. Please try again.");
         }
         else {
+            userStateManager.setUserAuth(null);
             showQuickMessage("Successfully signed out.")
             navigation.navigate(NavigatorType.LOGIN);
         }
     }
 
     async function onDeleteAccount() {
-
+        if (await AuthController.asyncDeleteAccount(userAuth) === false) {
+            showQuickMessage("Fail to delete account. Please try again.");
+        }
+        else {
+            userStateManager.resetAll();
+            showQuickMessage("Account deleted successfully.");
+            navigation.navigate(NavigatorType.LOGIN);
+        }
     }
 
     function onDeleteAccountTrigger() {

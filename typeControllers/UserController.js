@@ -117,4 +117,26 @@ export default class UserController {
         }
         return true;
     }
+
+    static async asyncDeleteUser(email) {
+        try {
+            const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, email);
+            const user = await this.asyncGetUser(email);
+
+            const batch = writeBatch(db);
+            batch.delete(userRef);
+
+            for (const postId of user.myPostIds) {
+                const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
+                batch.delete(postRef);
+            }
+
+            await batch.commit();
+            return false;
+        }
+        catch(e) {
+            console.log(e, "UserController.asyncDeleteUser");
+            return false;
+        }
+    }
 }

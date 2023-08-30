@@ -6,7 +6,7 @@ import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoil/postState";
 import {TouchableOpacity, View} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
-import {userAtom} from "../recoil/userState";
+import {userAtom, userState} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 /**
@@ -18,9 +18,10 @@ import UserController from "../typeControllers/UserController";
  * @constructor
  */
 export default function Post({id, onClickHandler, filterBlockedPost}) {
-    const /**@type {UserDoc} */ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc} */ user = useRecoilValue(userState);
     const /**@type {PostDoc} */ post = useRecoilValue(postAtom(id));
 
+    console.log(user);
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 

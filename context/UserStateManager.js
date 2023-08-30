@@ -20,6 +20,7 @@ export default function UserStateManager({userStateManager}) {
         return true;
     }
 
+
     userStateManager.setUserAuth = (userAuth) => {
         setUserAuth(userAuth);
     }
@@ -42,5 +43,10 @@ export default function UserStateManager({userStateManager}) {
 
         setUser(userDoc);
         return true;
+    }
+
+    userStateManager.resetAll = () => {
+        setUser(null);
+        setUserAuth(null);
     }
 }

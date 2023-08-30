@@ -32,6 +32,10 @@ export default function Login({navigation}) {
         if (await AuthController.asyncLogin(email, password) === false){
             setLoginFail(true);
         }
+        else {
+            navigation.navigate(NavigatorType.HOME);
+            console.log("User logged in.");
+        }
     }
 
     return (

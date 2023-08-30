@@ -2,9 +2,11 @@ import {
     createUserWithEmailAndPassword,
     sendEmailVerification,
     signInWithEmailAndPassword, signOut,
-    updateProfile
+    updateProfile,
+    deleteUser,
 } from "firebase/auth";
 import {auth} from "../firebase";
+import UserController from "./UserController";
 
 
 export default class AuthController {
@@ -62,6 +64,17 @@ export default class AuthController {
         }
         catch (e) {
             console.log(e, "Err: AuthController.asyncSignOut");
+            return false;
+        }
+    }
+
+    static async asyncDeleteAccount(userAuth) {
+        try {
+            await deleteUser(userAuth);
+            return await UserController.asyncDeleteUser(userAuth.email);
+        }
+        catch (e) {
+            console.log(e, "Err: AuthController.asyncDeleteAccount");
             return false;
         }
     }

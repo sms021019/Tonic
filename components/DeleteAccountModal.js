@@ -37,7 +37,7 @@ export default function DeleteAccountModal(props) {
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextPrimary}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={onDeleteAccount} disabled={!userCheckBox}>
+                    <TouchableOpacity onPress={() => onDeleteAccount()} disabled={!userCheckBox}>
                         <Text style={userCheckBox? styles.tonicTextRed : styles.tonicTextGray}>Delete</Text>
                     </TouchableOpacity>
                 </Flex>
