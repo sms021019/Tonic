@@ -49,7 +49,7 @@ export default function ChatroomHeader({id, onClickHandler}) {
 
 
     function handlePostClick() {
-        onClickHandler();
+        onClickHandler(chatroomHeader.chatroomId);
     }
 
 

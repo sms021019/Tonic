@@ -56,5 +56,33 @@ export default class ChatroomController {
 
     }
 
+    static async asyncExitChatroom(chatroom) {
+        try{
+            let batch = writeBatch(db);
+
+            if(await this.asyncSetDeleteChatroom(batch, chatroom) === false) return false;
+            if(await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
+
+            await batch.commit();
+            return true;
+
+
+        }catch(err){
+            console.log('Err: ChatroomController.asyncExitChatroom');
+            return false;
+        }
+    }
+
+    static async asyncSetDeleteChatroom(batch,chatroom) {
+        try{
+            const chatroomRef = FirebaseHelper.getRef(DBCollectionType.CHATROOMS, chatroom.docId);
+            batch.delete(chatroomRef);
+            return true;
+        }catch(err){
+            console.log('Err: ChatroomController.asyncSetDeleteChatroom');
+            return false;
+        }
+    }
+
     
 }

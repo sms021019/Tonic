@@ -10,12 +10,12 @@ const Stack = createStackNavigator();
 
 
 export default function ChatNavigator({route}) {
-    const chatroomHeaderId = route.params;
+    const {chatroomId} = route.params;
 
     return (
         <Stack.Navigator screenOptions={{headerShown: true}}>
             <Stack.Screen name = {ScreenType.CHAT}>
-                {props => <Chat {...props} chatroomHeaderId = {chatroomHeaderId}/>}
+                {props => <Chat {...props} chatroomId = {chatroomId}/>}
             </Stack.Screen>
         </Stack.Navigator>
     )

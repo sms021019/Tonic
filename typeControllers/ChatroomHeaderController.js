@@ -1,4 +1,4 @@
-import { arrayUnion, collection, doc } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDocs, query, where } from "firebase/firestore";
 import DBHelper from "../helpers/DBHelper";
 import { DBCollectionType } from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
@@ -89,6 +89,32 @@ export default class ChatroomHeaderController {
     static async asyncGetChatroomHeaderByEmailAndId(props) {
         const chatroomHeaderRef = this.getChatroomHeaderRef(props.email);
         return await FirebaseHelper.getDocDataByCollectionRefAndId(chatroomHeaderRef, props.id); 
+    }
+
+    static async asyncSetDeleteChatroomHeaders(batch, chatroom) {
+        try{
+            const ownerChatroomHeaderCollectionRef = this.getChatroomHeaderRef(chatroom.ownerEmail);
+            const customerChatroomHeaderCollectionRef = this.getChatroomHeaderRef(chatroom.customerEmail);
+
+            const ownerQuery = query(ownerChatroomHeaderCollectionRef, where('chatroomId', '==', chatroom.docId));
+            const customerQuery = query(customerChatroomHeaderCollectionRef, where('chatroomId', '==', chatroom.docId));
+
+            const ownerQuerySnapshot = await getDocs(ownerQuery);
+            const customerQuerySnapshot = await getDocs(customerQuery);
+
+            ownerQuerySnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+            customerQuerySnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            return true;
+
+        }catch(err){
+            console.log('Err: ChatroomHeaderController.asyncSetDeleteChatroomHeaders');
+            return false;
+        }
     }
 
 

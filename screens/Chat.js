@@ -23,75 +23,42 @@ import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
-import ChatroomModel from '../models/ChatroomModel';
-import ErrorScreen from "./ErrorScreen";
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { userAtom } from '../recoil/userState';
+import { useRecoilValue } from 'recoil';
+import { userAtom, userAtomByEmail } from '../recoil/userState';
 import { chatroomAtom, chatroomMessageAtom } from '../recoil/chatroomState';
 import ChatroomController from '../typeControllers/ChatroomController';
 import { chatroomHeaderAtom } from '../recoil/chatroomHeaderState';
+import {showQuickMessage} from "../helpers/MessageHelper";
+import { getInset } from 'react-native-safe-area-view'
 
-export default function Chat({navigation, chatroomHeaderId}) {
-    // const { user, gUserModel } = useContext(GlobalContext);
-    // const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
+export default function Chat({navigation, chatroomId}) {
     const [messages, setMessages] = useState([]);
-    // const [hasError, setHasError] = useState(false);r
-    // const [chatModel, setChatModel] = useState(null);
-    // const [chatroomRef, setChatroomRef] = useState(null);
-    // const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
-    // const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
-    // const [opponentUserModel, setOpponentUserModel] = useState(null);
-
-    // const [postModel, setPostModel] = useState(null);
-
-    // const index = route.params.index;
-
-    // var Filter = require('bad-words'),
-    // filter = new Filter();
-
-    // useEffect(() => {
-    //     setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
-    // },[])
-
-    // useEffect(() => {
-    //     if (chatModel === null) return;
-    //     setPostModel(0);
-
-    //     setChatroomRef(chatModel.ref);
-        
-    //     setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
-
-    //     setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
-
-    // }, [chatModel])
-    
-    // console.log('props:',chatroomHeaderId);
     const user = useRecoilValue(userAtom);
-    let props = {
-        email: user.email,
-        id: chatroomHeaderId.chatroomHeaderId
-    }
-    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(props));
-    const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomHeader.chatroomId)
-    // const [messages, setMessages] = useRecoilState(chatroomMessageAtom(chatroomHeader.chatroomId))
-
+    // let props = {
+    //     email: user.email,
+    //     id: chatroomHeaderId.chatroomHeaderId
+    // }
+    const chatroom = useRecoilValue(chatroomAtom(chatroomId));
+    const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomId)
+    const opponentUserEmail = chatroom.customerEmail === user.email ? chatroom.ownerEmail : chatroom.customerEmail;
+    const opponentUser = useRecoilValue(userAtomByEmail(opponentUserEmail));
     
     useLayoutEffect(() => {
 
         navigation.setOptions({
             
-            headerTitle: chatroomHeader.opponentEmail,
+            headerTitle: opponentUser.username,
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
             headerRight: () => (
                 <MenuButton mr={5} size={6} color={'black'}
                     items={
                             [
-                                {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
-                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: chatroom.docId}))},
+                                {name: "Exit", color: theme.colors.primary, callback: asyncExitChatroom},
+                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
                                 {name: "Report", color: theme.colors.alert, callback: (() => {})},
                             ]
                     }
@@ -143,14 +110,14 @@ export default function Chat({navigation, chatroomHeaderId}) {
         navigation.navigate(ScreenType.USER_SEARCH);
     }
     
-    const handleExitChatroom = async () => {
-        if(await chatModel.asyncExitChatroom(user.email) === false){
-            // TO DO: handle error
-            setHasError(true);
+    async function asyncExitChatroom () {
+        if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
+            console.log('Failed to exit chatroom with unknown error');
             return;
-        }else{
-            navigation.navigate(ScreenType.CHANNEL);
         }
+
+        showQuickMessage('Exited from chat');
+        navigation.navigate(ScreenType.CHANNEL);
     }
 
    
@@ -192,7 +159,7 @@ export default function Chat({navigation, chatroomHeaderId}) {
                 renderTicks={this.renderTicks}
                 renderSystemMessage={onRenderSysyemMessage}
                 
-                // bottomOffset={useBottomTabBarHeight()}
+                bottomOffset={getInset('bottom')}
                 
             />
         </SafeAreaView>

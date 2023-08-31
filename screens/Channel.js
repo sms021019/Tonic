@@ -43,9 +43,9 @@ export default function Channel({ navigation }) {
     }
 
 
-    function handleContentClick(chatroomHeaderId) {
-        if (!chatroomHeaderId) return;
-        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: chatroomHeaderId});
+    function handleContentClick(chatroomId) {
+        if (!chatroomId) return;
+        navigation.navigate(NavigatorType.CHAT, {chatroomId: chatroomId});
     }
 
   

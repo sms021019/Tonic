@@ -13,6 +13,7 @@ export default function ChatFlatList(props) {
     const margin = props.margin? props.margin : 2;
     const refreshing = props.refreshing? props.refreshing : false;
     const handleRefresh = props.handleRefresh? props.handleRefresh : null;
+    
 
 
     return (
@@ -24,7 +25,7 @@ export default function ChatFlatList(props) {
                         <View key={chatroomHeaderId.item}>
                             <View style={{margin: margin}}>
                                 <ChatroomHeader 
-                                    onClickHandler={() => handleClick(chatroomHeaderId.item)} 
+                                    onClickHandler={(chatroomId) => handleClick(chatroomId)} 
                                     id={chatroomHeaderId.item} 
                                 />
                             </View>

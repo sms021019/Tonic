@@ -49,7 +49,6 @@ export default function ContentDetailScreen({navigation, postId}) {
         state: false,
         message: "",
     })
-
     const [isChatButtonClicked, setChatbuttonClicked] = useState(false);
 
     useLayoutEffect(() => {
@@ -101,20 +100,10 @@ export default function ContentDetailScreen({navigation, postId}) {
             return LOG_ERROR("Unkown error occur while creaeting new chatroom");
         }
 
-        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: newChatroom.docId})
+        navigation.navigate(NavigatorType.CHAT, {chatroomId: newChatroom.docId})
 
     }
     
-    // function createNewChatroomDoc() { //PostModel 바꾸기
-    //     let /** @type ChatroomDoc */ ChatroomDoc = {
-    //         docId: null,
-    //         ownerEmail: postOwner.email,
-    //         customerEmail: user.email,
-    //         postId: post.docId,
-    //     }
-    //     return ChatroomDoc;
-    // }
-
     
     function handleEditPost() {
         navigation.navigate(NavigatorType.POST_EDIT, {postId: postId});

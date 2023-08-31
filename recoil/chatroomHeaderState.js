@@ -64,7 +64,8 @@ export const chatroomHeaderIdsAtomByEmail = atomFamily({
                         console.log("removing");
                         setSelf((prev) => {
                             console.log('prev', prev);
-                            prev.filter((elm) => elm !== change.doc.id);
+                            console.log('change.doc.id', change.doc.id);
+                            return prev.filter((elm) => elm !== change.doc.id);
                         });
                     }
                 });
@@ -84,13 +85,5 @@ export const getOpponentUserData = atomFamily({
         }
     })
 })
-
-// export const getRecnetText = atomFamily({
-//     key: 'chatroomHeaderAtomFamily/recentText',
-//     default: selectorFamily({
-//         key: 'chatroomHea'
-//     })
-// })
-
 
 
