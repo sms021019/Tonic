@@ -1,25 +1,11 @@
-import {useRecoilState} from "recoil";
-import {userAtom, userAuthAtom} from "../recoil/userState";
+import {useRecoilState, useRecoilValue} from "recoil";
+import {thisUser, userAuthAtom} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
 export default function UserStateManager({userStateManager}) {
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
-    const [user, setUser] = useRecoilState(userAtom);
-
-    userStateManager.login = async (userAuth) => {
-        setUserAuth(userAuth);
-
-        const userDoc = await UserController.asyncGetUser(userAuth.email);
-        if (!userDoc) {
-            console.log("Err: UserStateManager.login");
-            return false;
-        }
-
-        setUser(userDoc);
-        return true;
-    }
-
+    const user = useRecoilValue(thisUser);
 
     userStateManager.setUserAuth = (userAuth) => {
         setUserAuth(userAuth);

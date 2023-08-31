@@ -10,39 +10,28 @@ import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "../firebase";
 import GlobalContext from "../context/Context";
 import {useRecoilState, useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoil/userState";
+import {userAuthAtom} from "../recoil/userState";
 
 
 const Stack = createStackNavigator();
 
 
-export default function StartNavigator({navigation}) {
+export default function StartNavigator() {
     const {userStateManager} = useContext(GlobalContext);
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
-    const user = useRecoilValue(userAtom);
 
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth,
-            async authenticatedUser => {
-                if (!authenticatedUser) return;
+    // useEffect(() => {
+    //     const unsubscribe = onAuthStateChanged(auth,
+    //         async authenticatedUser => {
+    //             if (!authenticatedUser) return;
+    //
+    //             setUserAuth(authenticatedUser);
+    //         }
+    //     );
+    //     return () => unsubscribe();
+    // }, []);
 
-                setUserAuth(authenticatedUser);
-                // if (!user) {
-                //     console.log("onAuthStateChanged: Login")
-                //     const result = await userStateManager.login(authenticatedUser);
-                //     console.log("login:", result);
-                // }
-                // else {
-                //     console.log("onAuthStateChanged: Auth updated | email verified");
-                //     userStateManager.setUserAuth(authenticatedUser);
-                // }
-            }
-        );
-        return () => unsubscribe();
-    }, []);
-
-    console.log('START NAVIVGATOR')
     return (
         <Stack.Navigator>
             <Stack.Screen name={ScreenType.INTRO} component={Intro} options={{headerShown: false}}/>

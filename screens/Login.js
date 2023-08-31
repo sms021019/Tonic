@@ -8,34 +8,29 @@ import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import AuthController from "../typeControllers/AuthController";
 import {Center, Flex} from "native-base";
 import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoil/userState";
+import {thisUser, userAuthAtom} from "../recoil/userState";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginFail, setLoginFail] = useState(false);
-    const userAuth = useRecoilValue(userAuthAtom);
-    const user = useRecoilValue(userAtom);
-
-    useEffect(() => {
-        if (!userAuth) return;
-
-        if (userAuth.emailVerified === false) {
-            navigation.navigate(ScreenType.EMAIL_VERIFICATION);
-        }
-        if (user) {
-            navigation.navigate(NavigatorType.HOME);
-        }
-    }, [userAuth])
 
     async function asyncHandleLogin() {
         if (await AuthController.asyncLogin(email, password) === false){
             setLoginFail(true);
         }
         else {
-            navigation.navigate(NavigatorType.HOME);
             console.log("User logged in.");
+            navigation.navigate(NavigatorType.HOME);
         }
+    }
+
+    function handleFindPassword() {
+        navigation.push(ScreenType.PASSWORD_RESET)
+    }
+
+    function handleCreateAccount() {
+        navigation.push(ScreenType.SIGNUP)
     }
 
     return (
@@ -44,12 +39,12 @@ export default function Login({navigation}) {
             <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={{...styles.buttonOutline, ...styles.buttonBorder}}
-                                  onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>
+                                  onPress={handleFindPassword}>
                     <Text style={styles.optionText}>
                         Find Password {' '}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push(ScreenType.SIGNUP)}>
+                <TouchableOpacity style={styles.buttonOutline} onPress={handleCreateAccount}>
                     <Text style={styles.optionText}>
                         Create Account
                     </Text>

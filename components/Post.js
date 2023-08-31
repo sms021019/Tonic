@@ -6,7 +6,7 @@ import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoil/postState";
 import {TouchableOpacity, View} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
-import {userAtom, userState} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 /**
@@ -18,7 +18,7 @@ import UserController from "../typeControllers/UserController";
  * @constructor
  */
 export default function Post({id, onClickHandler, filterBlockedPost}) {
-    const /**@type {UserDoc} */ user = useRecoilValue(userState);
+    const /**@type {UserDoc} */ user = useRecoilValue(thisUser);
     const /**@type {PostDoc} */ post = useRecoilValue(postAtom(id));
 
     console.log(user);

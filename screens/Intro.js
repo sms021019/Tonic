@@ -5,7 +5,7 @@ import styled from "styled-components/native";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoil/userState";
+import {thisUser, userAuthAtom} from "../recoil/userState";
 import GlobalContext from "../context/Context";
 
 export default function Intro({navigation}) {

@@ -6,14 +6,14 @@ import theme from "../utils/theme";
 import PostList from "../components/PostList";
 import UnblockPostModal from "../components/UnblockPostModal";
 import {showQuickMessage} from "../helpers/MessageHelper";
-import {userAtom} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 import {useRecoilValue} from "recoil";
 import UserController from "../typeControllers/UserController";
 import GlobalContext from "../context/Context";
 
 export default function ManageBlockedPostScreen({navigation}) {
     const {userStateManager} = useContext(GlobalContext);
-    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     const [unblockModalOn, setUnblockModalOn] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);

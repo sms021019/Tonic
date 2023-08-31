@@ -18,12 +18,12 @@ import PostController from "../typeControllers/PostController";
 // Recoil
 import {postIdsAtom} from "../recoil/postState";
 import {useRecoilValue, useSetRecoilState} from "recoil";
-import {userAtom} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 
 
 export default function PostCreateScreen({navigation}) {
     const {events, postStateManager, userStateManager} = useContext(GlobalContext);
-    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     const [title, setTitle] =           useState("");
     const [price, setPrice] =           useState(0);

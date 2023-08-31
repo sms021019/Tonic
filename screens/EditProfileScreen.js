@@ -7,7 +7,7 @@ import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingAnimation from '../components/LoadingAnimation'
 import {updateProfile} from "firebase/auth";
 import {useRecoilValue} from "recoil";
-import {userAtom} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {error} from "react-native-gifted-chat/lib/logging";
@@ -15,7 +15,7 @@ import GlobalContext from "../context/Context";
 
 export default function EditProfileScreen({navigation}) {
     const {userStateManager} = useContext(GlobalContext);
-    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     const [newUsername, setNewUsername] = useState(user.username);
     const [newProfileImageType, setNewProfileImageType] = useState(user.profileImageType);
