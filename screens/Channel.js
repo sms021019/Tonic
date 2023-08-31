@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from "styled-components/native";
 
 // Util
-import { ScreenType } from '../utils/utils';
+import { NavigatorType, ScreenType } from '../utils/utils';
 import CreateChatroomModal from '../components/CreateChatroomModal';
 // recoil
 import { useRecoilValue } from 'recoil';
@@ -45,7 +45,7 @@ export default function Channel({ navigation }) {
 
     function handleContentClick(chatroomHeaderId) {
         if (!chatroomHeaderId) return;
-        navigation.navigate(ScreenType.CHAT, {chatroomHeaderId: chatroomHeaderId});
+        navigation.navigate(NavigatorType.CHAT, {chatroomHeaderId: chatroomHeaderId});
     }
 
   

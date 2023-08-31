@@ -19,13 +19,13 @@ export default function ChatFlatList(props) {
         <Box flex={1} px="0">
             <FlatList
                 data={chatroomHeaderIds}
-                renderItem={({chatroomHeaderId}) => {
+                renderItem={(chatroomHeaderId) => {
                     return (
-                        <View key={chatroomHeaderId}>
+                        <View key={chatroomHeaderId.item}>
                             <View style={{margin: margin}}>
                                 <ChatroomHeader 
-                                    onClickHandler={() => handleClick(chatroomHeaderId)} 
-                                    id={chatroomHeaderId} 
+                                    onClickHandler={() => handleClick(chatroomHeaderId.item)} 
+                                    id={chatroomHeaderId.item} 
                                 />
                             </View>
                         </View>

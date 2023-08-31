@@ -65,12 +65,15 @@ export default class ChatroomHeaderController {
         }
     }
 
-    static async asyncLoadOpponentData(chatroomHeader) {
+    static getChatroomHeaderRef(email) {
+        const chatroomHeaderRef = collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
+        return chatroomHeaderRef;
+    }
+
+    static async asyncLoadOpponentData(opponentEmail) {
         try{
-            console.log("1");
-            const opponentData = await UserController.asyncGetUser(chatroomHeader.opponentEmail);
-            chatroomHeader['opponentData'] = opponentData;
-            return chatroomHeader;
+            const opponentData = await UserController.asyncGetUser(opponentEmail);
+            return opponentData;
         }catch(err) {
             console.log("Err: ChatroomHeaderController.asyncLoadOpponentData");
             return null;
@@ -78,14 +81,14 @@ export default class ChatroomHeaderController {
     }
 
     static async asyncGetChatroomHeaderIdsByEmail(email) {
-        const chatroomHeaderRef = collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
+        const chatroomHeaderRef = this.getChatroomHeaderRef(email);
         const userChatroomHeaderIds = await FirebaseHelper.getDocIdsByCollectionRef(chatroomHeaderRef);
         return userChatroomHeaderIds;
     }   
 
-    static async asyncGetChatroomHeaderByEmailAndId(email, id) {
-        const chatroomHeaderRef = collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
-        return await FirebaseHelper.getDocDataByCollectionRefAndId(chatroomHeaderRef, id); // 얘 문제있음
+    static async asyncGetChatroomHeaderByEmailAndId(props) {
+        const chatroomHeaderRef = this.getChatroomHeaderRef(props.email);
+        return await FirebaseHelper.getDocDataByCollectionRefAndId(chatroomHeaderRef, props.id); 
     }
 
 

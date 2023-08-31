@@ -88,6 +88,18 @@ export default class FirebaseHelper {
         }
     }
 
+    // chatroomController 에서 여러문서를 읽기 위해서 만든 함수
+    static async getDocsDataByCollectionRef(collectionRef){
+        try{
+            const _docs = await getDocs(collectionRef);
+            if(!_docs) return null;
+            return _docs
+        }catch(e){
+            console.log("Err FirebaseHelper.getDocsDataByCollectionRef");
+            return null
+        }
+    }
+
     static async updateDoc(collectionType, id, data) {
         try {
             console.log(collectionType, id, data);

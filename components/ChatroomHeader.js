@@ -25,26 +25,33 @@ import UserModel from "../models/UserModel";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import { useRecoilValue } from "recoil";
 
-import { chatroomHeaderAtom } from "../recoil/chatroomHeaderState";
+import { chatroomHeaderAtom, getOpponentUserData } from "../recoil/chatroomHeaderState";
 import { userAtom } from "../recoil/userState";
 import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
 
 
-export default function ChatroomHeader(id, onClickHandler) {
+export default function ChatroomHeader({id, onClickHandler}) {
 
     const user = useRecoilValue(userAtom);
-    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(user.email,id));
+    let propsForChatroomHeaderAtom = {
+        id: id,
+        email: user.email,
+    }
+    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(propsForChatroomHeaderAtom));
+    const opponentUserData = useRecoilValue(getOpponentUserData(chatroomHeader.opponentEmail));
+    // const recentText
 
-    useEffect(() => {
-        if(!chatroomHeader) return;
+    // useEffect(() => {
+    //     if(!chatroomHeader) return;
         
-        ChatroomHeaderController.asyncLoadOpponentData(chatroomHeader)
-    },chatroomHeader)
+    //     ChatroomHeaderController.asyncLoadOpponentData(chatroomHeader)
+    // },[chatroomHeader])
 
 
     function handlePostClick() {
         onClickHandler();
     }
+
 
     return (
         <Box>
@@ -53,24 +60,24 @@ export default function ChatroomHeader(id, onClickHandler) {
                         borderColor: "muted.50"
                     }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
                         <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={''} />
+                            <Avatar size="48px" source={ProfileImageHelper.getProfileImageUrl(opponentUserData.profileImageType)} />
                             <VStack>
                                 <Text _dark={{
                                     color: "warmGray.50"
                                 }} color="coolGray.800" bold>
-                                    {chatroomHeader.opponentData.username}
+                                    {opponentUserData?.username}
                                 </Text>
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {recentText?.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
+                                    {/* {chatroomHeader.recentText === null? .text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text} */}
                                 </Text>
                             </VStack>
                             <Spacer />
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {recentText ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
+                                {chatroomHeader.recentText !== null ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
                             </Text>
                         </HStack>
                     </Box>

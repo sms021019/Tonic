@@ -1,16 +1,27 @@
-import { writeBatch } from "firebase/firestore";
+import { collection, writeBatch } from "firebase/firestore";
 import { DBCollectionType } from "../utils/utils";
 import { db } from "../firebase";
 import DBHelper from "../helpers/DBHelper";
 import ChatroomHeaderController from "./ChatroomHeaderController";
+import FirebaseHelper from "../helpers/FirebaseHelper";
 
 
 
 export default class ChatroomController {
     
 
-    static async asyncGetChatroom (id) {
+    static async asyncGetChatroomById (id) {
         return /**@type {ChatroomDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.CHATROOMS, id);
+    }
+
+    static async asyncLoadChatroomMessage(id) {
+        const chatroomMessageRef = this.getChatroomMessageRefById(id);
+        return await FirebaseHelper.getDocsDataByCollectionRef(chatroomMessageRef);
+    }
+
+    static getChatroomMessageRefById(id) {
+        const chatroomMessageRef = collection(db, DBCollectionType.CHATROOMS, id, DBCollectionType.MESSAGES);
+        return chatroomMessageRef;
     }
 
     static async asyncCreateNewChatroom (chatroom) {

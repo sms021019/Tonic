@@ -15,8 +15,8 @@ export const chatroomHeaderAtom = atomFamily({
     key: 'chatroomHeaderAtom',
     default: selectorFamily({
         key: 'chatroomHeaderAtom/Default',
-        get: (email, id) => async () => {
-            return await ChatroomHeaderController.asyncGetChatroomHeaderByEmailAndId(email, id);
+        get: (props) => async () => {
+            return await ChatroomHeaderController.asyncGetChatroomHeaderByEmailAndId(props);
         }
     }),
 });
@@ -34,30 +34,63 @@ export const chatroomHeaderIdsAtomByEmail = atomFamily({
             return await ChatroomHeaderController.asyncGetChatroomHeaderIdsByEmail(userEmail);
         }
     }),
-    // effects: [
-    //     ({setSelf}) => {
+    effects: (userEmail) => [
+        ({setSelf}) => {
 
-    //         const chatroomHeaderRef = ChatroomHeaderController.getChatroomHeaderRef;
+            const chatroomHeaderRef = ChatroomHeaderController.getChatroomHeaderRef(userEmail);
             
-    //         const q = query(chatroomHeaderRef);
+            const q = query(chatroomHeaderRef);
 
-    //         const unsubscribe = onSnapshot(q, (snapshot) => {
-    //             snapshot.docChanges().forEach((change) => {
-    //                 if(change.type === 'added') {
-    //                     setSelf((prev) => [change.doc.data().id, ...prev]);
-    //                 }
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if(change.type === 'added') {
+                        console.log('adding');
+                        setSelf((prev) => {
+                            console.log("prev", prev);
+                            if (prev instanceof Array) {
+                                console.log("1");
+                                console.log(change.doc.id);
+                                return [change.doc.id, ...prev];
+                            }
+                            else {
+                                console.log("2");
+                                console.log(change.doc.id);
+                                return [change.doc.id];
+                            }
+                        });
+                    }
 
-    //                 if(change.type === 'removed') {
-    //                     setSelf((prev) => prev.filter((elm) => elm !== change.doc.data().id));
-    //                 }
-    //             });
-    //         });
+                    if(change.type === 'removed') { 
+                        console.log("removing");
+                        setSelf((prev) => {
+                            console.log('prev', prev);
+                            prev.filter((elm) => elm !== change.doc.id);
+                        });
+                    }
+                });
+            });
       
-    //         return unsubscribe;
-    //     },
-    // ],
+            return unsubscribe;
+        },
+    ],
+});
+
+export const getOpponentUserData = atomFamily({
+    key: 'chatroomHeaderAtomFamily/opponentData',
+    default: selectorFamily({
+        key: 'chatroomHeaderSelectorFamily/opponentData',
+        get: (userEmail) => async () => {
+            return await ChatroomHeaderController.asyncLoadOpponentData(userEmail);
+        }
+    })
 })
 
+// export const getRecnetText = atomFamily({
+//     key: 'chatroomHeaderAtomFamily/recentText',
+//     default: selectorFamily({
+//         key: 'chatroomHea'
+//     })
+// })
 
 
 
