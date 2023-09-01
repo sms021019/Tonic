@@ -28,6 +28,7 @@ import { useRecoilValue } from "recoil";
 import { chatroomHeaderAtom, getOpponentUserData } from "../recoil/chatroomHeaderState";
 import { userAtom } from "../recoil/userState";
 import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
+import { recentTextState } from "../recoil/recentTextState";
 
 
 export default function ChatroomHeader({id, onClickHandler}) {
@@ -39,14 +40,7 @@ export default function ChatroomHeader({id, onClickHandler}) {
     }
     const chatroomHeader = useRecoilValue(chatroomHeaderAtom(propsForChatroomHeaderAtom));
     const opponentUserData = useRecoilValue(getOpponentUserData(chatroomHeader.opponentEmail));
-    // const recentText
-
-    // useEffect(() => {
-    //     if(!chatroomHeader) return;
-        
-    //     ChatroomHeaderController.asyncLoadOpponentData(chatroomHeader)
-    // },[chatroomHeader])
-
+    const recentText = useRecoilValue(recentTextState(chatroomHeader.chatroomId));
 
     function handlePostClick() {
         onClickHandler(chatroomHeader.chatroomId);
@@ -70,14 +64,14 @@ export default function ChatroomHeader({id, onClickHandler}) {
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {/* {chatroomHeader.recentText === null? .text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text} */}
+                                    {recentText !== null ? recentText.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text : ''}
                                 </Text>
                             </VStack>
                             <Spacer />
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {chatroomHeader.recentText !== null ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
+                                {recentText !== null ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
                             </Text>
                         </HStack>
                     </Box>
