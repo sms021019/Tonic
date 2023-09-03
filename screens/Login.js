@@ -3,12 +3,10 @@ import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 
 import AuthController from "../typeControllers/AuthController";
 import {Center, Flex} from "native-base";
-import {useRecoilValue} from "recoil";
-import {thisUser, userAuthAtom} from "../recoil/userState";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
@@ -21,7 +19,6 @@ export default function Login({navigation}) {
         }
         else {
             console.log("User logged in.");
-            navigation.navigate(NavigatorType.HOME);
         }
     }
 

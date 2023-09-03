@@ -1,5 +1,5 @@
 import {createStackNavigator} from "@react-navigation/stack";
-import {NavigatorType, ScreenType} from "../utils/utils";
+import {NavigatorType} from "../utils/utils";
 import HomeNavigator from "./HomeNavigator";
 import React from "react";
 import SearchNavigator from "./SearchNavigator";
@@ -11,11 +11,10 @@ import SettingNavigator from "./SettingNavigator";
 
 const Stack = createStackNavigator();
 
-
 export default function AppContentNavigator() {
 
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name={NavigatorType.HOME} component={HomeNavigator} options={{title: ""}}/>
             <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />
             <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator}/>

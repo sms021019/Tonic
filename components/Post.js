@@ -21,7 +21,6 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
     const /**@type {UserDoc} */ user = useRecoilValue(thisUser);
     const /**@type {PostDoc} */ post = useRecoilValue(postAtom(id));
 
-    console.log(user);
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 
@@ -30,8 +29,7 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
     function handlePostClick() {
         onClickHandler();
     }
-
-
+    
     if (filterBlockedPost === true && UserController.isPostBlockedByUser(user, post)) {
         return <></>
     }

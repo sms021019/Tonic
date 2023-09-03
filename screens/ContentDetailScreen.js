@@ -29,7 +29,7 @@ import UserController from "../typeControllers/UserController";
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {chatroomModelList, postStateManager, userStateManager} = useContext(GlobalContext);
+    const {postStateManager, userStateManager} = useContext(GlobalContext);
     const /**@type UserDoc*/ user = useRecoilValue(thisUser);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
     const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post.ownerEmail));
@@ -72,7 +72,7 @@ export default function ContentDetailScreen({navigation, postId}) {
         const chatroomModel = ChatroomModel.newEmpty();
         if(await chatroomModel.asyncSetNewChatroomData(postOwner?.username, postId, postOwner, user) === false) return;
 
-        chatroomModelList.addOne(chatroomModel);
+        // chatroomModelList.addOne(chatroomModel);
 
         if( await chatroomModel.asyncSaveData() === false) {
             console.log("Failed to create chatroom")

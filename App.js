@@ -14,6 +14,7 @@ import {
     RecoilRoot,
 } from 'recoil';
 import LoadingScreen from './screens/LoadingScreen'
+import ErrorBoundary from 'react-native-error-boundary'
 
 export default function App() {
     return (

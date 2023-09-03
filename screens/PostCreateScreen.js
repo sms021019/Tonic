@@ -90,8 +90,6 @@ export default function PostCreateScreen({navigation}) {
 
         postStateManager.addId(newPost.docId);
         userStateManager.refreshUser();
-
-        events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
     }
 

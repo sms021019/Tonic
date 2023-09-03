@@ -2,20 +2,15 @@
 import React, {useEffect, useState} from 'react';
 import {createStackNavigator} from '@react-navigation/stack'
 // Navigator
-import {NavigatorType} from '../utils/utils.js'
+import {NavigatorType, ScreenType} from '../utils/utils.js'
 import StartNavigator from "./StartNavigator"
-import HomeNavigator from './HomeNavigator'
-import ContentDetailNavigator from "./ContentDetailNavigator"
-import PostCreateNavigator from './PostCreateNavigator'
-import PostEditNavigator from "./PostEditNavigator";
-import SearchNavigator from './SearchNavigator'
-import SettingNavigator from "./SettingNavigator";
-import EditProfileNavigator from "./EditProfileNavigator";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "../firebase";
 import {userAuthAtom} from "../recoil/userState";
-import {useRecoilValue} from "recoil";
+import {useRecoilState, useRecoilValue} from "recoil";
 import AppContentNavigator from "./AppContentNavigator";
+import ErrorScreen from '../screens/ErrorScreen'
+import EmailVerification from "../screens/EmailVerification";
 
 
 const Stack = createStackNavigator();
@@ -27,7 +22,7 @@ const AccessStatus = {
 }
 
 export default function MainNavigator() {
-    const [userAuth, setUserAuth] = useRecoilValue(userAuthAtom);
+    const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
     const [accessStatus, setAccessStatus] = useState(AccessStatus.NO_ACCOUNT);
 
     useEffect(() => {
@@ -55,8 +50,12 @@ export default function MainNavigator() {
                 <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>
             }
             {
+                (accessStatus === AccessStatus.EMAIL_NOT_VERIFIED) &&
+                <Stack.Screen name={ScreenType.EMAIL_VERIFICATION} component={EmailVerification}/>
+            }
+            {
                 (accessStatus === AccessStatus.VALID) &&
-                <Stack.Screen name={NavigatorType.APP_CONTENT} component={AppContentNavigator}>
+                <Stack.Screen name={NavigatorType.APP_CONTENT} component={AppContentNavigator}/>
             }
         </Stack.Navigator>
     )

@@ -98,8 +98,6 @@ export default function PostEditScreen({navigation, postId}) {
         }
 
         setPost(newPost);
-
-        events.invokeOnContentUpdate();
         navigation.navigate(NavigatorType.HOME);
     }
 

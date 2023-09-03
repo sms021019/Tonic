@@ -12,12 +12,12 @@ import theme from "../utils/theme";
 import PostList from '../components/PostList';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
-import {userState} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 
 export default function MyPage({navigation}) {
-    const /**@type {UserDoc}*/ user = useRecoilValue(userState);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     useLayoutEffect(() => {
         navigation.setOptions({

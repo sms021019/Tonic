@@ -9,17 +9,7 @@ import {thisUser, userAuthAtom} from "../recoil/userState";
 import GlobalContext from "../context/Context";
 
 export default function Intro({navigation}) {
-    // const userAuth = useRecoilValue(userAuthAtom);
-
-    // useEffect(() => {
-    //     if (userAuth) {
-    //         navigation.navigate(NavigatorType.HOME);
-    //     }
-    // }, [userAuth])
-
-    console.log("2");
-
-    const goLogin = () => {
+    const handleLogin = () => {
         navigation.push(ScreenType.LOGIN);
     };
 
@@ -29,7 +19,7 @@ export default function Intro({navigation}) {
             <Text style={styles.head}>TONIC</Text>
             <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
             <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
-            <StartButton onPress={goLogin}>
+            <StartButton onPress={handleLogin}>
                 <StartText>시작하기</StartText>
             </StartButton>
             <TouchableOpacity>
