@@ -14,7 +14,6 @@ export const thisUser = selector({
         const userAuth = get(userAuthAtom);
         if (!userAuth) return null;
 
-
         console.log("thisUser-Updated.")
         return /**@type {UserDoc}*/ await UserController.asyncGetUser(userAuth.email);
     },

@@ -51,26 +51,31 @@ export default function ContentScreen({navigation}) {
 -------------------*/
     return (
         <Container>
-            <ContentArea>
-                {
-                    (postIds.length === 0)?
-                        <Flex h={"100px"} w={windowWidth} justifyContent={'center'}>
-                            <Center>
-                                <Text style={{color: 'gray'}}>No post</Text>
-                            </Center>
-                        </Flex>
-                    :
-                    <PostFlatList
-                        postIds={postIds}
-                        handleClick={handleContentClick}
-                        handleRefresh={onRefreshTrigger}
-                        refreshing={refreshing}
-                    />
-                }
-            </ContentArea>
-            <CreateButtonArea>
-                <CreatePostButton onPress={handleCreatePost}/>
-            </CreateButtonArea>
+            {
+                (postIds) &&
+                <>
+                    <ContentArea>
+                        {
+                            (postIds.length === 0)?
+                                <Flex h={"100px"} w={windowWidth} justifyContent={'center'}>
+                                    <Center>
+                                        <Text style={{color: 'gray'}}>No post</Text>
+                                    </Center>
+                                </Flex>
+                            :
+                            <PostFlatList
+                                postIds={postIds}
+                                handleClick={handleContentClick}
+                                handleRefresh={onRefreshTrigger}
+                                refreshing={refreshing}
+                            />
+                        }
+                    </ContentArea>
+                    <CreateButtonArea>
+                        <CreatePostButton onPress={handleCreatePost}/>
+                    </CreateButtonArea>
+                </>
+            }
         </Container>
     )
 }
