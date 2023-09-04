@@ -34,14 +34,13 @@ export default function SettingScreen({navigation}) {
         }
     }
 
-    async function onDeleteAccount() {
-        if (await AuthController.asyncDeleteAccount(userAuth) === false) {
+    async function onDeleteAccount(password) {
+        if (await AuthController.asyncDeleteAccount(userAuth, password) === false) {
             showQuickMessage("Fail to delete account. Please try again.");
         }
         else {
             userStateManager.resetAll();
             showQuickMessage("Account deleted successfully.");
-            navigation.navigate(NavigatorType.LOGIN);
         }
     }
 
@@ -78,7 +77,7 @@ export default function SettingScreen({navigation}) {
                 <Box style={styles.menu}>
                     <Flex direction={'row'}>
                         <Text style={styles.menuText}>Version</Text>
-                        <Text style={styles.menuTextRight}>{packageJson.version}</Text>
+                        <Text style={{...styles.menuTextRight, color:'gray'}}>{packageJson.version}</Text>
                     </Flex>
                 </Box>
                 <Divider/>

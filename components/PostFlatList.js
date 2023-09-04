@@ -5,6 +5,8 @@ import React from "react";
 import ImageModel from "../models/ImageModel";
 import PostModel from "../models/PostModel";
 import {ModelStatusType} from "../utils/utils";
+import ErrorBoundary from "react-native-error-boundary";
+import ErrorScreen from "../screens/ErrorScreen";
 
 export default function PostFlatList(props) {
 
@@ -20,12 +22,21 @@ export default function PostFlatList(props) {
                 data={postIds}
                 renderItem={(postId) => {
                     return (
-                        <Post key={postId.item} onClickHandler={() => handleClick(postId.item)} id={postId.item}/>
+                        <ErrorBoundary FallbackComponent={ErrorPost}>
+                            <Post key={postId.item} onClickHandler={() => handleClick(postId.item)} id={postId.item}/>
+                        </ErrorBoundary>
                     );
                 }}
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
             />
         </Center>
+    )
+}
+
+
+function ErrorPost() {
+    return (
+        <></>
     )
 }

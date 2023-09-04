@@ -83,12 +83,16 @@ export default class AuthController {
         }
     }
 
-    static async asyncDeleteAccount(userAuth) {
+    static async asyncDeleteAccount(userAuth, password) {
         try {
+            console.log(userAuth.email, password);
+            await signInWithEmailAndPassword(auth, userAuth.email, password);
             await deleteUser(userAuth);
             return await UserController.asyncDeleteUser(userAuth.email);
         }
         catch (e) {
+            if (e.code === "auth/requires-recent-login") {
+            }
             console.log(e, "Err: AuthController.asyncDeleteAccount");
             return false;
         }

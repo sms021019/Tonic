@@ -3,10 +3,10 @@ import {Divider, Flex} from "native-base";
 import Modal from "../utils/modal";
 import React, {useState} from "react";
 import theme from "../utils/theme";
-import BouncyCheckbox from "react-native-bouncy-checkbox";
+import styled from "styled-components/native";
 
 export default function DeleteAccountModal(props) {
-    const [userCheckBox, setUserCheckBox] = useState(false);
+    const [password, setPassword] = useState("");
     const state = props.state ?? false;
     const setState = props.setState? props.setState : ()=>{};
     const onDeleteAccount = props.onDeleteAccount? props.onDeleteAccount : ()=>{};
@@ -23,22 +23,14 @@ export default function DeleteAccountModal(props) {
                 <Divider style={{margin: 10}}/>
                 <View style={{width:'100%'}}>
                     <Text>By deleting your account, all posts and all works will be delete permanently.</Text>
-                    <BouncyCheckbox
-                        onPress={(isChecked) => setUserCheckBox(isChecked)}
-                        fillColor={theme.colors.primary}
-                        unfillColor={"#ffffff"}
-                        text={"I confirm deleting my account"}
-                        size={20}
-                        style={{marginTop:20}}
-                        textStyle={{ textDecorationLine: 'none'}}
-                    />
+                    <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
                 </View>
                 <Flex direction="row" style={{marginTop: 20}}>
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextPrimary}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => onDeleteAccount()} disabled={!userCheckBox}>
-                        <Text style={userCheckBox? styles.tonicTextRed : styles.tonicTextGray}>Delete</Text>
+                    <TouchableOpacity onPress={() => onDeleteAccount(password)} disabled={(password === "")}>
+                        <Text style={(password !== "")? styles.tonicTextRed : styles.tonicTextGray}>Delete</Text>
                     </TouchableOpacity>
                 </Flex>
             </View>
@@ -67,3 +59,10 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
 })
+
+const PasswordInputField = styled.TextInput`
+    border-bottom-color: ${theme.colors.primary};
+    border-bottom-width: 2px;
+    height: 50px;
+    margin-top:10px;
+`
