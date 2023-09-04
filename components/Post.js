@@ -24,9 +24,9 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 
-    // if (!user || !post) {
-    //     return <></>
-    // }
+    if (!user || !post) {
+        return <></>
+    }
 
     filterBlockedPost = filterBlockedPost ?? true;
 
@@ -37,7 +37,6 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
     if (filterBlockedPost === true && UserController.isPostBlockedByUser(user, post)) {
         return <></>
     }
-
 
     return (
         <View>

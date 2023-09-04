@@ -84,9 +84,10 @@ export default class UserController {
      *
      * @param {UserDoc} user
      * @param {PostDoc} post
-     * @returns {boolean}
+     * @returns {boolean || null}
      */
     static isPostBlockedByUser(user, post) {
+        if (!user || !post) return null;
         return (user.reportedPostIds.includes(post.docId) || user.reportedUserEmails.includes(post.ownerEmail))
     }
 
