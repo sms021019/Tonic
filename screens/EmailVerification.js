@@ -7,15 +7,17 @@ import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 import UserModel from '../models/UserModel';
 import {userAuthAtom} from "../recoil/userState";
-import {useRecoilState, useRecoilValue} from "recoil";
-import {View, Image, StyleSheet, Text, TouchableOpacity} from "react-native";
+import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
+import {Image, StyleSheet, Text, TouchableOpacity} from "react-native";
 import {Divider, Center, Flex, Box} from 'native-base'
 import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
+import {accessAtom, AccessStatus} from "../recoil/accessState";
 
 const MAX_VERIFY_TIME = 10;
 
 const EmailVerification = ({navigation}) => {
+    const setAccessStatus= useSetRecoilState(accessAtom);
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
     const [emailSent, setEmailSent] = useState(false);
     const intervalRef = useRef();
@@ -45,11 +47,11 @@ const EmailVerification = ({navigation}) => {
     async function reloadUserAuth() {
         await userAuth.reload();
 
-        if (userAuth.emailVerified){
-            setUserAuth(userAuth);
+        if (userAuth.emailVerified) {
             clearInterval(intervalRef.current);
-            showQuickMessage("Email verified!");
-            navigation.navigate(NavigatorType.HOME);
+            setUserAuth(userAuth);
+            setAccessStatus(AccessStatus.VALID);
+            showQuickMessage("Email has been verified!");
         }
     }
 
@@ -62,7 +64,6 @@ const EmailVerification = ({navigation}) => {
             console.log("Fail to sign out.");
             return;
         }
-
         navigation.navigate(ScreenType.LOGIN);
     }
 

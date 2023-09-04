@@ -133,7 +133,7 @@ export default class UserController {
             }
 
             await batch.commit();
-            return false;
+            return true;
         }
         catch(e) {
             console.log(e, "UserController.asyncDeleteUser");

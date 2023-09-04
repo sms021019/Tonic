@@ -16,7 +16,6 @@ export default function StartNavigator() {
             <Stack.Screen name={ScreenType.INTRO} component={Intro} options={{headerShown: false}}/>
             <Stack.Screen name={ScreenType.LOGIN} component={Login} options={{title: "Login", headerShown: true, headerLeft: null}}/>
             <Stack.Screen name={ScreenType.SIGNUP} component={Signup} options={{title: "Sign in"}}/>
-            <Stack.Screen name={ScreenType.PASSWORD_RESET} component={PasswordReset} options={{title: "Reset Password"}}/>
         </Stack.Navigator>
     )
 }

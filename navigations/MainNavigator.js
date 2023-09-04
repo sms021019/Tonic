@@ -1,5 +1,5 @@
 // React
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack'
 // Navigator
 import {NavigatorType, ScreenType} from '../utils/utils.js'
@@ -7,23 +7,16 @@ import StartNavigator from "./StartNavigator"
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "../firebase";
 import {userAuthAtom} from "../recoil/userState";
-import {useRecoilState, useRecoilValue} from "recoil";
+import {useRecoilState} from "recoil";
 import AppContentNavigator from "./AppContentNavigator";
-import ErrorScreen from '../screens/ErrorScreen'
 import EmailVerification from "../screens/EmailVerification";
-
+import {accessAtom, AccessStatus} from "../recoil/accessState";
 
 const Stack = createStackNavigator();
 
-const AccessStatus = {
-    NO_ACCOUNT: "levelOfAccess_noAccount",
-    EMAIL_NOT_VERIFIED: "levelOfAccess_emailNotVerified",
-    VALID: "levelOfAccess_valid",
-}
-
 export default function MainNavigator() {
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
-    const [accessStatus, setAccessStatus] = useState(AccessStatus.NO_ACCOUNT);
+    const [accessStatus, setAccessStatus] = useRecoilState(accessAtom);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth,
@@ -42,6 +35,8 @@ export default function MainNavigator() {
         );
         return () => unsubscribe();
     }, []);
+
+    console.log("accessStatus", accessStatus);
 
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
