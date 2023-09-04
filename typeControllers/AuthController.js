@@ -3,7 +3,7 @@ import {
     sendEmailVerification,
     signInWithEmailAndPassword, signOut,
     updateProfile,
-    deleteUser,
+    deleteUser, sendPasswordResetEmail,
 } from "firebase/auth";
 import {auth} from "../firebase";
 import UserController from "./UserController";
@@ -11,6 +11,10 @@ import UserController from "./UserController";
 
 export default class AuthController {
 
+    static ErrorCode = {
+        TOO_MANY_REQUEST: "tooManyRequest",
+        WRONG_PASSWORD: "wrongPassword",
+    }
     /**
      * It will create auth and set 'uid' to the input account.
      *
@@ -35,11 +39,11 @@ export default class AuthController {
     static async asyncLogin(email, password) {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            return true;
+            return {status: true};
         }
         catch (e) {
             console.log(e, "Err: AuthController.asyncSignIn");
-            return false;
+            return {status: false, errorCode: e.code};
         }
     }
 
@@ -50,9 +54,20 @@ export default class AuthController {
         }
         catch (e) {
             if (e.code === 'auth/too-many-requests') {
-                alert("Too many requests. Try again after few minutes.")
+                alert("Too many requests. Try again later.")
             }
             console.log(e, "AuthController.asyncVerifyEmail");
+            return false;
+        }
+    }
+
+    static async passwordReset(email) {
+        try {
+            await sendPasswordResetEmail(auth, email)
+            return true;
+        }
+        catch (e) {
+            console.log(e, "Err: AuthController.passwordReset");
             return false;
         }
     }

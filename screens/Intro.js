@@ -17,14 +17,11 @@ export default function Intro({navigation}) {
         <Container>
             <Image source={require("../assets/AppStartLogo.png")} style={{width:windowWidth*0.6, height:windowWidth*0.6}} />
             <Text style={styles.head}>TONIC</Text>
-            <Text style={styles.content}>알뜰 살뜰 스토니 중고거래</Text>
-            <Text style={styles.contentBottom}>얼른 시작해보세요!</Text>
+            <Text style={styles.content}>Easy Buy, Easy Sell</Text>
+            <Text style={styles.contentBottom}>SBU Market Place</Text>
             <StartButton onPress={handleLogin}>
-                <StartText>시작하기</StartText>
+                <StartText>Start</StartText>
             </StartButton>
-            <TouchableOpacity>
-                <Text style={styles.tip}>이미 계정이 있나요? 로그인</Text>
-            </TouchableOpacity>
         </Container>
     );
 }
@@ -49,7 +46,7 @@ const styles = StyleSheet.create({
     tip: {
         fontSize: 12,
         marginTop: 10,
-        color: theme.colors.foreground,
+        color: '#ffffff',
     }
 });
 const Container = styled.View`
@@ -65,7 +62,6 @@ const StartButton = styled.Pressable`
     height: 56px;
     border-radius: 8px;
 `;
-
 
 const StartText = styled.Text`
     color: ${theme.colors.primary};

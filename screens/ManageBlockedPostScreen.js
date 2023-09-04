@@ -56,7 +56,6 @@ export default function ManageBlockedPostScreen({navigation}) {
                             handleClick={handlePostClick}
                             filterBlockedPost={false}
                         />
-
                     }
                 </Center>
             </ScrollView>
