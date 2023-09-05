@@ -4,6 +4,7 @@ import {
     signInWithEmailAndPassword, signOut,
     updateProfile,
     deleteUser, sendPasswordResetEmail,
+    reauthenticateWithCredential, EmailAuthProvider,
 } from "firebase/auth";
 import {auth} from "../firebase";
 import UserController from "./UserController";
@@ -85,14 +86,13 @@ export default class AuthController {
 
     static async asyncDeleteAccount(userAuth, password) {
         try {
-            console.log(userAuth.email, password);
-            await signInWithEmailAndPassword(auth, userAuth.email, password);
+            const credential = EmailAuthProvider.credential(userAuth.email, password)
+            await reauthenticateWithCredential(auth.currentUser, credential);
             await deleteUser(userAuth);
+
             return await UserController.asyncDeleteUser(userAuth.email);
         }
         catch (e) {
-            if (e.code === "auth/requires-recent-login") {
-            }
             console.log(e, "Err: AuthController.asyncDeleteAccount");
             return false;
         }

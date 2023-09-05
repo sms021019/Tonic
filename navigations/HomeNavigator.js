@@ -6,8 +6,7 @@ import Chat from "../screens/Chat";
 import MyPage from '../screens/MyPage';
 import ChatNavigator from './ChatNavigator';
 import {NavigatorType, ScreenType} from '../utils/utils';
-import {userAuthAtom} from "../recoil/userState";
-import {useRecoilValue} from "recoil";
+
 
 function getIconNameByType(type) {
     if (type === ScreenType.CONTENT)

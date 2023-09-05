@@ -119,6 +119,11 @@ export default class UserController {
         return true;
     }
 
+    /**
+     *
+     * @param {string} email
+     * @returns {Promise<boolean>}
+     */
     static async asyncDeleteUser(email) {
         try {
             const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, email);
