@@ -32,7 +32,10 @@ export default class AuthController {
             return true;
         }
         catch (e) {
-            console.log("Err: UserController.asyncCreateUserAuth");
+            if (e.code === 'auth/email-already-in-use') {
+                alert("Already have an account.");
+            }
+            console.log(e, "Err: UserController.asyncCreateUserAuth");
             return false;
         }
     }

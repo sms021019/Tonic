@@ -1,4 +1,3 @@
-import {useState, useEffect, useContext} from 'react';
 import {createStackNavigator} from '@react-navigation/stack'
 import Intro from '../screens/Intro';
 import Login from '../screens/Login';
@@ -15,7 +14,8 @@ export default function StartNavigator() {
         <Stack.Navigator>
             <Stack.Screen name={ScreenType.INTRO} component={Intro} options={{headerShown: false}}/>
             <Stack.Screen name={ScreenType.LOGIN} component={Login} options={{title: "Login", headerShown: true, headerLeft: null}}/>
-            <Stack.Screen name={ScreenType.SIGNUP} component={Signup} options={{title: "Sign in"}}/>
+            <Stack.Screen name={ScreenType.SIGNUP} component={Signup} options={{title: "Sign up"}}/>
+            <Stack.Screen name={ScreenType.PASSWORD_RESET} component={PasswordReset} options={{title: "Reset Password"}}/>
         </Stack.Navigator>
     )
 }
