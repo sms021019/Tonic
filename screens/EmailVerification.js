@@ -18,7 +18,6 @@ const MAX_VERIFY_TIME = 10;
 const EmailVerification = ({navigation}) => {
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
     const [emailSent, setEmailSent] = useState(false);
-    const [hasError, setHasError] = useState(false);
     const intervalRef = useRef();
 
     useLayoutEffect(() => {
@@ -45,12 +44,13 @@ const EmailVerification = ({navigation}) => {
 
     async function reloadUserAuth() {
         await userAuth.reload();
-        if (userAuth.emailVerified === false) return;
 
-        setUserAuth(userAuth);
-        clearInterval(intervalRef.current);
-        showQuickMessage("Email verified!");
-        navigation.navigate(NavigatorType.HOME);
+        if (userAuth.emailVerified){
+            setUserAuth(userAuth);
+            clearInterval(intervalRef.current);
+            showQuickMessage("Email verified!");
+            navigation.navigate(NavigatorType.HOME);
+        }
     }
 
     const verifyButtonText = useMemo(() => {

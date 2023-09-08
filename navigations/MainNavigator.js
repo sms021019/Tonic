@@ -13,7 +13,8 @@ import SearchNavigator from './SearchNavigator'
 import SettingNavigator from "./SettingNavigator";
 import EditProfileNavigator from "./EditProfileNavigator";
 import ChatNavigator from './ChatNavigator.js';
-import {userAtom, userAuthAtom} from "../recoil/userState.js";
+import {userAtom, userAuthAtom} from "../recoil/userState";
+
 import {useRecoilValue} from "recoil";
 
 const Stack = createStackNavigator();

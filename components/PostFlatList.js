@@ -20,12 +20,7 @@ export default function PostFlatList(props) {
                 data={postIds}
                 renderItem={(postId) => {
                     return (
-                        <View key={postId.item}>
-                            <View style={{margin: margin}}>
-                                <Post onClickHandler={() => handleClick(postId.item)} id={postId.item}/>
-                            </View>
-                            <Divider/>
-                        </View>
+                        <Post key={postId.item} onClickHandler={() => handleClick(postId.item)} id={postId.item}/>
                     );
                 }}
                 refreshing={refreshing}

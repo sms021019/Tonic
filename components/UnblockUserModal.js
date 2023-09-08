@@ -6,11 +6,10 @@ import theme from "../utils/theme";
 
 
 export default function UnblockUserModal(props) {
-
-    const state = props.state? props.state : false;
+    const state = props.state ?? false;
     const setState = props.setState? props.setState : ()=>{};
-    const handleUnblockUser = props.handleUnblockUser? props.handleUnblockUser : ()=>{};
-    const username = props.username? props.username : "this user";
+    const onUnblockUser = props.onUnblockUser? props.onUnblockUser : ()=>{};
+    const username = props.username ?? "this user";
 
     return (
         <Modal
@@ -25,7 +24,7 @@ export default function UnblockUserModal(props) {
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextGray}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleUnblockUser}>
+                    <TouchableOpacity onPress={onUnblockUser}>
                         <Text style={styles.tonicTextRed}>Unblock</Text>
                     </TouchableOpacity>
                 </Flex>

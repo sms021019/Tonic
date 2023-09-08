@@ -1,19 +1,20 @@
-import React, {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
-import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
-import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
+import React, {useContext, useLayoutEffect, useState} from 'react'
+import {StyleSheet, View, Text} from 'react-native';
+import {Center, ScrollView} from "native-base";
+import {windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import PostList from "../components/PostList";
-import GlobalContext from "../context/Context";
-import PostModel from "../models/PostModel";
-import LoadingScreen from "./LoadingScreen";
 import UnblockPostModal from "../components/UnblockPostModal";
 import {showQuickMessage} from "../helpers/MessageHelper";
+import {userAtom} from "../recoil/userState";
+import {useRecoilValue} from "recoil";
+import UserController from "../typeControllers/UserController";
+import GlobalContext from "../context/Context";
 
 export default function ManageBlockedPostScreen({navigation}) {
-    const {gUserModel, events} = useContext(GlobalContext);
-    const [blockedPostModelList, setBlockedPostModelList] = useState(null);
-    const [pageReady, setPageReady] = useState(false);
+    const {userStateManager} = useContext(GlobalContext);
+    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+
     const [unblockModalOn, setUnblockModalOn] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState(null);
 
@@ -23,44 +24,19 @@ export default function ManageBlockedPostScreen({navigation}) {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        asyncLoadBlockedPosts().then();
-    }, [gUserModel])
-
-    useEffect(() => {
-        if (blockedPostModelList) {
-            setPageReady(true);
-        }
-    }, [blockedPostModelList])
-
-
-    if (pageReady === false) {
-        return <LoadingScreen/>;
-    }
-
-    async function asyncLoadBlockedPosts() {
-        const refs = gUserModel.model.postReports;
-        const models = await PostModel.loadAllByRefs(refs);
-        setBlockedPostModelList(models);
-    }
-
     async function asyncUnblockPost() {
-        setUnblockModalOn(false);
-
-        const postModel = blockedPostModelList.find(model => model.doc_id === selectedPostId);
-        if (!postModel) {
-            showQuickMessage("The post is already unblocked.");
-            return;
+        if (!selectedPostId || await UserController.asyncUnblockPost(user.email, selectedPostId) === false) {
+            showQuickMessage("Fail to unblock this post. Please try again.");
         }
-
-        await gUserModel.unblockPost(postModel);
-
-        events.invokeOnContentUpdate();
-        showQuickMessage("The post is unblocked successfully.");
+        else {
+            showQuickMessage("Successfully unblock the post.");
+            userStateManager.refreshUser();
+        }
+        setUnblockModalOn(false);
     }
 
-    function handlePostClick(docId) {
-        setSelectedPostId(docId);
+    function handlePostClick(postId) {
+        setSelectedPostId(postId);
         setUnblockModalOn(true);
     }
 
@@ -68,11 +44,20 @@ export default function ManageBlockedPostScreen({navigation}) {
         <View style={styles.container}>
             <UnblockPostModal state={unblockModalOn} setState={setUnblockModalOn} handleUnblockPost={asyncUnblockPost}/>
             <ScrollView>
-                <Center minHeight={windowHeight / 2}>
-                    <PostList
-                        modelList={blockedPostModelList}
-                        handleClick={handlePostClick}
-                    />
+                <Center>
+                    {
+                        (user.reportedPostIds.length === 0) ?
+                            <View style={{top: 300}}>
+                                <Text style={{color:'gray'}}>No blocked post.</Text>
+                            </View>
+                        :
+                        <PostList
+                            postIds={user.reportedPostIds}
+                            handleClick={handlePostClick}
+                            filterBlockedPost={false}
+                        />
+
+                    }
                 </Center>
             </ScrollView>
         </View>

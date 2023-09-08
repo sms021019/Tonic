@@ -15,10 +15,9 @@ export default function Intro({navigation}) {
 
     useEffect(() => {
         if (userAuth && userAuth?.emailVerified) {
-            console.log("go to home");
             navigation.navigate(NavigatorType.HOME);
         }
-    }, [userAuth, user])
+    }, [userAuth])
 
     const goLogin = () => {
         navigation.push(ScreenType.LOGIN);

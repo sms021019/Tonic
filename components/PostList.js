@@ -6,19 +6,13 @@ import ImageModel from "../models/ImageModel";
 import PostModel from "../models/PostModel";
 import theme from "../utils/theme";
 
-export default function PostList({postIds, handleClick, margin}) {
-
-    margin = margin? margin : 10;
+export default function PostList({postIds, handleClick, filterBlockedPost}) {
+    filterBlockedPost = filterBlockedPost ?? true;
 
     return (
         <Center flex={1} px="0">
             { postIds.map((id) => (
-                <View key={id}>
-                    <View style={{margin: margin}}>
-                        <Post onClickHandler={() => handleClick(id)} id={id}/>
-                    </View>
-                    <Divider/>
-                </View>
+                <Post key={id} onClickHandler={() => handleClick(id)} id={id} filterBlockedPost={filterBlockedPost}/>
             ))}
         </Center>
     )

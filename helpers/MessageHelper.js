@@ -8,6 +8,6 @@ export function showQuickMessage(message) {
         type: "info",
         backgroundColor: theme.colors.primary, // background color
         color: theme.colors.white, // text color
-        duration: 2500,
+        duration: 1500,
     });
 }
