@@ -12,12 +12,11 @@ import theme from "../utils/theme";
 import PostList from '../components/PostList';
 import CreatePostButton from "../components/CreatePostButton";
 import {useRecoilValue} from "recoil";
-import {userAtom} from "../recoil/userState";
+import {thisUser} from "../recoil/userState";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
-
 export default function MyPage({navigation}) {
-    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -29,8 +28,9 @@ export default function MyPage({navigation}) {
     }, [navigation]);
 
     const userProfileUrl = useMemo(() => {
-        return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
-    }, [])
+        if (!user) return null;
+        return ProfileImageHelper.getProfileImageUrl(user?.profileImageType);
+    }, [user])
 
 /* ------------------
        Handlers
@@ -52,51 +52,50 @@ export default function MyPage({navigation}) {
  -------------------*/
     return (
         <Container>
-            <SafeAreaView style={styles.container}>
-                <ScrollView>
-                    <View>
-                        <Center style={styles.profileImageBox}>
-                            <Image source={userProfileUrl} style={styles.profileImage}/>
-                        </Center>
-                        <Center style={styles.infoBox}>
-                            <Text style={styles.nameText}>
-                                {user.username}
-                            </Text>
-                            <Text style={styles.emailText}>
-                                {user.email}
-                            </Text>
-                            <TouchableOpacity onPress={handleEditProfileClick}>
-                                <Text style={styles.editText}>
-                                    Edit Profile
+            {
+            (user) &&
+            <>
+                <SafeAreaView style={styles.container}>
+                    <ScrollView>
+                        <View>
+                            <Center style={styles.profileImageBox}>
+                                <Image source={userProfileUrl} style={styles.profileImage}/>
+                            </Center>
+                            <Center style={styles.infoBox}>
+                                <Text style={styles.nameText}>
+                                    {user.username}
                                 </Text>
-                            </TouchableOpacity>
-                        </Center>
-                    </View>
-                    <View style={styles.myPostView}>
-                        <Flex direction="row" justifyContent={"space-between"} alignItems={"center"}>
+                                <Text style={styles.emailText}>
+                                    {user.email}
+                                </Text>
+                                <TouchableOpacity onPress={handleEditProfileClick}>
+                                    <Text style={styles.editText}>
+                                        Edit Profile
+                                    </Text>
+                                </TouchableOpacity>
+                            </Center>
+                        </View>
+                        <View style={styles.myPostView}>
                             <Text style={styles.myPostHeader}>My Posts</Text>
-                            <TouchableOpacity>
-                                <Ionicons name={"reload"} size={24} marginRight={15} />
-                            </TouchableOpacity>
-                        </Flex>
-                        <Center>
-                            {
-                                (user?.myPostIds.length === 0)?
-                                <Text style={{marginTop: 50, color: 'gray'}}>No post</Text>
-                                :
-                                <PostList
-                                    postIds={user?.myPostIds}
-                                    handleClick={handleContentClick}
-                                />
-
-                            }
-                        </Center>
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-            <CreateButtonArea>
-                <CreatePostButton onPress={handleCreatePost}/>
-            </CreateButtonArea>
+                            <Center>
+                                {
+                                    (user?.myPostIds.length === 0)?
+                                    <Text style={{marginTop: 50, color: 'gray'}}>No post</Text>
+                                    :
+                                    <PostList
+                                        postIds={user?.myPostIds}
+                                        handleClick={handleContentClick}
+                                    />
+                                }
+                            </Center>
+                        </View>
+                    </ScrollView>
+                </SafeAreaView>
+                <CreateButtonArea>
+                    <CreatePostButton onPress={handleCreatePost}/>
+                </CreateButtonArea>
+            </>
+            }
         </Container>
     )
 }

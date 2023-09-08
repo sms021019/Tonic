@@ -3,6 +3,7 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 import {arrayUnion, writeBatch} from "firebase/firestore";
 import {db} from "../firebase";
 import {arrayRemove} from "@firebase/firestore";
+import DBHelper from "../helpers/DBHelper";
 
 
 export default class UserController {
@@ -83,9 +84,65 @@ export default class UserController {
      *
      * @param {UserDoc} user
      * @param {PostDoc} post
-     * @returns {boolean}
+     * @returns {boolean || null}
      */
     static isPostBlockedByUser(user, post) {
+        if (!user || !post) return null;
         return (user.reportedPostIds.includes(post.docId) || user.reportedUserEmails.includes(post.ownerEmail))
+    }
+
+    /**
+     *
+     * @param {string} email
+     * @param {string} profileImageType
+     * @returns {Promise<boolean>}
+     */
+    static async asyncUpdateProfile(email, profileImageType) {
+        if (await FirebaseHelper.updateDoc(DBCollectionType.USERS, email,{profileImageType: profileImageType}) === false) {
+            console.log("Err: UserController.asyncUpdateProfile");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param {string} email
+     * @param {string} username
+     * @returns {Promise<boolean>}
+     */
+    static async asyncUpdateUsername(email, username) {
+        if (await FirebaseHelper.updateDoc(DBCollectionType.USERS, email,{username: username}) === false) {
+            console.log("Err: UserController.asyncUpdateUsername");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param {string} email
+     * @returns {Promise<boolean>}
+     */
+    static async asyncDeleteUser(email) {
+        try {
+            const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, email);
+            const user = await this.asyncGetUser(email);
+
+            const batch = writeBatch(db);
+            batch.delete(userRef);
+
+            for (const postId of user.myPostIds) {
+                const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
+                batch.delete(postRef);
+            }
+
+            await batch.commit();
+            return true;
+        }
+        catch(e) {
+            console.log(e, "UserController.asyncDeleteUser");
+            return false;
+        }
     }
 }

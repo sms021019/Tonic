@@ -1,51 +1,63 @@
-import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native'
+import React, {useState} from 'react'
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native'
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 
 import AuthController from "../typeControllers/AuthController";
-import {Center, Flex} from "native-base";
-import {useRecoilValue} from "recoil";
-import {userAtom, userAuthAtom} from "../recoil/userState";
+import {Center} from "native-base";
 
 export default function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginFail, setLoginFail] = useState(false);
-    const userAuth = useRecoilValue(userAuthAtom);
-    const user = useRecoilValue(userAtom);
-
-    useEffect(() => {
-        if (!userAuth) return;
-
-        if (userAuth.emailVerified === false) {
-            navigation.navigate(ScreenType.EMAIL_VERIFICATION);
-        }
-        if (user) {
-            navigation.navigate(NavigatorType.HOME);
-        }
-    }, [userAuth])
 
     async function asyncHandleLogin() {
-        if (await AuthController.asyncLogin(email, password) === false){
-            setLoginFail(true);
+        const result = await AuthController.asyncLogin(email, password);
+        if (result.status === false) {
+            if (result.errorCode === AuthController.ErrorCode.TOO_MANY_REQUEST) {
+                alert("Too many login tries. Try again later.");
+            }
+            else {
+                setLoginFail(true);
+            }
         }
+        else {
+            console.log("Successfully LOGGED IN.");
+        }
+    }
+
+    function handleFindPassword() {
+        navigation.push(ScreenType.PASSWORD_RESET)
+    }
+
+    function handleCreateAccount() {
+        navigation.push(ScreenType.SIGNUP)
+    }
+
+    function handleChangeEmail(value) {
+        if (loginFail) setLoginFail(false)
+        setEmail(value);
+    }
+
+    function handleChangePassword(value) {
+        if (loginFail) setLoginFail(false)
+        setPassword(value)
     }
 
     return (
         <Container>
-            <EmailInputField placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none"/>
-            <PasswordInputField placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none"/>
+            <EmailInputField placeholder="Email (.edu)" value={email} onChangeText={handleChangeEmail} autoCapitalize="none"/>
+            <PasswordInputField placeholder="Password" value={password} onChangeText={handleChangePassword} secureTextEntry autoCapitalize="none"/>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={{...styles.buttonOutline, ...styles.buttonBorder}}
-                                  onPress={() => navigation.push(ScreenType.PASSWORD_RESET)}>
+                                  onPress={handleFindPassword}>
                     <Text style={styles.optionText}>
                         Find Password {' '}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.push(ScreenType.SIGNUP)}>
+                <TouchableOpacity style={styles.buttonOutline} onPress={handleCreateAccount}>
                     <Text style={styles.optionText}>
                         Create Account
                     </Text>
@@ -59,9 +71,11 @@ export default function Login({navigation}) {
                     </Text>
                 </Center>
             }
-            <StartButton onPress={asyncHandleLogin}>
-                <StartText>Login</StartText>
-            </StartButton>
+            <TouchableOpacity onPress={asyncHandleLogin}>
+                <Center style={styles.ButtonArea}>
+                    <Text style={styles.buttonText}>Login</Text>
+                </Center>
+            </TouchableOpacity>
         </Container>
     )
 }
@@ -74,7 +88,6 @@ const EmailInputField = styled.TextInput`
     margin-bottom: 20px;
     margin-top: 20px;
 `
-
 const PasswordInputField = styled.TextInput`
     border-bottom-color: ${theme.colors.primary};
     border-bottom-width: 2px;
@@ -82,18 +95,6 @@ const PasswordInputField = styled.TextInput`
     height: 50px;
     margin-bottom: 20px;
 `
-const StartButton = styled.Pressable`
-    ${TonicButton};
-    width: ${windowWidth * 0.9}px;
-    height: 56px;
-    border-radius: 8px;
-`;
-
-const StartText = styled.Text`
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-`;
 
 const Container = styled.View`
     ${flexCenter};
@@ -103,23 +104,12 @@ const Container = styled.View`
 `;
 
 const styles = StyleSheet.create({
-    buttonContainer: {
-        flex: 0,
-        flexDirection: 'row',
-        marginBottom: 20,
-        alignSelf: 'flex-end',
-        marginRight: 20,
-    },
-    buttonBorder: {
-        borderRightWidth: 1,
-    },
-    buttonOutline: {
-        marginHorizontal: 4,
-    },
-    optionText: {
-        color: theme.colors.primary,
-    },
+    buttonContainer: {flex: 0, flexDirection: 'row', marginBottom: 20, alignSelf: 'flex-end', marginRight: 20,},
+    buttonBorder: {borderRightWidth: 1,},
+    buttonOutline: {marginHorizontal: 4,},
+    optionText: {color: theme.colors.primary,},
     loginFailMessageArea: {width: windowWidth*0.9, padding:5, marginBottom: 10, backgroundColor:'#ffbdbd'},
     loginFailText: {color:"#8a2020"},
-
+    ButtonArea: {backgroundColor:theme.colors.primary, width: windowWidth*0.9, height: 56, borderRadius:8},
+    buttonText: {fontWeight:'600', fontSize:18, color: '#ffffff'},
 })

@@ -1,37 +1,55 @@
 // React
-import React, {useState, useEffect, useContext, createContext, useMemo} from 'react';
-import {View, Text, ActivityIndicator} from 'react-native'
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
+import React, {useEffect} from 'react';
+import {createStackNavigator} from '@react-navigation/stack'
 // Navigator
-import {NavigatorType} from '../utils/utils.js'
+import {NavigatorType, ScreenType} from '../utils/utils.js'
 import StartNavigator from "./StartNavigator"
-import HomeNavigator from './HomeNavigator'
-import ContentDetailNavigator from "./ContentDetailNavigator"
-import PostCreateNavigator from './PostCreateNavigator'
-import PostEditNavigator from "./PostEditNavigator";
-import SearchNavigator from './SearchNavigator'
-import SettingNavigator from "./SettingNavigator";
-import EditProfileNavigator from "./EditProfileNavigator";
-import ChatNavigator from './ChatNavigator.js';
-import {userAtom, userAuthAtom} from "../recoil/userState";
-
-import {useRecoilValue} from "recoil";
+import {onAuthStateChanged} from "firebase/auth";
+import {auth} from "../firebase";
+import {userAuthAtom} from "../recoil/userState";
+import {useRecoilState} from "recoil";
+import AppContentNavigator from "./AppContentNavigator";
+import EmailVerification from "../screens/EmailVerification";
+import {accessAtom, AccessStatus} from "../recoil/accessState";
 
 const Stack = createStackNavigator();
 
 export default function MainNavigator() {
+    const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
+    const [accessStatus, setAccessStatus] = useRecoilState(accessAtom);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth,
+            async authenticatedUser => {
+                if (!authenticatedUser) {
+                    setAccessStatus(AccessStatus.NO_ACCOUNT);
+                }
+                else if (authenticatedUser.emailVerified === false) {
+                    setAccessStatus(AccessStatus.EMAIL_NOT_VERIFIED)
+                }
+                else {
+                    setAccessStatus(AccessStatus.VALID);
+                }
+                setUserAuth(authenticatedUser);
+            }
+        );
+        return () => unsubscribe();
+    }, []);
 
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>
-            <Stack.Screen name={NavigatorType.HOME} component={HomeNavigator} options={{title: ""}}/>
-            <Stack.Screen name={NavigatorType.SEARCH} component={SearchNavigator} />
-            <Stack.Screen name={NavigatorType.CONTENT_DETAIL} component={ContentDetailNavigator}/>
-            <Stack.Screen name={NavigatorType.POST_CREATE} component={PostCreateNavigator}/>
-            <Stack.Screen name={NavigatorType.POST_EDIT} component={PostEditNavigator}/>
-            <Stack.Screen name={NavigatorType.EDIT_PROFILE} component={EditProfileNavigator}/>
-            <Stack.Screen name={NavigatorType.SETTING} component={SettingNavigator}/>
-            <Stack.Screen name={NavigatorType.CHAT} component={ChatNavigator}/>
+            {
+                (accessStatus === AccessStatus.NO_ACCOUNT) &&
+                <Stack.Screen name={NavigatorType.LOGIN} component={StartNavigator}/>
+            }
+            {
+                (accessStatus === AccessStatus.EMAIL_NOT_VERIFIED) &&
+                <Stack.Screen name={ScreenType.EMAIL_VERIFICATION} component={EmailVerification}/>
+            }
+            {
+                (accessStatus === AccessStatus.VALID) &&
+                <Stack.Screen name={NavigatorType.APP_CONTENT} component={AppContentNavigator}/>
+            }
         </Stack.Navigator>
     )
 }

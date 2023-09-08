@@ -1,10 +1,5 @@
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { atom, atomFamily, selector, selectorFamily } from "recoil";
-import { db } from "../firebase";
-import { DBCollectionType } from "../utils/utils";
-import DBHelper from "../helpers/DBHelper";
-import { userAtom } from "./userState";
-import FirebaseHelper from "../helpers/FirebaseHelper";
+import { onSnapshot, query } from "firebase/firestore";
+import { atomFamily, selectorFamily } from "recoil";
 import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
 
 
@@ -38,7 +33,7 @@ export const chatroomHeaderIdsAtomByEmail = atomFamily({
         ({setSelf}) => {
 
             const chatroomHeaderRef = ChatroomHeaderController.getChatroomHeaderRef(userEmail);
-            
+
             const q = query(chatroomHeaderRef);
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -60,7 +55,7 @@ export const chatroomHeaderIdsAtomByEmail = atomFamily({
                         });
                     }
 
-                    if(change.type === 'removed') { 
+                    if(change.type === 'removed') {
                         console.log("removing");
                         setSelf((prev) => {
                             console.log('prev', prev);
@@ -70,7 +65,7 @@ export const chatroomHeaderIdsAtomByEmail = atomFamily({
                     }
                 });
             });
-      
+
             return unsubscribe;
         },
     ],

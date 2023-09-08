@@ -8,10 +8,17 @@ export const userAuthAtom = atom({
     default: /**@type {User}*/ null,
 })
 
-export const userAtom = atom({
-    key: 'userAtom',
-    default: /**@type {UserDoc}*/ null,
+export const thisUser = selector({
+    key: 'thisUser',
+    get: async ({get, set}) => {
+        const userAuth = get(userAuthAtom);
+        if (!userAuth) return null;
+
+        console.log("thisUser-Updated.")
+        return /**@type {UserDoc}*/ await UserController.asyncGetUser(userAuth.email);
+    },
 })
+
 
 export const userAtomByEmail = atomFamily({
     key: 'userAtomFamily',

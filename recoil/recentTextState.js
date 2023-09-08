@@ -16,12 +16,12 @@ export const recentTextState = atomFamily({
     }),
     effects: (chatroomId) => [
         ({setSelf}) => {
-            // const user = get(userAtom); //needs to be updated
+            // const user = get(thisUser); //needs to be updated
             // const chatroomHeaderRef = collection(db, DBCollectionType.USERS, user.email, DBCollectionType.CHATROOMHEADERS);
             const messageRef = ChatroomController.getChatroomMessageRefById(chatroomId);
 
             const q = query(messageRef, orderBy("createdAt", "desc"), limit(1));
-            
+
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 console.log("Callback called")
                 snapshot.docChanges().forEach((change) => {

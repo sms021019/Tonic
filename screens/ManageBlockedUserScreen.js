@@ -4,14 +4,14 @@ import {Box, Center, Divider, Flex, ScrollView} from "native-base";
 import {windowHeight, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import UnblockUserModal from "../components/UnblockUserModal";
-import {userAtom, userAtomByEmail} from "../recoil/userState";
+import {thisUser, userAtomByEmail} from "../recoil/userState";
 import {useRecoilValue} from "recoil";
 import UserController from "../typeControllers/UserController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import GlobalContext from "../context/Context";
 
 export default function ManageBlockedUserScreen({navigation}) {
-    const /**@type {UserDoc}*/ user = useRecoilValue(userAtom);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
 
     useLayoutEffect(() => {
         navigation.setOptions({

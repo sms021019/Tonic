@@ -15,7 +15,7 @@ import { Icon, Button } from '@rneui/base';
 export default function NewUserSearchScreen({navigation, route}) {
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerTitle: "New Chat User Search",
+            headerTitle: "New ChatScreen User Search",
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.goBack()}/>,
             headerRight: () => <Button type="clear" onPress={() => {}}>
                                     <Icon

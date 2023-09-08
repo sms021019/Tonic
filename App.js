@@ -14,7 +14,8 @@ import {
     RecoilRoot,
 } from 'recoil';
 import LoadingScreen from './screens/LoadingScreen'
-
+import ErrorBoundary from 'react-native-error-boundary'
+import ErrorScreen from './screens/ErrorScreen'
 export default function App() {
     return (
         <RecoilRoot>
@@ -23,9 +24,11 @@ export default function App() {
                     <NativeBaseProvider>
                         <ThemeProvider theme={theme}>
                             <FlashMessage position="top"/>
-                                <NavigationContainer>
-                                    <MainNavigator/>
-                                </NavigationContainer>
+                                <ErrorBoundary FallbackComponent={ErrorScreen}>
+                                    <NavigationContainer>
+                                        <MainNavigator/>
+                                    </NavigationContainer>
+                                </ErrorBoundary>
                         </ThemeProvider>
                     </NativeBaseProvider>
                 </ContextWrapper>

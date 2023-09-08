@@ -4,6 +4,7 @@ import React from "react";
 export const NavigatorType = {
     MAIN:               "mainNavigator",
     LOGIN:              "loginNavigator",
+    APP_CONTENT:        "AppContentNavigator",
     HOME:               "homeNavigator",
     CONTENT_DETAIL:     "contentDetailNavigator",
     POST_CREATE:        "postCreateNavigator",

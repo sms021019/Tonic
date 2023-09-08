@@ -1,12 +1,13 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {Feather, Ionicons} from "@expo/vector-icons";
-import Content from '../screens/ContentScreen';
-import Channel from "../screens/Channel";
+import {Feather} from "@expo/vector-icons";
+import ContentScreen from '../screens/ContentScreen';
+import ChatScreen from "../screens/ChatScreen";
 import MyPage from '../screens/MyPage';
 import ChatNavigator from './ChatNavigator';
 import {NavigatorType, ScreenType} from '../utils/utils';
-import TestA from "../screens/TestA";
+import Channel from "../screens/Channel";
+
 
 function getIconNameByType(type) {
     if (type === ScreenType.CONTENT)
@@ -17,9 +18,9 @@ function getIconNameByType(type) {
         return 'user'
 }
 
-
 const Tab = createBottomTabNavigator();
-export default function HomeNavigator({route}) {
+export default function HomeNavigator() {
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -27,15 +28,9 @@ export default function HomeNavigator({route}) {
                     return <Feather name={getIconNameByType(route.name)} size={size} color={color} />;
                 },
         })}>
-            <Tab.Screen name={ScreenType.CONTENT} options={{title: "Home"}}>
-                {props => <Content {...props} />}
-            </Tab.Screen>
-            <Tab.Screen name={ScreenType.CHANNEL} options={{headerShown: false, title: "Chat"}}>
-                {props => <Channel {...props}/>}
-            </Tab.Screen>
-            <Tab.Screen name={ScreenType.MYPAGE} options={{headerTransparent: true, title: "My", headerTitle: ""}}>
-                {props => <MyPage {...props} />}
-            </Tab.Screen>
+            <Tab.Screen name={ScreenType.CONTENT} options={{title: "Home"}} component={ContentScreen}/>
+            <Tab.Screen name={ScreenType.CHANNEL} options={{headerShown: false, title: "Chat"}} component={Channel}/>
+            <Tab.Screen name={ScreenType.MYPAGE} options={{headerTransparent: true, title: "My", headerTitle: ""}} component={MyPage}/>
         </Tab.Navigator>
     )
 }

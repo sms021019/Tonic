@@ -1,17 +1,24 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react';
+import React, {useContext, useEffect, useLayoutEffect, useMemo, useState} from 'react';
 import {View, Text, TextInput, Button, Image, StyleSheet, TouchableOpacity} from 'react-native';
-import {Box, Center, Divider, Flex, ScrollView} from "native-base";
+import {Center, Flex, ScrollView} from "native-base";
 import theme from "../utils/theme";
-import {NavigatorType, PageMode, ProfileImageType, ScreenType, windowWidth} from "../utils/utils";
-import GlobalContext from "../context/Context";
+import {ProfileImageType, ScreenType, windowWidth} from "../utils/utils";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingAnimation from '../components/LoadingAnimation'
 import {updateProfile} from "firebase/auth";
+import {useRecoilValue} from "recoil";
+import {thisUser} from "../recoil/userState";
+import UserController from "../typeControllers/UserController";
+import {showQuickMessage} from "../helpers/MessageHelper";
+import {error} from "react-native-gifted-chat/lib/logging";
+import GlobalContext from "../context/Context";
 
 export default function EditProfileScreen({navigation}) {
-    const {user, gUserModel} = useContext(GlobalContext);
-    const [username, setUsername] = useState(gUserModel.model.username);
-    const [profileImageType, setProfileImageType] = useState(gUserModel.model.profileImageType);
+    const {userStateManager} = useContext(GlobalContext);
+    const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
+
+    const [newUsername, setNewUsername] = useState(user.username);
+    const [newProfileImageType, setNewProfileImageType] = useState(user.profileImageType);
     const [save, setSave] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -27,35 +34,43 @@ export default function EditProfileScreen({navigation}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (save) {
+        if (loading === false && save === true) {
+            setLoading(true);
             asyncUpdateProfile().then();
         }
     }, [save])
 
-    let myProfileImageUrl = ProfileImageHelper.getProfileImageUrl(profileImageType);
+    const selectedProfileImageUrl = useMemo(() => {
+        return ProfileImageHelper.getProfileImageUrl(newProfileImageType);
+    }, [newProfileImageType])
 
     async function asyncUpdateProfile() {
-        if (isProfileChanged()) {
-            navigation.navigate(ScreenType.MYPAGE);
-            return;
+        let errorStatus = false;
+
+        if (user.profileImageType !== newProfileImageType) {
+            if (await UserController.asyncUpdateProfile(user.email, newProfileImageType) === false)
+                errorStatus = true;
         }
 
-        setLoading(true);
+        if (user.username !== newUsername) {
+            if (await UserController.asyncUpdateUsername(user.email, newUsername) === false)
+                errorStatus = true;
+        }
 
-        await updateProfile(user, {displayName: username})
-        // TODO : profile name is not updated.
-        await gUserModel.updateProfile(username, profileImageType);
+        if (errorStatus) {
+            showQuickMessage("Fail to update profile. Please try again later.");
+        }
+        else {
+            showQuickMessage("Successfully updated profile.");
+            userStateManager.refreshUser();
+        }
 
         setLoading(false);
         navigation.navigate(ScreenType.MYPAGE)
     }
 
-    function isProfileChanged() {
-        return (gUserModel.model.username === username && gUserModel.model.profileImageType === profileImageType)
-    }
-
     function selectProfileImage(type) {
-        setProfileImageType(type);
+        setNewProfileImageType(type);
     }
 
     return (
@@ -63,7 +78,7 @@ export default function EditProfileScreen({navigation}) {
             <LoadingAnimation visible={loading}/>
             <View marginTop={10}>
                 <Center style={styles.profileImageBox}>
-                    <Image source={myProfileImageUrl} style={styles.profileImageBig}/>
+                    <Image source={selectedProfileImageUrl} style={styles.profileImageBig}/>
                 </Center>
                 <Flex alignItems={'center'} marginRight={12} marginLeft={12}>
                     <Flex direction={'row'} m={1}>
@@ -99,14 +114,14 @@ export default function EditProfileScreen({navigation}) {
             <Center marginTop={12}>
                 <View marginTop={5}>
                     <Text style={styles.boldText}>
-                        Nickname
+                        Username
                     </Text>
                 </View>
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Username"
-                        value={username}
-                        onChangeText={setUsername}
+                        value={newUsername}
+                        onChangeText={setNewUsername}
                         style={styles.input}
                     />
                 </View>

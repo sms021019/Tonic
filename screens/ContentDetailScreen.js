@@ -1,5 +1,5 @@
 // React
-import React, {useLayoutEffect, useState, useContext} from 'react'
+import React, {useLayoutEffect, useState, useContext, useEffect} from 'react'
 import {View, Text, StyleSheet} from 'react-native'
 import {Box, Flex, ScrollView} from "native-base";
 import styled from "styled-components/native";
@@ -29,14 +29,14 @@ import {postAtom} from "../recoil/postState";
 import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
-import {userAtom, userAtomByEmail} from "../recoil/userState";
+import {thisUser, userAtomByEmail} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 
 
 
 export default function ContentDetailScreen({navigation, postId}) {
-    const {chatroomModelList, postStateManager, userStateManager} = useContext(GlobalContext);
-    const /**@type UserDoc*/ user = useRecoilValue(userAtom);
+    const {postStateManager, userStateManager} = useContext(GlobalContext);
+    const /**@type UserDoc*/ user = useRecoilValue(thisUser);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
     const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post.ownerEmail));
 
@@ -47,7 +47,7 @@ export default function ContentDetailScreen({navigation, postId}) {
         state: false,
         message: "",
     })
-    const [isChatButtonClicked, setChatbuttonClicked] = useState(false);
+    const [isChatButtonClicked, setChatButtonClicked] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -79,15 +79,12 @@ export default function ContentDetailScreen({navigation, postId}) {
 
     }, [isChatButtonClicked]);
 
-
     function tryCreateChat() {
         asyncHandleChatClick().then();
     }
 
 
     async function asyncHandleChatClick() {
-        // if(!isMyPost()) return;
-        
         let /** @type ChatroomDoc */ newChatroom = {
             docId: null,
             ownerEmail: postOwner.email,
@@ -99,10 +96,8 @@ export default function ContentDetailScreen({navigation, postId}) {
         }
 
         navigation.navigate(NavigatorType.CHAT, {chatroomId: newChatroom.docId})
-
     }
-    
-    
+
     function handleEditPost() {
         navigation.navigate(NavigatorType.POST_EDIT, {postId: postId});
     }
@@ -133,7 +128,6 @@ export default function ContentDetailScreen({navigation, postId}) {
         }
         setReportPostModalOn(false);
         navigation.navigate(ScreenType.CONTENT);
-
     }
 
     async function asyncHandleReportUser() {
@@ -176,7 +170,7 @@ export default function ContentDetailScreen({navigation, postId}) {
                     <Text flex="1" style={styles.priceText}>
                         ${post.price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}} onPress={() => setChatbuttonClicked(true)}>
+                    <ChatButton style={{marginRight:10}} onPress={() => setChatButtonClicked(true)}>
                         <TonicText>Chat</TonicText>
                     </ChatButton>
                 </Flex>
@@ -221,3 +215,5 @@ const TonicText = styled.Text`
     font-size: 18px;
     font-weight: 600;
 `;
+
+

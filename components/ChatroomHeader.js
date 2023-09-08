@@ -26,14 +26,14 @@ import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import { useRecoilValue } from "recoil";
 
 import { chatroomHeaderAtom, getOpponentUserData } from "../recoil/chatroomHeaderState";
-import { userAtom } from "../recoil/userState";
+import { thisUser } from "../recoil/userState";
 import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
 import { recentTextState } from "../recoil/recentTextState";
 
 
 export default function ChatroomHeader({id, onClickHandler}) {
 
-    const user = useRecoilValue(userAtom);
+    const user = useRecoilValue(thisUser);
     let propsForChatroomHeaderAtom = {
         id: id,
         email: user.email,
