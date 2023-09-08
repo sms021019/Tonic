@@ -9,12 +9,10 @@ import NewUserSearchScreen from '../screens/NewUserSearchScreen';
 const Stack = createStackNavigator();
 
 
-export default function ChatNavigator({route}) {
-    const {chatroomId} = route.params;
-
+export default function ChatNavigator() {
     return (
-        <Stack.Navigator screenOptions={{headerShown: true}}>
-            <Stack.Screen name = {ScreenType.CHAT}>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name = {ScreenType.CHANNEL}>
                 {props => <Chat {...props} chatroomId = {chatroomId}/>}
             </Stack.Screen>
         </Stack.Navigator>

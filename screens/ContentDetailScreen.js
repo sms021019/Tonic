@@ -7,7 +7,9 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {NavigatorType, ScreenType} from "../utils/utils";
+
+import {DBCollectionType, LOG_ERROR, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
+
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
@@ -19,6 +21,9 @@ import ImageSwiper from "../components/ImageSwiper";
 import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
 import {showQuickMessage} from "../helpers/MessageHelper";
+
+import ChatroomController from '../typeControllers/ChatroomController';
+
 import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoil/postState";
 import TimeHelper from "../helpers/TimeHelper";
@@ -26,6 +31,7 @@ import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
 import {userAtom, userAtomByEmail} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
+
 
 
 export default function ContentDetailScreen({navigation, postId}) {
@@ -41,6 +47,7 @@ export default function ContentDetailScreen({navigation, postId}) {
         state: false,
         message: "",
     })
+    const [isChatButtonClicked, setChatbuttonClicked] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -66,24 +73,36 @@ export default function ContentDetailScreen({navigation, postId}) {
         });
     }, [navigation]);
 
-    async function handleChatClick() {
-        if (user.email === post.ownerEmail) return;
+    useEffect(() => {
+        if(!isChatButtonClicked) return;
+        tryCreateChat();
 
-        const chatroomModel = ChatroomModel.newEmpty();
-        if(await chatroomModel.asyncSetNewChatroomData(postOwner?.username, postId, postOwner, user) === false) return;
+    }, [isChatButtonClicked]);
 
-        chatroomModelList.addOne(chatroomModel);
 
-        if( await chatroomModel.asyncSaveData() === false) {
-            console.log("Failed to create chatroom")
-            return false;
-        }
-
-        navigation.navigate(NavigatorType.CHAT, {screen: ScreenType.CHAT, params: {doc_id: chatroomModel.doc_id}});
-
-        return true;
+    function tryCreateChat() {
+        asyncHandleChatClick().then();
     }
 
+
+    async function asyncHandleChatClick() {
+        // if(!isMyPost()) return;
+        
+        let /** @type ChatroomDoc */ newChatroom = {
+            docId: null,
+            ownerEmail: postOwner.email,
+            customerEmail: user.email,
+            postId: post.docId,
+        }
+        if(await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
+            return LOG_ERROR("Unkown error occur while creaeting new chatroom");
+        }
+
+        navigation.navigate(NavigatorType.CHAT, {chatroomId: newChatroom.docId})
+
+    }
+    
+    
     function handleEditPost() {
         navigation.navigate(NavigatorType.POST_EDIT, {postId: postId});
     }
@@ -157,7 +176,7 @@ export default function ContentDetailScreen({navigation, postId}) {
                     <Text flex="1" style={styles.priceText}>
                         ${post.price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}} onPress={handleChatClick}>
+                    <ChatButton style={{marginRight:10}} onPress={() => setChatbuttonClicked(true)}>
                         <TonicText>Chat</TonicText>
                     </ChatButton>
                 </Flex>

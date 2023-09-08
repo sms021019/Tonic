@@ -12,7 +12,9 @@ import PostEditNavigator from "./PostEditNavigator";
 import SearchNavigator from './SearchNavigator'
 import SettingNavigator from "./SettingNavigator";
 import EditProfileNavigator from "./EditProfileNavigator";
+import ChatNavigator from './ChatNavigator.js';
 import {userAtom, userAuthAtom} from "../recoil/userState";
+
 import {useRecoilValue} from "recoil";
 
 const Stack = createStackNavigator();
@@ -29,6 +31,7 @@ export default function MainNavigator() {
             <Stack.Screen name={NavigatorType.POST_EDIT} component={PostEditNavigator}/>
             <Stack.Screen name={NavigatorType.EDIT_PROFILE} component={EditProfileNavigator}/>
             <Stack.Screen name={NavigatorType.SETTING} component={SettingNavigator}/>
+            <Stack.Screen name={NavigatorType.CHAT} component={ChatNavigator}/>
         </Stack.Navigator>
     )
 }

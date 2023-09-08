@@ -23,46 +23,29 @@ import TimeHelper from "../helpers/TimeHelper";
 import DBHelper from "../helpers/DBHelper";
 import UserModel from "../models/UserModel";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
+import { useRecoilValue } from "recoil";
+
+import { chatroomHeaderAtom, getOpponentUserData } from "../recoil/chatroomHeaderState";
+import { userAtom } from "../recoil/userState";
+import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
+import { recentTextState } from "../recoil/recentTextState";
 
 
-export default function Chat(id, onClickHandler) {
-    // const { user, gUserModel } = useContext(GlobalContext);
-    // const [recentText, setRecentText] = useState(null);
-    // const [photoURL, setPhotoURL] = useState(null);
-    
-    // const [opponentUsername, setOpponentUsername] = useState(null);
-    // const [opponentProfileImageUrl, setOpponentprofileImageUrl] = useState(null);
+export default function ChatroomHeader({id, onClickHandler}) {
 
-    
-
-    if (props.model === null) {
-        return (
-            <View> no model data </View>
-        )
+    const user = useRecoilValue(userAtom);
+    let propsForChatroomHeaderAtom = {
+        id: id,
+        email: user.email,
     }
-
-    const chatroomModel = props.model;
-    const index = props.index;
-    const chatroomModelList = props.modelList;
-
-    useEffect(() => {
-        if(chatroomModel === undefined) return;
-
-        // setRecentText(chatroomModel.recentText);
-        if(chatroomModel.getRecentText(setRecentText, index ) === false){
-            //TO DO
-            console.log("Error when getting a recent text")
-            return;
-        }            
-
-        setOpponentprofileImageUrl(ProfileImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
-        setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
-    },[])
-
+    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(propsForChatroomHeaderAtom));
+    const opponentUserData = useRecoilValue(getOpponentUserData(chatroomHeader.opponentEmail));
+    const recentText = useRecoilValue(recentTextState(chatroomHeader.chatroomId));
 
     function handlePostClick() {
-        props.onClickHandler();
+        onClickHandler(chatroomHeader.chatroomId);
     }
+
 
     return (
         <Box>
@@ -71,24 +54,24 @@ export default function Chat(id, onClickHandler) {
                         borderColor: "muted.50"
                     }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
                         <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={opponentProfileImageUrl} />
+                            <Avatar size="48px" source={ProfileImageHelper.getProfileImageUrl(opponentUserData.profileImageType)} />
                             <VStack>
                                 <Text _dark={{
                                     color: "warmGray.50"
                                 }} color="coolGray.800" bold>
-                                    {opponentUsername}
+                                    {opponentUserData?.username}
                                 </Text>
                                 <Text color="coolGray.600" _dark={{
                                     color: "warmGray.200"
                                 }}>
-                                    {recentText?.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
+                                    {recentText !== null ? recentText.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text : ''}
                                 </Text>
                             </VStack>
                             <Spacer />
                             <Text fontSize="xs" _dark={{
                                 color: "warmGray.50"
                             }} color="coolGray.800" alignSelf="flex-start">
-                                {recentText ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
+                                {recentText !== null ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
                             </Text>
                         </HStack>
                     </Box>

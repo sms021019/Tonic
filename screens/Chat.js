@@ -1,68 +1,64 @@
-import React, {useState, useEffect, useLayoutEffect, useCallback, useContext} from 'react'
-import { View, SafeAreaView} from 'react-native'
-import { GiftedChat, MessageStatusIndicator, Bubble } from 'react-native-gifted-chat'
-import {collection, addDoc, orderBy, query, onSnapshot,} from 'firebase/firestore';
+import React, {
+    useState,
+    useEffect,
+    useLayoutEffect,
+    useCallback,
+    useContext
+} from 'react'
+import { View, Text, TouchableOpacity, SafeAreaView} from 'react-native'
+import { GiftedChat, Composer, Send, MessageStatusIndicator, Bubble, TypingIndicator, SystemMessage } from 'react-native-gifted-chat'
+import {
+    collection,
+    addDoc,
+    orderBy,
+    query,
+    limit,
+    onSnapshot,
+    doc
+} from 'firebase/firestore';
+
+
 import styled from "styled-components/native";
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme';
 import GlobalContext from '../context/Context';
 import {DBCollectionType, NavigatorType,ScreenType} from "../utils/utils";
-import ChatroomModel from '../models/ChatroomModel';
-import ErrorScreen from "./ErrorScreen";
 import GoBackButton from "../components/GoBackButton";
 import MenuButton from '../components/MenuButton'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useRecoilValue } from 'recoil';
+import { userAtom, userAtomByEmail } from '../recoil/userState';
+import { chatroomAtom, chatroomMessageAtom } from '../recoil/chatroomState';
+import ChatroomController from '../typeControllers/ChatroomController';
+import { chatroomHeaderAtom } from '../recoil/chatroomHeaderState';
+import {showQuickMessage} from "../helpers/MessageHelper";
+import { getInset } from 'react-native-safe-area-view'
 
-export default function Chat({navigation, route}) {
-    const { user, gUserModel } = useContext(GlobalContext);
-    const {chatroomModelList, postModelList} = useContext(GlobalContext);
 
+export default function Chat({navigation, chatroomId}) {
     const [messages, setMessages] = useState([]);
-    const [hasError, setHasError] = useState(false);
-    const [chatModel, setChatModel] = useState(null);
-    const [chatroomRef, setChatroomRef] = useState(null);
-    const [chatroomMessagesRef, setChatroomMessageRef] = useState(null);
-    const [chatroomTitle, setChatroomTitle] = useState("Chatroom");
-    const [opponentUserModel, setOpponentUserModel] = useState(null);
-
-    const [postModel, setPostModel] = useState(null);
-
-    const index = route.params.index;
-
-    var Filter = require('bad-words'),
-    filter = new Filter();
-
-    useEffect(() => {
-        setChatModel(() => chatroomModelList.getOneByDocId(route.params.doc_id));
-        
-        
-    },[])
-
-    useEffect(() => {
-        if (chatModel === null) return;
-        setPostModel(() => postModelList.getOneByDocId(chatModel.postModelId));
-
-        setChatroomRef(chatModel.ref);
-        
-        setChatroomMessageRef(collection(chatModel.ref, DBCollectionType.MESSAGES));
-
-        setChatroomTitle(user.email === chatModel.owner.email ? chatModel.customer.username : chatModel.owner.username)
-
-    }, [chatModel])
+    const user = useRecoilValue(userAtom);
+    // let props = {
+    //     email: user.email,
+    //     id: chatroomHeaderId.chatroomHeaderId
+    // }
+    const chatroom = useRecoilValue(chatroomAtom(chatroomId));
+    const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomId)
+    const opponentUserEmail = chatroom.customerEmail === user.email ? chatroom.ownerEmail : chatroom.customerEmail;
+    const opponentUser = useRecoilValue(userAtomByEmail(opponentUserEmail));
     
     useLayoutEffect(() => {
-        if(chatModel === null || chatroomMessagesRef === null || postModel === null) return;
 
         navigation.setOptions({
             
-            headerTitle: chatroomTitle,
+            headerTitle: opponentUser.username,
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
             headerRight: () => (
                 <MenuButton mr={5} size={6} color={'black'}
                     items={
                             [
-                                {name: "Exit", color: theme.colors.primary, callback: handleExitChatroom},
-                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {docId: chatModel.postModelId}))},
+                                {name: "Exit", color: theme.colors.primary, callback: asyncExitChatroom},
+                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
                                 {name: "Report", color: theme.colors.alert, callback: (() => {})},
                             ]
                     }
@@ -71,76 +67,81 @@ export default function Chat({navigation, route}) {
 
         });
 
-        
-        console.log("Uselayout onsnapshot callback called");
-        const q = query(chatroomMessagesRef, orderBy("createdAt", "desc"));
+        const q = query(chatroomMessageRef, orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, snapshot => {
-            
-            setMessages(
-                snapshot.docs.map(doc => ({
-                    _id: doc.id,
-                    createdAt: doc.data().createdAt.toDate(),
-                    text: doc.data().text,
-                    user: doc.data().user
-                }))
-            )
+            let temp = snapshot.docs.map(doc => ({
+                _id: doc.id,
+                createdAt: doc.data().createdAt.toDate(),
+                text: doc.data().text,
+                user: doc.data().user
+            }));
+            temp.push({
+                _id: 0,
+                text: 'Please refrain from inappropriate or offensive conversations. You may face membership sanctions.',
+                createdAt: new Date().getTime(),
+                system: true,
+            });
+            setMessages(temp);
 
         });
 
         
         return () => unsubscribe();
-    }, [navigation, chatModel, chatroomMessagesRef, postModel]);
+    }, [navigation]);
     
 
     const onSend = useCallback((messages = []) => {
 
-        // messages[0].text = filter.clean(messages[0].text); /// 이거 한국어 안됨 왕니;ㄹ묀;ㅗㅎㅁ;ㅣ뇌;뫼;모미;ㅗㄱ;ㅣ모미친거 아님?
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
         const { _id, createdAt, text, user} = messages[0];
         
-        addDoc(chatroomMessagesRef, {
+        addDoc(chatroomMessageRef, {
             _id,
             createdAt,
             text,
             user
         });
-        // chatModel.setRecentChat(messages[0]);
-        // chatroomModelList.liftChatroom(index);
 
-    }, [chatroomMessagesRef]);
+    }, [chatroomMessageRef]);
+
+
 
     const handleInvite = () => {
         navigation.navigate(ScreenType.USER_SEARCH);
     }
     
-    const handleExitChatroom = async () => {
-        if(await ChatroomModel.asyncExitChatroom(chatModel, user) === false){
-            // TO DO: handle error
-            setHasError(true);
+    async function asyncExitChatroom () {
+        if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
+            console.log('Failed to exit chatroom with unknown error');
             return;
-        }else{
-            navigation.navigate(ScreenType.CHANNEL);
         }
+
+        showQuickMessage('Exited from chat');
+        navigation.navigate(ScreenType.CHANNEL);
     }
 
-    /* ------------------
-        Error Screen
-    -------------------*/
-    if (hasError) return <ErrorScreen/>
+   
 
-    //
-    // renderBubble = (props) => {
-    //     return (
-    //         <View style={{paddingRight: 12}}>
-    //         <View style={{position: 'absolute', right: -1, bottom: 0}}>
-    //             <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
-    //         </View>
-    //             <Bubble {...props} />
-    //         </View>
-    //     )
-    // }
-    //
-    //
+
+    renderBubble = (props) => {
+        return (
+            <View style={{paddingRight: 12}}>
+            <View style={{position: 'absolute', right: -1, bottom: 0}}>
+                <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
+            </View>
+            <Bubble {...props} />
+            </View>
+        )
+    }
+
+    onRenderSysyemMessage = (props) => (
+        <SystemMessage
+            {...props}
+            containerStyle= {{backgroundColor:'#0782F9'}}
+            textStyle={{color: "white", fontWeight:"500", fontSize: 17, textAlign: 'center'}}
+        />
+    );
+
 
     return (
         <SafeAreaView style={{flex: 1,}} >
@@ -148,16 +149,17 @@ export default function Chat({navigation, route}) {
                 messages={messages}
                 onSend={messages => onSend(messages)}
                 user={{
-                    _id: user?.email,
-                    name: user?.displayName,
-                    avatar: gUserModel.model.profileImageUrl
+                    _id: user.email,
+                    name: user.username,
+                    avatar: user.profileImageType
                 }}
                 messagesContainerStyle={{
                     backgroundColor: '#fff'
                 }}
                 renderTicks={this.renderTicks}
+                renderSystemMessage={onRenderSysyemMessage}
                 
-                bottomOffset={useBottomTabBarHeight()}
+                bottomOffset={getInset('bottom')}
                 
             />
         </SafeAreaView>

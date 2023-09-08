@@ -48,6 +48,14 @@ export default class FirebaseHelper {
         return snapshots.docs.map((doc) => doc.id);
     }
 
+    static async getDocIdsByCollectionRef(collectionRef) {
+        const q = query(collectionRef);
+        
+        const snapshots = await getDocs(q);
+
+        return snapshots.docs.map((doc) => doc.id);
+    }
+
     /**
      *
      * @param collectionType
@@ -63,6 +71,31 @@ export default class FirebaseHelper {
         }
         catch (e) {
             console.log("Err: FirebaseHelper.getDocDataById");
+            return null
+        }
+    }
+    
+    // chatroomHeader 콜랙션에서 문서 읽기 위해서 임시로 만든 함수
+    static async getDocDataByCollectionRefAndId(collectionRef, id) {
+        try{
+            const dRef = doc(collectionRef, id);
+            const _doc = await getDoc(dRef);
+            if(!_doc.data()) return null;
+            return _doc.data();
+        }catch (e) {
+            console.log("Err FirebaseHelper.getDocDataByCollectionRefAndId");
+            return null
+        }
+    }
+
+    // chatroomController 에서 여러문서를 읽기 위해서 만든 함수
+    static async getDocsDataByCollectionRef(collectionRef){
+        try{
+            const _docs = await getDocs(collectionRef);
+            if(!_docs) return null;
+            return _docs
+        }catch(e){
+            console.log("Err FirebaseHelper.getDocsDataByCollectionRef");
             return null
         }
     }

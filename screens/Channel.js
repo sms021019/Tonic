@@ -1,184 +1,74 @@
 
 // React
-import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet } from "react-native";
+import React, { useEffect, useState } from 'react';
 // Design
 import { Icon, Button, Divider } from '@rneui/base';
 import { Center } from "../utils/styleComponents";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-    Input,
-    Box,
-    HStack,
-    FlatList,
-    VStack,
-    Text,
-    Avatar,
-    Spacer
-} from 'native-base';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import styled from "styled-components/native";
-// Modal
-import Modal from '../utils/modal';
-import GlobalContext from '../context/Context';
+
 // Util
-import { DBCollectionType } from '../utils/utils';
-import { ScreenType } from '../utils/utils';
-import ErrorScreen from "./ErrorScreen";
-import DBHelper from '../helpers/DBHelper';
-import { useIsFocused } from '@react-navigation/native'
-// Model
-import ChatroomModel from '../models/ChatroomModel';
-import ChatList from '../components/ChatList';
-import Loading from '../components/Loading';
+import { NavigatorType, ScreenType } from '../utils/utils';
+import CreateChatroomModal from '../components/CreateChatroomModal';
+// recoil
+import { useRecoilValue } from 'recoil';
+import { chatroomHeaderIdsAtomByEmail } from '../recoil/chatroomHeaderState';
+import {userAtom, userAtomByEmail} from "../recoil/userState";
 
-import {doc} from "firebase/firestore";
+import ChatroomHeaderFlatList from '../components/ChatroomHeaderFlatList';
+import ChatroomHeaderController from '../typeControllers/ChatroomHeaderController';
 
-export default function Channel({ navigation: {navigate}}) {
-    const { user, gUserModel } = useContext(GlobalContext);    
-    const [modalVisible, setModalVisible] = useState(false);
-    const [email, setEmail] = useState("");
-    const {chatroomModelList} = useContext(GlobalContext);
-    const [loading, setLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
+export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [email, setEmail] = useState('');
 
-    const [chatroomRefs, setChatroomRefs] = useState(null);
+    const user = useRecoilValue(userAtom);
+    const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsAtomByEmail(user.email));
 
 
-    const [newChatroomModel, setNewChatroomModel] = useState();
-    const [displayName, setDisplayName] = useState();
-
-    let state = {
-        isModalVisible: modalVisible,
-    };
-    let showModal = () => setModalVisible(true);
-    let hideModal = () => setModalVisible(false);
-    
-    const isFocused = useIsFocused()
-
-    useEffect(() => {
-        ChatroomModel.onSnapshotGetUserChatroomRefs(gUserModel, setChatroomRefs);
-        // loadChatrooms();
-    }, []);
-    
-    useEffect(() => {
-        if(chatroomRefs === null) return;
-        loadChatrooms().then();
-    },[chatroomRefs]);
+    console.log(user.email);
+    console.log("chatroomHeaderIds:", chatroomHeaderIds);
 
     function handleRefresh() {
         setRefreshing(true)
-        loadChatrooms().then();
     }
 
-    const handleCreateChatroom = async () => {
-        // 처리 대상
-            if(!displayName || !gUserModel) {
-                //TO DO
-                console.log("Not proper user or Empty name");
-                return false;
-            }
+    function openCreateChatroomModal() {
+        setModalVisible(true);
+    }
 
+    function handleCreateChatroom () {
+        return;
+    }
+
+
+    function handleContentClick(chatroomId) {
+        if (!chatroomId) return;
+        navigation.navigate(NavigatorType.CHAT, {chatroomId: chatroomId});
+    }
+
+  
         
-            const newRoom = ChatroomModel.newEmpty();
-            newRoom.setDisplayName(displayName);
-            newRoom.setUser(prev => [...prev, user]); // 무튼 유저 추가..?
-
-            newRoom.asyncSaveData();
-
-            await chatroomModel.asyncSaveData().then( ref => {
-                if(ref){
-                    console.log(ref)
-                    setEmail('');
-                    setModalVisible(prev => !prev);
-                    chatroomModel.setRef(ref);
-                    navigate(ScreenType.CHAT, {ref: ref});
-                }else{
-                    setHasError(true);
-                    return;
-                }
-            })
-    
-    }
-
-    async function loadChatrooms() {
-        let chatroomModelListBeforeSorting = await ChatroomModel.asyncChatroomRefsToModel(chatroomRefs);
-        let sortedChatroomList = await ChatroomModel.sortChatroomModelsByRecentText(chatroomModelListBeforeSorting);
-        chatroomModelList.set(sortedChatroomList);
-
-        setLoading(false);
-        setRefreshing(false);
-    }
-
-    function handleContentClick(doc_id, index) {
-        if (doc_id === -1 || !doc_id) return;
-        navigate(ScreenType.CHAT, {doc_id: doc_id, index: index});
-    }
-
-    //어제 노트: 채팅하기 빠르게 눌러도 한번만 실행되게하기, 이메일 존재여부 확인, 채팅목록창 스크롤
-    const LoadingView = <View><Text>Loading...</Text></View>
-
-        const ContentView = (
-            <ChatList
-                modelList={chatroomModelList}
-                handleClick={handleContentClick}
-                handleRefresh={handleRefresh}
-                refreshing={refreshing}
-            />
-        )
-            
-        const Content = !user ? LoadingView : ContentView;
 
 /* ------------------
-    Error Screen
+    Render
 -------------------*/
-if (hasError) return <ErrorScreen/>
-if (loading) return <Loading/>
-
     return (
         <SafeAreaView style={{ display: 'flex', flex: 1 }}>
-
-            <Modal
-                visible={this.state.isModalVisible}
-                dismiss={this.hideModal}
-            >
-                <View style={styles.modalView}>
-                    <Text style={styles.modalText}>대화를 원하는 상대의 이메일을 입력해주세요</Text>
-                    <Input shadow={2} _light={{
-                        bg: "coolGray.100",
-                        _hover: {
-                            bg: "coolGray.200"
-                        },
-                        _focus: {
-                            bg: "coolGray.200:alpha.70"
-                        }
-                    }} _dark={{
-                        bg: "coolGray.800",
-                        _hover: {
-                            bg: "coolGray.900"
-                        },
-                        _focus: {
-                            bg: "coolGray.900:alpha.70"
-                        }
-                    }} placeholder="이메일"
-                        value={email}
-                        onChangeText={text => setEmail(text.toLowerCase())}
-                    />
-                    <TouchableOpacity
-                        style={[styles.button, styles.buttonClose]}
-                        onPress={handleCreateChatroom}>
-                        <Text style={styles.textStyle}>채팅하기</Text>
-                    </TouchableOpacity>
-                </View>
-
-            </Modal>
+            <CreateChatroomModal 
+                state = {modalVisible} 
+                setState = {setModalVisible} 
+                email={email} 
+                setEmail = {setEmail} 
+                handleCreateChatroom = {handleCreateChatroom}
+            />
             <TopContainer>
                 <UsernameContainer>
-                    <UsernameText>{user?.displayName}</UsernameText>
+                    <UsernameText>{user?.username}</UsernameText>
                 </UsernameContainer>
                 <FormButtonContainer>
-                    <Button type="clear" onPress={this.showModal}>
+                    <Button type="clear" onPress={openCreateChatroomModal}>
                         <Icon
                             name='sc-telegram'
                             type='evilicon'
@@ -190,10 +80,15 @@ if (loading) return <Loading/>
             </TopContainer>
             <Divider />
             <TopContainer>
-                <MessageText>메세지</MessageText>
+                <MessageText>Message</MessageText>
             </TopContainer>
             <ContentArea>
-                {Content}
+                <ChatroomHeaderFlatList
+                    chatroomHeaderIds={chatroomHeaderIds}
+                    handleClick={handleContentClick}
+                    handleRefresh={handleRefresh}
+                    refreshing={refreshing}
+                />
             </ContentArea>
         </SafeAreaView>
     );
@@ -235,50 +130,5 @@ const MessageText = styled.Text`
     font-size: 20px;
     font-weight: 700;
 `
-
-const styles = StyleSheet.create({
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 22,
-    },
-    modalView: {
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    button: {
-        marginTop: 20,
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2,
-    },
-    buttonOpen: {
-        backgroundColor: '#F194FF',
-    },
-    buttonClose: {
-        backgroundColor: '#2196F3',
-    },
-    textStyle: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    modalText: {
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-});
 
 
