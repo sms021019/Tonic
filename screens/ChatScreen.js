@@ -1,5 +1,5 @@
 import React, {useState, useLayoutEffect, useCallback } from 'react'
-import { View, SafeAreaView} from 'react-native'
+import {View, SafeAreaView, StyleSheet} from 'react-native'
 import { GiftedChat, MessageStatusIndicator, Bubble, SystemMessage } from 'react-native-gifted-chat'
 import { addDoc, orderBy, query, onSnapshot,} from 'firebase/firestore';
 import styled from "styled-components/native";
@@ -32,9 +32,9 @@ export default function ChatScreen({navigation, chatroomId}) {
                 <MenuButton mr={5} size={6} color={'black'}
                     items={
                             [
-                                {name: "Exit", color: theme.colors.primary, callback: asyncExitChatroom},
-                                {name: "Post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
-                                {name: "Report", color: theme.colors.alert, callback: (() => {})},
+                                {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
+                                {name: "See post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
+                                {name: "Report user", color: theme.colors.alert, callback: (() => {})},
                             ]
             }/>)
         });
@@ -99,13 +99,13 @@ export default function ChatScreen({navigation, chatroomId}) {
     const onRenderSysyemMessage = (props) => (
         <SystemMessage
             {...props}
-            containerStyle= {{backgroundColor:'#0782F9'}}
-            textStyle={{color: "white", fontWeight:"500", fontSize: 17, textAlign: 'center'}}
+            containerStyle= {{backgroundColor:'#c0c0c0', borderRadius: 15, margin:10, padding:4}}
+            textStyle={{color: "white", fontWeight:"300", fontSize: 16, textAlign: 'center'}}
         />
     );
 
     return (
-        <SafeAreaView style={{flex: 1,}} >
+        <SafeAreaView style={styles.container} >
             <GiftedChat
                 messages={messages}
                 onSend={messages => onSend(messages)}
@@ -126,3 +126,11 @@ export default function ChatScreen({navigation, chatroomId}) {
         </SafeAreaView>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        display: 'flex',
+        flex: 1,
+        backgroundColor: theme.colors.white,
+    },
+})

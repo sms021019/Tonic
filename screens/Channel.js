@@ -13,6 +13,8 @@ import { useRecoilValue } from 'recoil';
 import { chatroomHeaderIdsAtomByEmail } from '../recoil/chatroomHeaderState';
 import {thisUser} from "../recoil/userState";
 import ChatroomHeaderFlatList from '../components/ChatroomHeaderFlatList';
+import {StyleSheet} from "react-native";
+import theme from "../utils/theme";
 
 export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
@@ -35,16 +37,13 @@ export default function Channel({ navigation }) {
     Render
 -------------------*/
     return (
-        <SafeAreaView style={{ display: 'flex', flex: 1 }}>
+        <SafeAreaView style={styles.container}>
             <TopContainer>
                 <UsernameContainer>
-                    <UsernameText>{user?.username}</UsernameText>
+                    <UsernameText>Messages</UsernameText>
                 </UsernameContainer>
             </TopContainer>
             <Divider />
-            <TopContainer>
-                <MessageText>Message</MessageText>
-            </TopContainer>
             <ContentArea>
                 <ChatroomHeaderFlatList
                     chatroomHeaderIds={chatroomHeaderIds}
@@ -56,7 +55,6 @@ export default function Channel({ navigation }) {
         </SafeAreaView>
     );
 };
-
 
 const ContentArea = styled.View`
   display: flex;
@@ -75,16 +73,10 @@ const UsernameText = styled.Text`
     font-size: 30px;
     font-weight: 700;
 `
-const FormButtonContainer = styled.View`
-    flex: 1;
-    align-items: flex-end;
-    justify-content: center;
-    margin-right: 20px;
-`
-const MessageText = styled.Text`
-    padding: 20px;
-    font-size: 20px;
-    font-weight: 700;
-`
-
-
+const styles = StyleSheet.create({
+    container: {
+        display: 'flex',
+        flex: 1,
+        backgroundColor: theme.colors.white,
+    },
+})
