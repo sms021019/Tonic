@@ -1,5 +1,5 @@
 
-import React, {useState, useLayoutEffect, useMemo, useEffect, useRef, useCallback} from 'react'
+import React, {useState, useLayoutEffect, useMemo, useEffect, useRef, useCallback, useContext} from 'react'
 import { flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
@@ -12,10 +12,11 @@ import {Divider, Center, Flex} from 'native-base'
 import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {accessAtom, AccessStatus} from "../recoil/accessState";
+import GlobalContext from "../context/Context";
 
-const MAX_VERIFY_TIME = 10;
 
 const EmailVerification = ({navigation}) => {
+    const {userStateManager} = useContext(GlobalContext);
     const setAccessStatus= useSetRecoilState(accessAtom);
     const [userAuth, setUserAuth] = useRecoilState(userAuthAtom);
     const [emailSent, setEmailSent] = useState(false);
@@ -48,7 +49,7 @@ const EmailVerification = ({navigation}) => {
 
         if (userAuth.emailVerified) {
             clearInterval(intervalRef.current);
-            setUserAuth(userAuth);
+            userStateManager.refreshUserAuth();
             setAccessStatus(AccessStatus.VALID);
             showQuickMessage("Email has been verified!");
         }
