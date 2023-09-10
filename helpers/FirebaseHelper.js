@@ -52,11 +52,15 @@ export default class FirebaseHelper {
     }
 
     static async getDocIdsByCollectionRef(collectionRef) {
-        const q = query(collectionRef);
-        
-        const snapshots = await getDocs(q);
-
-        return snapshots.docs.map((doc) => doc.id);
+        try {
+            const q = query(collectionRef);
+            const snapshots = await getDocs(q);
+            return snapshots.docs.map((doc) => doc.id);
+        }
+        catch (e) {
+            console.log(e, "Err: FirebaseHelper.getDocIdsByCollectionRef");
+            return null;
+        }
     }
 
     /**
@@ -77,7 +81,7 @@ export default class FirebaseHelper {
             return null
         }
     }
-    
+
     // chatroomHeader 콜랙션에서 문서 읽기 위해서 임시로 만든 함수
     static async getDocDataByCollectionRefAndId(collectionRef, id) {
         try{

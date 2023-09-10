@@ -8,7 +8,6 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 
 
 export default class ChatroomController {
-    
 
     static async asyncGetChatroomById (id) {
         return /**@type {ChatroomDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.CHATROOMS, id);
@@ -24,36 +23,40 @@ export default class ChatroomController {
         return chatroomMessageRef;
     }
 
+    /**
+     * The 'chatroom.docId' will be initialized in here, if succeeded.
+     * @param {ChatroomDoc} chatroom
+     * @returns {Promise<boolean>}
+     */
     static async asyncCreateNewChatroom (chatroom) {
         try{
+            if (this.isValidNewChatroom(chatroom) === false) return false;
+
             let batch = writeBatch(db);
-            
-            if(await this.asyncSetNewChatroom(batch, chatroom) === false) return false;
-            if(await ChatroomHeaderController.asyncSetNewChatroomHeader(batch, chatroom) === false) return false;
+
+            if (await this.asyncSetNewChatroom(batch, chatroom) === false) return false;
+            if (await ChatroomHeaderController.asyncSetNewChatroomHeader(batch, chatroom) === false) return false;
 
             await batch.commit();
             return true;
-
-        }catch(err){
-            console.log('Err: ChatroomController.asyncCreateNewChatroom');
+        }
+        catch(e){
+            console.log(e, 'Err: ChatroomController.asyncCreateNewChatroom');
             return false;
         }
     }
 
-
     static async asyncSetNewChatroom(batch, chatroom) {
-        try{
+        try {
             let newChatroomRef = DBHelper.getNewRef(DBCollectionType.CHATROOMS);
             chatroom.docId = newChatroomRef.id;
-            batch.set(newChatroomRef,chatroom);
-    
+            batch.set(newChatroomRef, chatroom);
             return true;
-
-        }catch(err){
+        }
+        catch(err) {
             console.log('Err: ChatroomController.asyncSetNewChatroom');
             return false;
         }
-
     }
 
     static async asyncExitChatroom(chatroom) {
@@ -67,8 +70,9 @@ export default class ChatroomController {
             return true;
 
 
-        }catch(err){
-            console.log('Err: ChatroomController.asyncExitChatroom');
+        }
+        catch(e){
+            console.log(e, 'Err: ChatroomController.asyncExitChatroom');
             return false;
         }
     }
@@ -78,11 +82,21 @@ export default class ChatroomController {
             const chatroomRef = FirebaseHelper.getRef(DBCollectionType.CHATROOMS, chatroom.docId);
             batch.delete(chatroomRef);
             return true;
-        }catch(err){
-            console.log('Err: ChatroomController.asyncSetDeleteChatroom');
+        }
+        catch(e){
+            console.log(e, 'Err: ChatroomController.asyncSetDeleteChatroom');
             return false;
         }
     }
 
-    
+    /**
+     *
+     * @param {ChatroomDoc} chatroom
+     * @return boolean
+     */
+    static isValidNewChatroom(chatroom) {
+        if (!chatroom.customerEmail || !chatroom.ownerEmail || !chatroom.postId) return false;
+        if (chatroom.customerEmail === chatroom.ownerEmail) return false;
+        return true;
+    }
 }

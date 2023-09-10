@@ -1,12 +1,7 @@
 import {Center, Divider, FlatList} from "native-base";
-import {View, Text} from "react-native";
 import Post from "./Post";
 import React from "react";
-import ImageModel from "../models/ImageModel";
-import PostModel from "../models/PostModel";
-import {ModelStatusType} from "../utils/utils";
 import ErrorBoundary from "react-native-error-boundary";
-import ErrorScreen from "../screens/ErrorScreen";
 
 export default function PostFlatList(props) {
 

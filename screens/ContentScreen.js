@@ -100,10 +100,6 @@ function ContentScreenErrorHandler({resetError}) {
     )
 }
 
-const ErrorComponent = () => {
-    throw new Error()
-}
-
 /* ------------------
        Styles
  -------------------*/

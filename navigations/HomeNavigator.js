@@ -2,11 +2,12 @@ import React from 'react'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Feather} from "@expo/vector-icons";
 import ContentScreen from '../screens/ContentScreen';
-import ChatScreen from "../screens/ChatScreen";
 import MyPage from '../screens/MyPage';
-import ChatNavigator from './ChatNavigator';
-import {NavigatorType, ScreenType} from '../utils/utils';
-import Channel from "../screens/Channel";
+import {ScreenType} from '../utils/utils';
+import LoadingScreen from "../screens/LoadingScreen";
+import {useRecoilValue} from "recoil";
+import {thisUser} from "../recoil/userState";
+import ChannelScreen from "../screens/ChannelScreen";
 
 
 function getIconNameByType(type) {
@@ -20,6 +21,11 @@ function getIconNameByType(type) {
 
 const Tab = createBottomTabNavigator();
 export default function HomeNavigator() {
+    const /** @type {UserDoc} */ user = useRecoilValue(thisUser);
+
+    if (!user) {
+        return <LoadingScreen/>
+    }
 
     return (
         <Tab.Navigator
@@ -29,7 +35,7 @@ export default function HomeNavigator() {
                 },
         })}>
             <Tab.Screen name={ScreenType.CONTENT} options={{title: "Home"}} component={ContentScreen}/>
-            <Tab.Screen name={ScreenType.CHANNEL} options={{headerShown: false, title: "Chat"}} component={Channel}/>
+            <Tab.Screen name={ScreenType.CHANNEL} options={{headerShown: false, title: "Chat"}} component={ChannelScreen}/>
             <Tab.Screen name={ScreenType.MYPAGE} options={{headerTransparent: true, title: "My", headerTitle: ""}} component={MyPage}/>
         </Tab.Navigator>
     )

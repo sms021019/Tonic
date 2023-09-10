@@ -1,98 +1,111 @@
-import React, {useContext, useEffect, useState} from "react";
-import GlobalContext from "../context/Context";
-import {
-    Pressable,
-    Text,
-    Box,
-    HStack,
-    Spacer,
-    Flex,
-    Badge,
-    Center,
-    NativeBaseProvider,
-    VStack,
-    Image,
-    Divider,
-    Avatar
-} from "native-base";
-import {DBCollectionType, windowWidth} from "../utils/utils";
-import theme from '../utils/theme'
-
-import {TouchableOpacity, View} from "react-native";
-import TimeHelper from "../helpers/TimeHelper";
-import DBHelper from "../helpers/DBHelper";
-import UserModel from "../models/UserModel";
-import ProfileImageHelper from "../helpers/ProfileImageHelper";
-
-
-export default function Chat(id, onClickHandler) {
-    // const { user, gUserModel } = useContext(GlobalContext);
-    // const [recentText, setRecentText] = useState(null);
-    // const [photoURL, setPhotoURL] = useState(null);
-    
-    // const [opponentUsername, setOpponentUsername] = useState(null);
-    // const [opponentProfileImageUrl, setOpponentprofileImageUrl] = useState(null);
-
-    
-
-    if (props.model === null) {
-        return (
-            <View> no model data </View>
-        )
-    }
-
-    const chatroomModel = props.model;
-    const index = props.index;
-    const chatroomModelList = props.modelList;
-
-    useEffect(() => {
-        if(chatroomModel === undefined) return;
-
-        // setRecentText(chatroomModel.recentText);
-        if(chatroomModel.getRecentText(setRecentText, index ) === false){
-            //TO DO
-            console.log("Error when getting a recent text")
-            return;
-        }            
-
-        setOpponentprofileImageUrl(ProfileImageHelper.getProfileImageUrl((user.email === chatroomModel.owner.email ? chatroomModel.customer.profileImageType : chatroomModel.owner.profileImageType)));
-        setOpponentUsername((user.email === chatroomModel.owner.email ? chatroomModel.customer.username : chatroomModel.owner.username));
-    },[])
-
-
-    function handlePostClick() {
-        props.onClickHandler();
-    }
-
-    return (
-        <Box>
-            <TouchableOpacity onPress={handlePostClick}>
-                <Box borderBottomWidth="1" _dark={{
-                        borderColor: "muted.50"
-                    }} borderColor="muted.800" pl={["0", "4"]} pr={["0", "5"]} py="2" m='2'>
-                        <HStack space={[2, 3]} justifyContent="space-between">
-                            <Avatar size="48px" source={opponentProfileImageUrl} />
-                            <VStack>
-                                <Text _dark={{
-                                    color: "warmGray.50"
-                                }} color="coolGray.800" bold>
-                                    {opponentUsername}
-                                </Text>
-                                <Text color="coolGray.600" _dark={{
-                                    color: "warmGray.200"
-                                }}>
-                                    {recentText?.text?.length >= 16 ? recentText?.text.substr(0,16)+"..." : recentText?.text}
-                                </Text>
-                            </VStack>
-                            <Spacer />
-                            <Text fontSize="xs" _dark={{
-                                color: "warmGray.50"
-                            }} color="coolGray.800" alignSelf="flex-start">
-                                {recentText ? `${TimeHelper.getTopElapsedStringUntilNow(recentText.createdAt?.toDate())} ago` : ``}
-                            </Text>
-                        </HStack>
-                    </Box>
-            </TouchableOpacity>
-        </Box>
-    );
-}
+// import React, {useState, useLayoutEffect, useCallback } from 'react'
+// import { GiftedChat, SystemMessage } from 'react-native-gifted-chat'
+// import { addDoc, orderBy, query, onSnapshot,} from 'firebase/firestore';
+// import theme from '../utils/theme';
+// import {NavigatorType,ScreenType} from "../utils/utils";
+// import GoBackButton from "../components/GoBackButton";
+// import MenuButton from '../components/MenuButton'
+// import { useRecoilValue } from 'recoil';
+// import { thisUser, userAtomByEmail } from '../recoil/userState';
+// import { chatroomAtom } from '../recoil/chatroomState';
+// import ChatroomController from '../typeControllers/ChatroomController';
+// import {showQuickMessage} from "../helpers/MessageHelper";
+// import { getInset } from 'react-native-safe-area-view'
+//
+//
+// export default function Chat({navigation, chatroomId}) {
+//     const [messages, setMessages] = useState([]);
+//     const user = useRecoilValue(thisUser);
+//     const chatroom = useRecoilValue(chatroomAtom(chatroomId));
+//     const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomId)
+//     const opponentUserEmail = chatroom.customerEmail === user.email ? chatroom.ownerEmail : chatroom.customerEmail;
+//     const opponentUser = useRecoilValue(userAtomByEmail(opponentUserEmail));
+//
+//     useLayoutEffect(() => {
+//         navigation.setOptions({
+//             headerShown: true,
+//             headerTitle: opponentUser.username,
+//             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
+//             headerRight: () => (
+//                 <MenuButton mr={5} size={6} color={'black'}
+//                             items={
+//                                 [
+//                                     {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
+//                                     {name: "See post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
+//                                     {name: "Report user", color: theme.colors.alert, callback: (() => {})},
+//                                 ]
+//                             }/>)
+//         });
+//
+//         const q = query(chatroomMessageRef, orderBy("createdAt", "desc"));
+//         const unsubscribe = onSnapshot(q, snapshot => {
+//             let temp = snapshot.docs.map(doc => ({
+//                 _id: doc.id,
+//                 createdAt: doc.data().createdAt.toDate(),
+//                 text: doc.data().text,
+//                 user: doc.data().user
+//             }));
+//             temp.push({
+//                 _id: 0,
+//                 text: 'Please refrain from inappropriate or offensive conversations. You may face membership sanctions.',
+//                 createdAt: new Date().getTime(),
+//                 system: true,
+//             });
+//             setMessages(temp);
+//
+//         });
+//
+//         return () => unsubscribe();
+//     }, [navigation]);
+//
+//
+//     const onSend = useCallback((messages = []) => {
+//         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
+//         const { _id, createdAt, text, user} = messages[0];
+//
+//         addDoc(chatroomMessageRef, {
+//             _id,
+//             createdAt,
+//             text,
+//             user
+//         });
+//
+//     }, [chatroomMessageRef]);
+//
+//     async function asyncExitChatroom () {
+//         if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
+//             console.log('Failed to exit chatroom with unknown error');
+//             return;
+//         }
+//
+//         showQuickMessage('Exited from chat');
+//         navigation.navigate(ScreenType.CHANNEL);
+//     }
+//
+//     const onRenderSysyemMessage = (props) => (
+//         <SystemMessage
+//             {...props}
+//             containerStyle= {{backgroundColor:'#c0c0c0', borderRadius: 15, margin:10, padding:4}}
+//             textStyle={{color: "white", fontWeight:"300", fontSize: 16, textAlign: 'center'}}
+//         />
+//     );
+//
+//     return (
+//         <GiftedChat
+//             messages={messages}
+//             onSend={messages => onSend(messages)}
+//             user={{
+//                 _id: user.email,
+//                 name: user.username,
+//                 avatar: user.profileImageType
+//             }}
+//             messagesContainerStyle={{
+//                 backgroundColor: '#fff'
+//             }}
+//             renderTicks={this.renderTicks}
+//             renderSystemMessage={onRenderSysyemMessage}
+//
+//             bottomOffset={getInset('bottom')}
+//         />
+//     )
+// }

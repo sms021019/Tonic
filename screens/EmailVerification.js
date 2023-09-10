@@ -3,13 +3,12 @@ import React, {useState, useLayoutEffect, useMemo, useEffect, useRef, useCallbac
 import { flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
-import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
-import UserModel from '../models/UserModel';
 import {userAuthAtom} from "../recoil/userState";
-import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
+import {useRecoilState, useSetRecoilState} from "recoil";
 import {Image, StyleSheet, Text, TouchableOpacity} from "react-native";
-import {Divider, Center, Flex, Box} from 'native-base'
+import {Divider, Center, Flex} from 'native-base'
 import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {accessAtom, AccessStatus} from "../recoil/accessState";

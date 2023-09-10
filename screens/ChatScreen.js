@@ -1,22 +1,52 @@
-import React, {useState, useLayoutEffect, useCallback } from 'react'
-import {View, SafeAreaView, StyleSheet} from 'react-native'
-import { GiftedChat, MessageStatusIndicator, Bubble, SystemMessage } from 'react-native-gifted-chat'
-import { addDoc, orderBy, query, onSnapshot,} from 'firebase/firestore';
-import styled from "styled-components/native";
-import {flexCenter} from "../utils/styleComponents";
+import React, {useCallback, useLayoutEffect, useState} from 'react'
+import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import theme from '../utils/theme';
-import {NavigatorType,ScreenType} from "../utils/utils";
+import {useRecoilValue} from "recoil";
+import {thisUser, userAtomByEmail} from "../recoil/userState";
+import {chatroomAtom} from "../recoil/chatroomState";
+import ChatroomController from "../typeControllers/ChatroomController";
 import GoBackButton from "../components/GoBackButton";
-import MenuButton from '../components/MenuButton'
-import { useRecoilValue } from 'recoil';
-import { thisUser, userAtomByEmail } from '../recoil/userState';
-import { chatroomAtom } from '../recoil/chatroomState';
-import ChatroomController from '../typeControllers/ChatroomController';
+import {NavigatorType, ScreenType} from "../utils/utils";
+import MenuButton from "../components/MenuButton";
+import {addDoc, onSnapshot, orderBy, query} from "firebase/firestore";
+import {GiftedChat, SystemMessage} from "react-native-gifted-chat";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import { getInset } from 'react-native-safe-area-view'
+import ErrorBoundary from "react-native-error-boundary";
+import {Box, Center} from "native-base";
 
 
-export default function ChatScreen({navigation, chatroomId}) {
+
+/*
+This wrapper screen prevents showing an empty gray screen when the following screen is not ready.
+ */
+export default function ChatScreenWrapper(props) {
+    return (
+        <SafeAreaView style={styles.container} >
+            <ErrorBoundary FallbackComponent={() => <ChatScreenErrorHandler navigation={props.navigation}/>}>
+                <ChatScreen {...props}/>
+            </ErrorBoundary>
+        </SafeAreaView>
+    )
+}
+
+function ChatScreenErrorHandler({navigation}) {
+    function handleRedirectToChannel() {
+        navigation.navigate(ScreenType.CHANNEL);
+    }
+
+    return (
+        <Center style={{width:'100%', height:'100%'}}>
+            <Text style={styles.errorText}>Fail to open a chat.</Text>
+            <Box marginTop={3}></Box>
+            <TouchableOpacity onPress={handleRedirectToChannel}>
+                <Text style={styles.redirectText}>Redirect</Text>
+            </TouchableOpacity>
+        </Center>
+    )
+}
+
+export function ChatScreen({navigation, chatroomId}) {
     const [messages, setMessages] = useState([]);
     const user = useRecoilValue(thisUser);
     const chatroom = useRecoilValue(chatroomAtom(chatroomId));
@@ -26,17 +56,18 @@ export default function ChatScreen({navigation, chatroomId}) {
 
     useLayoutEffect(() => {
         navigation.setOptions({
+            headerShown: true,
             headerTitle: opponentUser.username,
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
             headerRight: () => (
                 <MenuButton mr={5} size={6} color={'black'}
-                    items={
-                            [
-                                {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
-                                {name: "See post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
-                                {name: "Report user", color: theme.colors.alert, callback: (() => {})},
-                            ]
-            }/>)
+                            items={
+                                [
+                                    {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
+                                    {name: "See post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
+                                    {name: "Report user", color: theme.colors.alert, callback: (() => {})},
+                                ]
+                            }/>)
         });
 
         const q = query(chatroomMessageRef, orderBy("createdAt", "desc"));
@@ -84,18 +115,6 @@ export default function ChatScreen({navigation, chatroomId}) {
         navigation.navigate(ScreenType.CHANNEL);
     }
 
-
-    const renderBubble = (props) => {
-        return (
-            <View style={{paddingRight: 12}}>
-            <View style={{position: 'absolute', right: -1, bottom: 0}}>
-                <MessageStatusIndicator messageStatus={props.currentMessage.messageStatus} />
-            </View>
-            <Bubble {...props} />
-            </View>
-        )
-    }
-
     const onRenderSysyemMessage = (props) => (
         <SystemMessage
             {...props}
@@ -105,32 +124,26 @@ export default function ChatScreen({navigation, chatroomId}) {
     );
 
     return (
-        <SafeAreaView style={styles.container} >
-            <GiftedChat
-                messages={messages}
-                onSend={messages => onSend(messages)}
-                user={{
-                    _id: user.email,
-                    name: user.username,
-                    avatar: user.profileImageType
-                }}
-                messagesContainerStyle={{
-                    backgroundColor: '#fff'
-                }}
-                renderTicks={this.renderTicks}
-                renderSystemMessage={onRenderSysyemMessage}
+        <GiftedChat
+            messages={messages}
+            onSend={messages => onSend(messages)}
+            user={{
+                _id: user.email,
+                name: user.username,
+                avatar: user.profileImageType
+            }}
+            messagesContainerStyle={{
+                backgroundColor: '#fff'
+            }}
+            renderTicks={this.renderTicks}
+            renderSystemMessage={onRenderSysyemMessage}
 
-                bottomOffset={getInset('bottom')}
-
-            />
-        </SafeAreaView>
+            bottomOffset={getInset('bottom')}
+        />
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flex: 1,
-        backgroundColor: theme.colors.white,
-    },
+    container: {display: 'flex', flex: 1, backgroundColor: theme.colors.white,},
+    redirectText: {fontWeight:'600', fontSize:16, color: theme.colors.primary},
 })

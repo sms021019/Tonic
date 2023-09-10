@@ -1,6 +1,5 @@
 import DBHelper from "../helpers/DBHelper";
-import {DBCollectionType, ModelStatusType} from "../utils/utils";
-import UserModel from "../models/UserModel";
+import {DBCollectionType} from "../utils/utils";
 import {arrayUnion, writeBatch} from "firebase/firestore";
 import {db} from "../firebase";
 import {arrayRemove} from "@firebase/firestore";

@@ -7,23 +7,18 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-
-import {DBCollectionType, LOG_ERROR, NavigatorType, PageMode, ScreenType, windowHeight, windowWidth} from "../utils/utils";
-
+import {LOG_ERROR, NavigatorType, ScreenType,} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";
 import DeletePostModal from "../components/DeletePostModal";
 import ReportPostModal from "../components/ReportPostModal";
 // Model
-import ChatroomModel from '../models/ChatroomModel';
 import ImageSwiper from "../components/ImageSwiper";
 import ReportUserModal from "../components/ReportUserModal";
 import ConfirmMessageModal from "../components/ConfirmMessageModal";
 import {showQuickMessage} from "../helpers/MessageHelper";
-
 import ChatroomController from '../typeControllers/ChatroomController';
-
 import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoil/postState";
 import TimeHelper from "../helpers/TimeHelper";
@@ -31,10 +26,22 @@ import PostController from "../typeControllers/PostController";
 import MenuButton from "../components/MenuButton";
 import {thisUser, userAtomByEmail} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
+import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
 
 
 
-export default function ContentDetailScreen({navigation, postId}) {
+/*
+This wrapper screen prevents showing an empty gray screen when the following screen is not ready.
+ */
+export default function ContentDetailScreenWrapper(props) {
+    return (
+        <Container>
+            <ContentDetailScreen {...props}/>
+        </Container>
+    )
+}
+
+export function ContentDetailScreen({navigation, postId}) {
     const {postStateManager, userStateManager} = useContext(GlobalContext);
     const /**@type UserDoc*/ user = useRecoilValue(thisUser);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
@@ -47,7 +54,6 @@ export default function ContentDetailScreen({navigation, postId}) {
         state: false,
         message: "",
     })
-    const [isChatButtonClicked, setChatButtonClicked] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -73,29 +79,37 @@ export default function ContentDetailScreen({navigation, postId}) {
         });
     }, [navigation]);
 
-    useEffect(() => {
-        if(!isChatButtonClicked) return;
-        tryCreateChat();
-
-    }, [isChatButtonClicked]);
-
-    function tryCreateChat() {
-        asyncHandleChatClick().then();
-    }
-
 
     async function asyncHandleChatClick() {
+        if (user.email === post.ownerEmail) return;
+
+        const /** @type ChatroomHeaderDoc */ chatroomHeader = await ChatroomHeaderController.asyncGetChatroomHeaderByEmailAndPostId(user.email, post.docId);
+
+        if (chatroomHeader) {
+            navigation.navigate(NavigatorType.CHAT, {chatroomId: chatroomHeader.chatroomId})
+        }
+        else {
+            const docId = await asyncCreateNewChatAndGetDocId();
+            if (!docId) {
+                showQuickMessage("Fail to start chat. Please try again.");
+                return false;
+            }
+            navigation.navigate(NavigatorType.CHAT, {chatroomId: docId})
+        }
+    }
+
+    async function asyncCreateNewChatAndGetDocId() {
         let /** @type ChatroomDoc */ newChatroom = {
             docId: null,
             ownerEmail: postOwner.email,
             customerEmail: user.email,
             postId: post.docId,
         }
-        if(await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
-            return LOG_ERROR("Unkown error occur while creaeting new chatroom");
-        }
 
-        navigation.navigate(NavigatorType.CHAT, {chatroomId: newChatroom.docId})
+        if (await ChatroomController.asyncCreateNewChatroom(newChatroom) === false){
+            return null;
+        }
+        return newChatroom.docId;
     }
 
     function handleEditPost() {
@@ -147,7 +161,7 @@ export default function ContentDetailScreen({navigation, postId}) {
     }
 
     return (
-        <Container>
+        <>
             <ConfirmMessageModal state={confirmMessageModal} setState={setConfirmMessageModal} handler={handleDismissConfirmMessageModal}/>
             <DeletePostModal state={deleteModalOn} setState={setDeleteModalOn} handleDeleteClick={handleDeletePost}/>
             <ReportPostModal state={reportPostModalOn} setState={setReportPostModalOn} handleReportPost={asyncHandleReportPost}/>
@@ -170,12 +184,19 @@ export default function ContentDetailScreen({navigation, postId}) {
                     <Text flex="1" style={styles.priceText}>
                         ${post.price.toLocaleString()}
                     </Text>
-                    <ChatButton style={{marginRight:10}} onPress={() => setChatButtonClicked(true)}>
-                        <TonicText>Chat</TonicText>
-                    </ChatButton>
+                    {
+                        (user.email === post.ownerEmail)?
+                        <ChatButton style={{marginRight:10}} onPress={handleEditPost}>
+                            <TonicText>Edit</TonicText>
+                        </ChatButton>
+                            :
+                        <ChatButton style={{marginRight:10}} onPress={asyncHandleChatClick}>
+                            <TonicText>Chat</TonicText>
+                        </ChatButton>
+                    }
                 </Flex>
             </View>
-        </Container>
+        </>
     )
 }
 
