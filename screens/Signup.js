@@ -11,6 +11,7 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import {showQuickMessage} from "../helpers/MessageHelper";
 
+const ADMIN_EMAIL = 'tonic.cs.acc@gmail.com';
 
 const SignupScreen = () => {
     const [email, setEmail] = useState("");
@@ -19,16 +20,6 @@ const SignupScreen = () => {
     const [username, setUsername] = useState('');
     const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
     const [wrongPasswordFormat, setWrongPasswordFormat] = useState(false);
-
-    useEffect(() => {
-        const regex = /\.edu$/i;
-        if (email === "" || regex.test(email)) {
-            setWrongEmailFormat(false);
-        }
-        else {
-            setWrongEmailFormat(true);
-        }
-    }, [email])
 
     async function asyncHandleSignUp() {
         if (isValidToSignUp() === false) {
@@ -67,6 +58,10 @@ const SignupScreen = () => {
 
     function onEmailChange(value) {
         setEmail(value);
+        if (value === ADMIN_EMAIL) {
+            setWrongEmailFormat(false)
+            return;
+        }
 
         const regex = /\.edu$/i;
         (value === "" || regex.test(value))? setWrongEmailFormat(false) : setWrongEmailFormat(true);

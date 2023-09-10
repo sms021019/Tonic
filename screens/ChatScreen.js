@@ -1,4 +1,4 @@
-import React, {useCallback, useLayoutEffect, useState} from 'react'
+import React, {useCallback, useLayoutEffect, useMemo, useState} from 'react'
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import theme from '../utils/theme';
 import {useRecoilValue} from "recoil";
@@ -14,6 +14,7 @@ import {showQuickMessage} from "../helpers/MessageHelper";
 import { getInset } from 'react-native-safe-area-view'
 import ErrorBoundary from "react-native-error-boundary";
 import {Box, Center} from "native-base";
+import ProfileImageHelper from "../helpers/ProfileImageHelper";
 
 
 
@@ -71,12 +72,14 @@ export function ChatScreen({navigation, chatroomId}) {
         });
 
         const q = query(chatroomMessageRef, orderBy("createdAt", "desc"));
+
+        const opponentUserProfileImageUrl = ProfileImageHelper.getProfileImageUrl(opponentUser.profileImageType);
         const unsubscribe = onSnapshot(q, snapshot => {
             let temp = snapshot.docs.map(doc => ({
                 _id: doc.id,
                 createdAt: doc.data().createdAt.toDate(),
                 text: doc.data().text,
-                user: doc.data().user
+                user: {...doc.data()?.user, avatar: opponentUserProfileImageUrl}
             }));
             temp.push({
                 _id: 0,
@@ -91,7 +94,6 @@ export function ChatScreen({navigation, chatroomId}) {
         return () => unsubscribe();
     }, [navigation]);
 
-
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
         const { _id, createdAt, text, user} = messages[0];
@@ -104,6 +106,10 @@ export function ChatScreen({navigation, chatroomId}) {
         });
 
     }, [chatroomMessageRef]);
+
+    const myProfileImageUrl = useMemo(() => {
+        return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
+    }, [user])
 
     async function asyncExitChatroom () {
         if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
@@ -130,7 +136,7 @@ export function ChatScreen({navigation, chatroomId}) {
             user={{
                 _id: user.email,
                 name: user.username,
-                avatar: user.profileImageType
+                avatar: myProfileImageUrl,
             }}
             messagesContainerStyle={{
                 backgroundColor: '#fff'
