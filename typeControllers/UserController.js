@@ -1,9 +1,8 @@
 import {DBCollectionType, LOG_ERROR} from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
-import {arrayUnion, writeBatch} from "firebase/firestore";
-import {db} from "../firebase";
+import {arrayUnion} from "firebase/firestore";
 import {arrayRemove} from "@firebase/firestore";
-import DBHelper from "../helpers/DBHelper";
+import ChatroomHeaderController from "./ChatroomHeaderController";
 
 
 export default class UserController {
@@ -129,14 +128,15 @@ export default class UserController {
             const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, email);
             const user = await this.asyncGetUser(email);
 
-            const batch = writeBatch(db);
-            batch.delete(userRef);
-
-            for (const postId of user.myPostIds) {
-                const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
-                batch.delete(postRef);
+            const batch = FirebaseHelper.createBatch();
+            {
+                if (await ChatroomHeaderController.asyncSetDeleteAllChatroomHeadersActionToBatch(batch, email) === false) return false;
+                for (const postId of user.myPostIds) {
+                    const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
+                    batch.delete(postRef);
+                }
+                batch.delete(userRef);
             }
-
             await batch.commit();
             return true;
         }
@@ -144,5 +144,15 @@ export default class UserController {
             console.log(e, "UserController.asyncDeleteUser");
             return false;
         }
+    }
+
+    /**
+     *
+     * @param {UserDoc} user
+     * @returns {*|[]|string[]|FieldValue}
+     */
+    static isValid(user) {
+        return (user && user?.email && user?.username && user?.profileImageType && user?.myPostIds &&
+            user?.chatrooms && user?.reportedUserEmails && user?.reportedPostIds);
     }
 }

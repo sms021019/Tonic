@@ -135,12 +135,21 @@ export default class ChatroomHeaderController {
             customerQuerySnapshot.forEach((doc) => {
                 batch.delete(doc.ref);
             });
-
             return true;
-
-        }catch(err){
+        }
+        catch(err){
             console.log('Err: ChatroomHeaderController.asyncSetDeleteChatroomHeaders');
             return false;
         }
+    }
+
+    static async asyncSetDeleteAllChatroomHeadersActionToBatch(batch, email) {
+        const dRefs = await FirebaseHelper.getDocRefsByCollectionPath(DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
+        if (!dRefs) return false;
+        console.log("dRefs", dRefs);
+        for (const ref of dRefs) {
+            batch.delete(ref);
+        }
+        return true;
     }
 }

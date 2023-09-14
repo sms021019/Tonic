@@ -56,7 +56,7 @@ const EmailVerification = ({navigation}) => {
     }
 
     const verifyButtonText = useMemo(() => {
-        return emailSent? 'Verify Email Again' : "Verify Email";
+        return emailSent? 'Send Again' : "Send Verification Email";
     }, [emailSent])
 
     const asyncHandleSignOut = async () => {
@@ -73,7 +73,7 @@ const EmailVerification = ({navigation}) => {
             return;
         }
         setEmailSent(true);
-        showQuickMessage("Verification email has been sent to you email.");
+        showQuickMessage("Verification email has been sent to your email.");
     }
 
     return (
@@ -88,6 +88,13 @@ const EmailVerification = ({navigation}) => {
                         <StartText>{verifyButtonText}</StartText>
                     </Center>
                 </TouchableOpacity>
+                {
+                    emailSent &&
+                    <>
+                        <Text style={{color:theme.colors.primary}}>Verification email has been sent to your email.</Text>
+                        <Text style={{color:theme.colors.primary}}>If you can't find it, please check the spam.</Text>
+                    </>
+                }
             </Flex>
         </Container>
     )

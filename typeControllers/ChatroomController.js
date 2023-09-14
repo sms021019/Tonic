@@ -68,8 +68,6 @@ export default class ChatroomController {
 
             await batch.commit();
             return true;
-
-
         }
         catch(e){
             console.log(e, 'Err: ChatroomController.asyncExitChatroom');

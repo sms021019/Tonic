@@ -2,13 +2,10 @@
 import {
     collection,
     getDocs,
-    runTransaction,
     updateDoc,
-    deleteDoc,
     doc,
-    arrayUnion,
     getDoc,
-    setDoc, query,
+    setDoc, query, writeBatch,
 } from "firebase/firestore";
 import {db, getDownloadURL, storage, uploadBytesResumable} from '../firebase'
 import {createURL, LOG_ERROR, StorageDirectoryType} from "../utils/utils";
@@ -25,6 +22,7 @@ export default class FirebaseHelper {
     static getRef(type, docId) {
         return doc(collection(db, type), docId);
     }
+
 
     static async addDoc(type, docId, data) {
         try {
@@ -51,6 +49,24 @@ export default class FirebaseHelper {
         }
     }
 
+    /**
+     *
+     * @param pathSegments
+     * @returns {Promise<DocumentReference<unknown>[]|null|undefined>}
+     */
+    static async getDocRefsByCollectionPath(...pathSegments) {
+        try {
+            const path = this.toPath(...pathSegments);
+            console.log("path", path);
+            const cRef = collection(db, path);
+            return await this.getDocRefsByCollectionRef(cRef);
+        }
+        catch (e) {
+            console.log(e, "Err: FirebaseHelper.getCollectionRefByPath");
+            return null;
+        }
+    }
+
     static async getDocIdsByCollectionRef(collectionRef) {
         try {
             const q = query(collectionRef);
@@ -59,6 +75,18 @@ export default class FirebaseHelper {
         }
         catch (e) {
             console.log(e, "Err: FirebaseHelper.getDocIdsByCollectionRef");
+            return null;
+        }
+    }
+
+    static async getDocRefsByCollectionRef(collectionRef) {
+        try {
+            const q = query(collectionRef);
+            const snapshots = await getDocs(q);
+            return snapshots.docs.map((doc) => doc.ref);
+        }
+        catch (e) {
+            console.log(e, "Err: FirebaseHelper.getDocRefsByCollectionRef");
             return null;
         }
     }
@@ -169,5 +197,13 @@ export default class FirebaseHelper {
             console.log("Error occurs while delete image from Storage.");
             return false;
         }
+    }
+
+    static toPath(...segments) {
+        return segments.join('/');
+    }
+
+    static createBatch() {
+        return writeBatch(db);
     }
 }

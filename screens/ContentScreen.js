@@ -8,13 +8,14 @@ import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
 import PostFlatList from "../components/PostFlatList";
 import CreatePostButton from "../components/CreatePostButton";
-import {useRecoilValue} from "recoil";
+import {useRecoilState, useRecoilValue} from "recoil";
 import {postIdsAtom} from "../recoil/postState";
 import GlobalContext from "../context/Context";
 import ErrorBoundary from "react-native-error-boundary";
 import theme from "../utils/theme";
 import Global from "react-native-reanimated/src/reanimated2/js-reanimated/global";
 import {showQuickMessage} from "../helpers/MessageHelper";
+import {atomTest, globalFunctionTest} from "../recoil/userState";
 
 export default function ContentScreen({navigation}) {
     const {postStateManager} = useContext(GlobalContext);

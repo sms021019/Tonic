@@ -6,8 +6,9 @@ import {
     deleteUser, sendPasswordResetEmail,
     reauthenticateWithCredential, EmailAuthProvider,
 } from "firebase/auth";
-import {auth} from "../firebase";
+import {auth, db} from "../firebase";
 import UserController from "./UserController";
+import {writeBatch} from "firebase/firestore";
 
 
 export default class AuthController {

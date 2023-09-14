@@ -10,7 +10,7 @@ export const userAuthAtom = atom({
 
 export const thisUser = selector({
     key: 'thisUser',
-    get: async ({get, set}) => {
+    get: async ({get}) => {
         const userAuth = get(userAuthAtom);
         if (!userAuth) return null;
 
@@ -25,7 +25,7 @@ export const userAtomByEmail = atomFamily({
     default: selectorFamily({
         key: 'userAtom/Default',
         get: (email) => async () => {
-            return await /**@type {UserDoc}*/ UserController.asyncGetUser(email);
+            return /**@type {UserDoc}*/ await UserController.asyncGetUser(email);
         },
     })
 })

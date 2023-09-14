@@ -24,7 +24,7 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
     const bannerImageUrl = post.postImages[0].downloadUrlLow;
     const elapsedTime = TimeHelper.getTopElapsedStringUntilNow(post.postTime);
 
-    if (!user || !post) {
+    if (!UserController.isValid(user) || !post) {
         return <></>
     }
 
