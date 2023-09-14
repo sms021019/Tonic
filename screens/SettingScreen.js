@@ -35,7 +35,7 @@ export default function SettingScreen({navigation}) {
     }
 
     async function onDeleteAccount(password) {
-        if (await AuthController.asyncDeleteAccount(userAuth, password) === false) {
+        if (await userStateManager.deleteUserAccount(password) === false) {
             showQuickMessage("Fail to delete account. Please try again.");
         }
         else {

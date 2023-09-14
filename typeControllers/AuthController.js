@@ -89,12 +89,12 @@ export default class AuthController {
     }
 
     static async asyncDeleteAccount(userAuth, password) {
+        console.log(userAuth);
         try {
             const credential = EmailAuthProvider.credential(userAuth.email, password)
             await reauthenticateWithCredential(auth.currentUser, credential);
             await deleteUser(userAuth);
-
-            return await UserController.asyncDeleteUser(userAuth.email);
+            return true;
         }
         catch (e) {
             console.log(e, "Err: AuthController.asyncDeleteAccount");

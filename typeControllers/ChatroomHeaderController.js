@@ -1,9 +1,8 @@
-import { collection, doc, getDocs, query, where } from "firebase/firestore";
+import {collection, doc, getDocs, query, where} from "firebase/firestore";
 import DBHelper from "../helpers/DBHelper";
-import { DBCollectionType } from "../utils/utils";
+import {DBCollectionType} from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 import UserController from "./UserController";
-import { db } from "../firebase";
 
 
 export default class ChatroomHeaderController {
@@ -78,28 +77,27 @@ export default class ChatroomHeaderController {
      * @returns {CollectionReference<DocumentData>}
      */
     static getChatroomHeaderRef(email) {
-        return collection(db, DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
+        return FirebaseHelper.getCRefByPath(DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
     }
 
     static async asyncLoadOpponentData(opponentEmail) {
         try{
-            const opponentData = await UserController.asyncGetUser(opponentEmail);
-            return opponentData;
-        }catch(err) {
+            return await UserController.asyncGetUser(opponentEmail);
+        }
+        catch(err) {
             console.log("Err: ChatroomHeaderController.asyncLoadOpponentData");
             return null;
         }
     }
 
     static async asyncGetChatroomHeaderIdsByEmail(email) {
-        const chatroomHeaderRef = this.getChatroomHeaderRef(email);
-        const userChatroomHeaderIds = await FirebaseHelper.getDocIdsByCollectionRef(chatroomHeaderRef);
-        return userChatroomHeaderIds;
+        const cRef = this.getChatroomHeaderRef(email);
+        return await FirebaseHelper.getDocIdsByCollectionRef(cRef);
     }
 
     static async asyncGetChatroomHeaderByEmailAndId(props) {
-        const chatroomHeaderRef = this.getChatroomHeaderRef(props.email);
-        return await FirebaseHelper.getDocDataByCollectionRefAndId(chatroomHeaderRef, props.id);
+        const cRef = this.getChatroomHeaderRef(props.email);
+        return await FirebaseHelper.getDocDataByCollectionRefAndId(cRef, props.id);
     }
 
     /**
@@ -118,13 +116,19 @@ export default class ChatroomHeaderController {
         return null;
     }
 
+    /**
+     *
+     * @param batch
+     * @param {ChatroomDoc} chatroom
+     * @returns {Promise<boolean>}
+     */
     static async asyncSetDeleteChatroomHeaders(batch, chatroom) {
         try{
-            const ownerChatroomHeaderCollectionRef = this.getChatroomHeaderRef(chatroom.ownerEmail);
-            const customerChatroomHeaderCollectionRef = this.getChatroomHeaderRef(chatroom.customerEmail);
+            const ownerCRef = this.getChatroomHeaderRef(chatroom.ownerEmail);
+            const customerCRef = this.getChatroomHeaderRef(chatroom.customerEmail);
 
-            const ownerQuery = query(ownerChatroomHeaderCollectionRef, where('chatroomId', '==', chatroom.docId));
-            const customerQuery = query(customerChatroomHeaderCollectionRef, where('chatroomId', '==', chatroom.docId));
+            const ownerQuery = query(ownerCRef, where('chatroomId', '==', chatroom.docId));
+            const customerQuery = query(customerCRef, where('chatroomId', '==', chatroom.docId));
 
             const ownerQuerySnapshot = await getDocs(ownerQuery);
             const customerQuerySnapshot = await getDocs(customerQuery);
@@ -141,15 +145,5 @@ export default class ChatroomHeaderController {
             console.log('Err: ChatroomHeaderController.asyncSetDeleteChatroomHeaders');
             return false;
         }
-    }
-
-    static async asyncSetDeleteAllChatroomHeadersActionToBatch(batch, email) {
-        const dRefs = await FirebaseHelper.getDocRefsByCollectionPath(DBCollectionType.USERS, email, DBCollectionType.CHATROOMHEADERS);
-        if (!dRefs) return false;
-        console.log("dRefs", dRefs);
-        for (const ref of dRefs) {
-            batch.delete(ref);
-        }
-        return true;
     }
 }

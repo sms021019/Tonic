@@ -123,21 +123,16 @@ export default class UserController {
      * @param {string} email
      * @returns {Promise<boolean>}
      */
-    static async asyncDeleteUser(email) {
+    static async asyncBatchDeleteUser(batch, email) {
         try {
             const userRef = FirebaseHelper.getRef(DBCollectionType.USERS, email);
             const user = await this.asyncGetUser(email);
-
-            const batch = FirebaseHelper.createBatch();
-            {
-                if (await ChatroomHeaderController.asyncSetDeleteAllChatroomHeadersActionToBatch(batch, email) === false) return false;
-                for (const postId of user.myPostIds) {
-                    const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
-                    batch.delete(postRef);
-                }
-                batch.delete(userRef);
+            for (const postId of user.myPostIds) {
+                const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, postId);
+                batch.delete(postRef);
             }
-            await batch.commit();
+            batch.delete(userRef);
+
             return true;
         }
         catch(e) {

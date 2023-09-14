@@ -1,4 +1,4 @@
-import { collection, writeBatch } from "firebase/firestore";
+import {collection, query, where, or, writeBatch, getDocs} from "firebase/firestore";
 import { DBCollectionType } from "../utils/utils";
 import { db } from "../firebase";
 import DBHelper from "../helpers/DBHelper";
@@ -9,18 +9,31 @@ import FirebaseHelper from "../helpers/FirebaseHelper";
 
 export default class ChatroomController {
 
-    static async asyncGetChatroomById (id) {
-        return /**@type {ChatroomDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.CHATROOMS, id);
-    }
-
     static async asyncLoadChatroomMessage(id) {
         const chatroomMessageRef = this.getChatroomMessageRefById(id);
         return await FirebaseHelper.getDocsDataByCollectionRef(chatroomMessageRef);
     }
 
+    static async asyncGetChatroomById (id) {
+        return /**@type {ChatroomDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.CHATROOMS, id);
+    }
+
     static getChatroomMessageRefById(id) {
         const chatroomMessageRef = collection(db, DBCollectionType.CHATROOMS, id, DBCollectionType.MESSAGES);
         return chatroomMessageRef;
+    }
+
+    static async asyncGetChatroomsByEmail(email) {
+        const cRef = FirebaseHelper.getCRefByPath(DBCollectionType.CHATROOMS);
+        const q = query(
+            cRef,
+            or(
+                where('ownerEmail', '==', email),
+                where('customerEmail', '==', email)
+            )
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => doc.data());
     }
 
     /**
@@ -63,7 +76,7 @@ export default class ChatroomController {
         try{
             let batch = writeBatch(db);
 
-            if(await this.asyncSetDeleteChatroom(batch, chatroom) === false) return false;
+            if(await this.asyncBatchDeleteChatroom(batch, chatroom) === false) return false;
             if(await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
 
             await batch.commit();
@@ -75,14 +88,51 @@ export default class ChatroomController {
         }
     }
 
-    static async asyncSetDeleteChatroom(batch,chatroom) {
-        try{
-            const chatroomRef = FirebaseHelper.getRef(DBCollectionType.CHATROOMS, chatroom.docId);
-            batch.delete(chatroomRef);
+    /**
+     *
+     * @param batch
+     * @param {ChatroomDoc[]} chatrooms
+     * @returns {Promise<boolean>}
+     */
+    static async asyncBatchExitChatrooms(batch, chatrooms) {
+        for (const chatroom of chatrooms) {
+            if (await this.asyncBatchExitChatroom(batch, chatroom) === false) return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param batch
+     * @param {ChatroomDoc}chatroom
+     * @returns {Promise<boolean>}
+     */
+    static async asyncBatchExitChatroom(batch, chatroom) {
+        try {
+            if (await this.asyncBatchDeleteChatroom(batch, chatroom.docId) === false) return false;
+            if (await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
             return true;
         }
-        catch(e){
-            console.log(e, 'Err: ChatroomController.asyncSetDeleteChatroom');
+        catch(e) {
+            console.log(e, 'Err: ChatroomController.asyncExitChatroom');
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param batch
+     * @param {string} docId
+     * @returns {Promise<boolean>}
+     */
+    static async asyncBatchDeleteChatroom(batch, docId) {
+        try {
+            const dRef = FirebaseHelper.getRef(DBCollectionType.CHATROOMS, docId);
+            batch.delete(dRef);
+            return true;
+        }
+        catch(e) {
+            console.log(e, 'Err: ChatroomController.asyncBatchDeleteChatroom');
             return false;
         }
     }

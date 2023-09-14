@@ -49,7 +49,7 @@ const EmailVerification = ({navigation}) => {
 
         if (userAuth.emailVerified) {
             clearInterval(intervalRef.current);
-            userStateManager.refreshUserAuth();
+            userStateManager.refreshUserAuth(userAuth);
             setAccessStatus(AccessStatus.VALID);
             showQuickMessage("Email has been verified!");
         }

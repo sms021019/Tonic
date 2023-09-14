@@ -23,6 +23,14 @@ export default class FirebaseHelper {
         return doc(collection(db, type), docId);
     }
 
+    static getCRefByPath(...pathSegments) {
+        const path = this.toPath(...pathSegments);
+        return collection(db, path);
+    }
+
+    static getDRef(cRef, docId) {
+        return doc(cRef, docId);
+    }
 
     static async addDoc(type, docId, data) {
         try {
@@ -49,46 +57,32 @@ export default class FirebaseHelper {
         }
     }
 
-    /**
-     *
-     * @param pathSegments
-     * @returns {Promise<DocumentReference<unknown>[]|null|undefined>}
-     */
-    static async getDocRefsByCollectionPath(...pathSegments) {
+
+    static async getDocsByCollectionRef(collectionRef) {
         try {
-            const path = this.toPath(...pathSegments);
-            console.log("path", path);
-            const cRef = collection(db, path);
-            return await this.getDocRefsByCollectionRef(cRef);
+            const q = query(collectionRef);
+            const snapshots = await getDocs(q);
+            return snapshots.docs;
         }
         catch (e) {
-            console.log(e, "Err: FirebaseHelper.getCollectionRefByPath");
+            console.log(e, "Err: FirebaseHelper.getDocsByCollectionRef");
             return null;
         }
     }
 
     static async getDocIdsByCollectionRef(collectionRef) {
-        try {
-            const q = query(collectionRef);
-            const snapshots = await getDocs(q);
-            return snapshots.docs.map((doc) => doc.id);
-        }
-        catch (e) {
-            console.log(e, "Err: FirebaseHelper.getDocIdsByCollectionRef");
-            return null;
-        }
+        const docs = await this.getDocsByCollectionRef(collectionRef);
+        return docs.map((doc) => doc.id);
+    }
+
+    static async getDocRefsByCollectionPath(...pathSegments) {
+        const cRef = this.getCRefByPath(...pathSegments);
+        return await this.getDocRefsByCollectionRef(cRef);
     }
 
     static async getDocRefsByCollectionRef(collectionRef) {
-        try {
-            const q = query(collectionRef);
-            const snapshots = await getDocs(q);
-            return snapshots.docs.map((doc) => doc.ref);
-        }
-        catch (e) {
-            console.log(e, "Err: FirebaseHelper.getDocRefsByCollectionRef");
-            return null;
-        }
+        const docs = await this.getDocsByCollectionRef(collectionRef);
+        return docs.map((doc) => doc.ref);
     }
 
     /**
