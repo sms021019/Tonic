@@ -1,7 +1,6 @@
 import {atom, atomFamily, selector, selectorFamily} from "recoil";
 import UserController from "../typeControllers/UserController";
 
-
 export const userAuthAtom = atom({
     key: "userAuthAtom",
     default: /**@type {User}*/ null,
@@ -13,8 +12,11 @@ export const thisUser = selector({
         const userAuth = get(userAuthAtom);
         if (!userAuth) return null;
 
-        console.log("thisUser-Updated.")
-        return /**@type {UserDoc}*/ await UserController.asyncGetUser(userAuth.email);
+        const user = await UserController.asyncGetUser(userAuth.email);
+        if (!user) {
+            console.log("Err: userState.thisUser");
+        }
+        return /**@type {UserDoc}*/ user;
     },
 })
 

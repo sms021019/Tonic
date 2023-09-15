@@ -10,6 +10,8 @@ import {windowWidth} from "../utils/utils";
 import {flexCenter, TonicButton} from "../utils/styleComponents";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import {showQuickMessage} from "../helpers/MessageHelper";
+import {useSetRecoilState} from "recoil";
+import {userAuthAtom} from "../recoil/userState";
 
 const ADMIN_EMAIL = 'tonic.cs.acc@gmail.com';
 
@@ -20,10 +22,11 @@ const SignupScreen = () => {
     const [username, setUsername] = useState('');
     const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
     const [wrongPasswordFormat, setWrongPasswordFormat] = useState(false);
+    const setUserAuth = useSetRecoilState(userAuthAtom);
 
     async function asyncHandleSignUp() {
         if (isValidToSignUp() === false) {
-            showQuickMessage("Please fill all field.");
+            showQuickMessage("Please fill all fields.");
             return;
         }
         const /**@type {Account}*/ newAccount = {
@@ -32,9 +35,8 @@ const SignupScreen = () => {
             password,
             username,
         }
-        if (await AuthController.asyncCreateUserAuth(newAccount) === false) {
-            return false;
-        }
+        const newUserAuth = await AuthController.asyncCreateUserAuth(newAccount)
+        if (!newUserAuth) return false;
 
         const /**@type UserDoc*/ newUser = {
             uid: newAccount.uid,
@@ -47,6 +49,8 @@ const SignupScreen = () => {
             reportedPostIds: [],
         }
         if (await UserController.asyncAddUser(newUser) === false) return false;
+
+        setUserAuth(newUserAuth);
     }
 
     function isValidToSignUp() {

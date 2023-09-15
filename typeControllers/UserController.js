@@ -7,6 +7,7 @@ import ChatroomHeaderController from "./ChatroomHeaderController";
 
 export default class UserController {
     static async asyncGetUser(email) {
+        console.log("email", email);
         return /**@type {UserDoc}*/ await FirebaseHelper.getDocDataById(DBCollectionType.USERS, email);
     }
 

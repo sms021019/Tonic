@@ -21,7 +21,6 @@ export default class AuthController {
      * It will create auth and set 'uid' to the input account.
      *
      * @param {Account} account
-     * @returns {Promise<boolean>}
      */
     static async asyncCreateUserAuth(account) {
         try {
@@ -29,15 +28,14 @@ export default class AuthController {
             const userAuth = userCredential.user;
             await updateProfile(userAuth, {displayName: account.username})
             account.uid = userAuth.uid;
-
-            return true;
+            return userAuth;
         }
         catch (e) {
             if (e.code === 'auth/email-already-in-use') {
                 alert("Already have an account.");
             }
             console.log(e, "Err: UserController.asyncCreateUserAuth");
-            return false;
+            return null;
         }
     }
 
