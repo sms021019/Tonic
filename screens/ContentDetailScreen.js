@@ -79,6 +79,15 @@ export function ContentDetailScreen({navigation, postId}) {
         });
     }, [navigation]);
 
+    useEffect(() => {
+        PostController.isPostExist(postId).then(result => {
+            if (result === false) {
+                alert("This post is deleted.");
+                navigation.navigate(ScreenType.CONTENT);
+            }
+        })
+    }, [])
+
 
     async function asyncHandleChatClick() {
         if (user.email === post.ownerEmail) return;

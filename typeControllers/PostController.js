@@ -236,4 +236,8 @@ export default class PostController {
         )
     }
 
+    static async isPostExist(postId) {
+        const postData = await FirebaseHelper.getDocDataById(DBCollectionType.POSTS, postId);
+        return !!(postData)
+    }
 }

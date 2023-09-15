@@ -74,7 +74,7 @@ const SignupScreen = () => {
     function onPasswordChange(value) {
         setPassword(value);
         // Minimum 8 characters, at least one letter and one number.
-        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]{8,}$/i;
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()]{8,}$/i;
         (value === "" || regex.test(value))? setWrongPasswordFormat(false) : setWrongPasswordFormat(true);
     }
 
