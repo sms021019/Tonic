@@ -1,7 +1,7 @@
 import React, {useContext, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import {Box, Center, Divider, FlatList, Flex, ScrollView} from "native-base";
+import {Box, Center, Divider, Flex, ScrollView} from "native-base";
 import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import packageJson from '../package.json';

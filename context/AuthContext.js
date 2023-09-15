@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect} from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "@firebase/auth";
 import errorHandler from "../errors";
@@ -23,7 +23,7 @@ function AuthContextProvider(props) {
         loggedIn: false,
         errorMessage: null
     });
-    
+
 
     useEffect(() => {
         auth.getLoggedIn();
@@ -46,7 +46,7 @@ function AuthContextProvider(props) {
                 await updateProfile(user, {displayName: username}).catch(
                     (err) => console.log(err)
                 );
-                
+
                 await setDoc(doc(usersCollectionRef, user.email), {
                     username: username,
                     uid: user.uid,

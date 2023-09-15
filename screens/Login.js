@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native'
-import {flexCenter, TonicButton} from "../utils/styleComponents";
+import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";
 import {ScreenType, windowWidth} from "../utils/utils";

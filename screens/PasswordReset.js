@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react'
-import {StyleSheet, TouchableOpacity, Text, View} from "react-native";
+import {StyleSheet, TouchableOpacity, Text} from "react-native";
 import styled from "styled-components/native";
 import {Box, Center} from "native-base";
 import theme from '../utils/theme'

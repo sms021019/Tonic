@@ -1,6 +1,6 @@
 import React from "react";
 import {Text, Box, HStack, Spacer, VStack, Avatar, Divider} from "native-base";
-import {TouchableOpacity, View} from "react-native";
+import {TouchableOpacity} from "react-native";
 import TimeHelper from "../helpers/TimeHelper";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import { useRecoilValue } from "recoil";

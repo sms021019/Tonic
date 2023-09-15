@@ -1,10 +1,7 @@
 // React
 import React, { useState } from 'react';
 import { View, StyleSheet } from "react-native";
-import { 
-    Input,
-    Text,
-} from 'native-base';
+import {Input, Text,} from 'native-base';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 // Modal
 import Modal from '../utils/modal';

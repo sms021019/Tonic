@@ -1,5 +1,5 @@
 
-import React, {useState, useLayoutEffect, useMemo, useEffect, useRef, useCallback, useContext} from 'react'
+import React, {useState, useLayoutEffect, useMemo, useEffect, useRef, useContext} from 'react'
 import { flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import styled from "styled-components/native";

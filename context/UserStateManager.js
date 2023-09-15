@@ -1,11 +1,8 @@
 import {useRecoilRefresher_UNSTABLE, useRecoilState, useRecoilValue} from "recoil";
 import {thisUser, userAuthAtom} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
-import {authTaskManagerAtom} from "../recoil/taskManager";
-import {useEffect} from "react";
 import AuthController from "../typeControllers/AuthController";
 import FirebaseHelper from "../helpers/FirebaseHelper";
-import ChatroomHeaderController from "../typeControllers/ChatroomHeaderController";
 import ChatroomController from "../typeControllers/ChatroomController";
 
 

@@ -1,7 +1,7 @@
 import React, {useContext, useLayoutEffect, useState} from 'react'
 import {StyleSheet, View, Text} from 'react-native';
 import {Center, ScrollView} from "native-base";
-import {windowHeight, windowWidth} from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import PostList from "../components/PostList";
 import UnblockPostModal from "../components/UnblockPostModal";

@@ -7,7 +7,7 @@ import {flexCenter, TonicButton} from "../utils/styleComponents";
 // Context
 import GlobalContext from '../context/Context';
 // Utils
-import {LOG_ERROR, NavigatorType, ScreenType,} from "../utils/utils";
+import {NavigatorType, ScreenType,} from "../utils/utils";
 import theme from '../utils/theme';
 // Component
 import GoBackButton from "../components/GoBackButton";

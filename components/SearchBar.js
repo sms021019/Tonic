@@ -1,7 +1,6 @@
 import {Icon, Input} from "native-base";
 import {Ionicons} from "@expo/vector-icons";
 import React from "react";
-import theme from '../utils/theme'
 
 export default function SearchBar(props) {
     let bg = props.bg? props.bg : "white"

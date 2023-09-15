@@ -1,6 +1,6 @@
 import React from "react";
 import {Box, Flex, Center, Image, Text, Divider} from "native-base";
-import {NavigatorType, windowWidth} from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 import theme from '../utils/theme'
 import {useRecoilValue} from "recoil";
 import {postAtom} from "../recoil/postState";

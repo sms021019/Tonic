@@ -6,11 +6,7 @@ import {
     deleteUser, sendPasswordResetEmail,
     reauthenticateWithCredential, EmailAuthProvider,
 } from "firebase/auth";
-import {auth, db} from "../firebase";
-import UserController from "./UserController";
-import {writeBatch} from "firebase/firestore";
-
-
+import {auth} from "../firebase";
 export default class AuthController {
 
     static ErrorCode = {

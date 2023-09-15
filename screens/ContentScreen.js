@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
+import {StyleSheet, Text, TouchableOpacity} from 'react-native'
 import {Box, Center, Flex} from "native-base";
 import styled from "styled-components/native";
 // util
@@ -8,15 +8,11 @@ import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";
 import HeaderLeftLogo from '../components/HeaderLeftLogo'
 import PostFlatList from "../components/PostFlatList";
 import CreatePostButton from "../components/CreatePostButton";
-import {useRecoilState, useRecoilValue} from "recoil";
+import {useRecoilValue} from "recoil";
 import {postIdsAtom} from "../recoil/postState";
 import GlobalContext from "../context/Context";
 import ErrorBoundary from "react-native-error-boundary";
 import theme from "../utils/theme";
-import Global from "react-native-reanimated/src/reanimated2/js-reanimated/global";
-import {showQuickMessage} from "../helpers/MessageHelper";
-import {atomTest, globalFunctionTest} from "../recoil/userState";
-
 export default function ContentScreen({navigation}) {
     const {postStateManager} = useContext(GlobalContext);
     const [refreshing, setRefreshing] = useState(false);

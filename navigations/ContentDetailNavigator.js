@@ -1,5 +1,4 @@
 import React from 'react'
-import {View, Text} from 'react-native'
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
 import ContentDetailScreen from '../screens/ContentDetailScreen'
 import {ScreenType} from "../utils/utils";

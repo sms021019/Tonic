@@ -1,11 +1,6 @@
 // Modal.js
 import React from 'react';
-import {
-    TouchableWithoutFeedback,
-    StyleSheet,
-    Modal,
-    View,
-} from 'react-native';
+import {TouchableWithoutFeedback, StyleSheet, Modal, View,} from 'react-native';
 import t from 'prop-types';
 
 

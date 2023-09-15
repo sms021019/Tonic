@@ -1,11 +1,11 @@
 // React
 import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
-import {Button, StyleSheet, Text, View} from 'react-native'
+import {Button, StyleSheet, Text} from 'react-native'
 // Design
 import styled from "styled-components/native";
 import {Divider, Flex} from "native-base";
 // Utils
-import {LOG_ERROR, NavigatorType, PageMode, windowWidth} from "../utils/utils"
+import {LOG_ERROR, NavigatorType, windowWidth} from "../utils/utils"
 import {flexCenter} from "../utils/styleComponents";
 import theme from '../utils/theme'
 import ErrorScreen from "./ErrorScreen";
@@ -13,8 +13,6 @@ import AnimatedLoader from "react-native-animated-loader";
 // Context
 import GlobalContext from "../context/Context";
 import PostingImageUploader from "../components/PostingImageUploader";
-import {PostCollect, PostCollection} from '../types/PostCollection'
-import TimeHelper from "../helpers/TimeHelper";
 import PostController from "../typeControllers/PostController";
 // Recoil
 import {postAtom} from "../recoil/postState";

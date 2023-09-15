@@ -1,10 +1,9 @@
 import React from 'react'
-import {Text, Image, StyleSheet, TouchableOpacity} from 'react-native'
+import {Text, Image, StyleSheet} from 'react-native'
 import styled from "styled-components/native";
-import {flexCenter, TonicButton, TonicButtonWhite} from "../utils/styleComponents";
+import {flexCenter} from "../utils/styleComponents";
 import {windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
-import {Box, Center} from "native-base";
 
 export default function ErrorScreen() {
 

@@ -1,13 +1,9 @@
-import React, {useContext, useEffect} from "react";
-import {Text, View, Image, Pressable, StyleSheet, TouchableOpacity} from "react-native";
-import {flexCenter, TonicButton, TonicButtonWhite} from "../utils/styleComponents";
+import React from "react";
+import {Text, Image, StyleSheet} from "react-native";
+import {flexCenter, TonicButtonWhite} from "../utils/styleComponents";
 import styled from "styled-components/native";
-import {NavigatorType, ScreenType, windowWidth} from "../utils/utils";
+import {ScreenType, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
-import {useRecoilValue} from "recoil";
-import {thisUser, userAuthAtom} from "../recoil/userState";
-import GlobalContext from "../context/Context";
-
 export default function Intro({navigation}) {
     const handleLogin = () => {
         navigation.push(ScreenType.LOGIN);

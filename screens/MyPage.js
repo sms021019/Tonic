@@ -2,8 +2,8 @@
 import React, {useLayoutEffect, useMemo} from 'react'
 import {View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image} from 'react-native'
 import styled from "styled-components/native";
-import {Feather, Ionicons} from "@expo/vector-icons";
-import {Center, Flex, ScrollView} from "native-base";
+import {Feather} from "@expo/vector-icons";
+import {Center, ScrollView} from "native-base";
 // Util
 import {flexCenter} from "../utils/styleComponents";
 import {NavigatorType, windowHeight, windowWidth} from "../utils/utils";

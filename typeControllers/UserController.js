@@ -1,8 +1,7 @@
-import {DBCollectionType, LOG_ERROR} from "../utils/utils";
+import {DBCollectionType} from "../utils/utils";
 import FirebaseHelper from "../helpers/FirebaseHelper";
 import {arrayUnion} from "firebase/firestore";
 import {arrayRemove} from "@firebase/firestore";
-import ChatroomHeaderController from "./ChatroomHeaderController";
 
 
 export default class UserController {

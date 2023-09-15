@@ -1,5 +1,5 @@
 import React from "react";
-import {Box, Divider, Flex} from "native-base";
+import {Box, Flex} from "native-base";
 import {StyleSheet, TouchableOpacity} from "react-native";
 import styled from "styled-components/native";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
@@ -8,7 +8,6 @@ import * as ImageManipulator from "expo-image-manipulator";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {LOG, windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
-import ImageModel from "../models/ImageModel";
 import {PostImage} from "../types/PostCollection";
 
 

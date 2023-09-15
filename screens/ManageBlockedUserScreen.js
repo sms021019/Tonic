@@ -1,7 +1,7 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import React, {useContext, useLayoutEffect, useState} from 'react'
 import {Text, StyleSheet, View, TouchableOpacity} from 'react-native';
 import {Box, Center, Divider, Flex, ScrollView} from "native-base";
-import {windowHeight, windowWidth} from "../utils/utils";
+import {windowWidth} from "../utils/utils";
 import theme from "../utils/theme";
 import UnblockUserModal from "../components/UnblockUserModal";
 import {thisUser, userAtomByEmail} from "../recoil/userState";

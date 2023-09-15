@@ -10,7 +10,6 @@ import {useRecoilValue} from "recoil";
 import {thisUser} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
 import {showQuickMessage} from "../helpers/MessageHelper";
-import {error} from "react-native-gifted-chat/lib/logging";
 import GlobalContext from "../context/Context";
 
 export default function EditProfileScreen({navigation}) {

@@ -1,5 +1,4 @@
-import styled, {css} from "styled-components/native";
-import {theme} from "./utils";
+import {css} from "styled-components/native";
 
 export const Center = css`
   display: flex;

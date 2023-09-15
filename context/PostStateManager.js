@@ -1,5 +1,5 @@
 import {useRecoilRefresher_UNSTABLE, useRecoilState, useRecoilValue} from "recoil";
-import {postIdsAtom, postAtom} from '../recoil/postState'
+import {postIdsAtom} from '../recoil/postState'
 import PostController from "../typeControllers/PostController";
 
 

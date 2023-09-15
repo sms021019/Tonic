@@ -1,5 +1,5 @@
 
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import {Text, StyleSheet, TouchableOpacity} from "react-native";
 import {Box, Center} from "native-base";
 import styled from "styled-components/native";
@@ -7,7 +7,7 @@ import theme from '../utils/theme'
 import UserController from "../typeControllers/UserController";
 import AuthController from "../typeControllers/AuthController";
 import {windowWidth} from "../utils/utils";
-import {flexCenter, TonicButton} from "../utils/styleComponents";
+import {flexCenter} from "../utils/styleComponents";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import {useSetRecoilState} from "recoil";

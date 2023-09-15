@@ -1,12 +1,10 @@
 import React, {useLayoutEffect} from 'react'
-import {View, Text, SafeAreaView, TouchableOpacity} from 'react-native'
+import {SafeAreaView} from 'react-native'
 import styled from "styled-components/native";
-import { AntDesign } from '@expo/vector-icons';
 import {flexCenter} from "../utils/styleComponents";
 import SearchBar from '../components/SearchBar'
-import theme from '../utils/theme'
 
-import {Flex, Divider} from "native-base";
+import {Flex} from "native-base";
 import {NavigatorType} from "../utils/utils";
 import GoBackButton from "../components/GoBackButton";
 
