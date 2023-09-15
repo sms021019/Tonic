@@ -16,7 +16,6 @@ export default function Channel({ navigation }) {
     const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
     const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsAtomByEmail(user.email));
 
-
     function handleRefresh() {
         setRefreshing(true)
     }
@@ -26,9 +25,6 @@ export default function Channel({ navigation }) {
         navigation.navigate(NavigatorType.CHAT, {chatroomId: chatroomId});
     }
 
-/* ------------------
-    Render
--------------------*/
     return (
         <>
             {

@@ -1,4 +1,4 @@
-import React, {useCallback, useLayoutEffect, useMemo, useState} from 'react'
+import React, {Suspense, useCallback, useLayoutEffect, useMemo, useState} from 'react'
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import theme from '../utils/theme';
 import {useRecoilValue} from "recoil";
@@ -15,18 +15,17 @@ import { getInset } from 'react-native-safe-area-view'
 import ErrorBoundary from "react-native-error-boundary";
 import {Box, Center} from "native-base";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
+import LoadingScreen from "./LoadingScreen";
 
 
-
-/*
-This wrapper screen prevents showing an empty gray screen when the following screen is not ready.
- */
 export default function ChatScreenWrapper(props) {
     return (
         <SafeAreaView style={styles.container} >
-            <ErrorBoundary FallbackComponent={() => <ChatScreenErrorHandler navigation={props.navigation}/>}>
-                <ChatScreen {...props}/>
-            </ErrorBoundary>
+            <Suspense fallback={<LoadingScreen/>}>
+                <ErrorBoundary FallbackComponent={() => <ChatScreenErrorHandler navigation={props.navigation}/>}>
+                    <ChatScreen {...props}/>
+                </ErrorBoundary>
+            </Suspense>
         </SafeAreaView>
     )
 }

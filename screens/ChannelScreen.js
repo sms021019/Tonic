@@ -1,10 +1,10 @@
 import Channel from "../components/Channel";
-import {SafeAreaView, StyleSheet} from "react-native";
+import {SafeAreaView, StyleSheet, Text} from "react-native";
 import theme from "../utils/theme";
 import {Divider} from "@rneui/base";
-import React from "react";
+import React, {Suspense} from "react";
 import styled from "styled-components/native";
-
+import LoadingScreen from "./LoadingScreen";
 
 export default function ChannelScreen({navigation}) {
     return(
@@ -13,7 +13,9 @@ export default function ChannelScreen({navigation}) {
                 <UsernameText>Messages</UsernameText>
             </TopContainer>
             <Divider />
-            <Channel navigation={navigation}/>
+            <Suspense fallback={<LoadingScreen/>}>
+                <Channel navigation={navigation}/>
+            </Suspense>
         </SafeAreaView>
     )
 }
@@ -26,7 +28,6 @@ const UsernameText = styled.Text`
     font-size: 30px;
     font-weight: 700;
 `
-
 const styles = StyleSheet.create({
     container: {
         display: 'flex',
