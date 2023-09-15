@@ -76,8 +76,8 @@ export default class ChatroomController {
         try{
             let batch = writeBatch(db);
 
-            if(await this.asyncBatchDeleteChatroom(batch, chatroom) === false) return false;
-            if(await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
+            if (await this.asyncBatchDeleteChatroom(batch, chatroom) === false) return false;
+            if (await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
 
             await batch.commit();
             return true;
@@ -127,8 +127,16 @@ export default class ChatroomController {
      */
     static async asyncBatchDeleteChatroom(batch, docId) {
         try {
+            // Delete Messages
+            const dRefs = await FirebaseHelper.getDocRefsByCollectionPath(DBCollectionType.CHATROOMS, docId, DBCollectionType.MESSAGES);
+            for (const ref of dRefs) {
+                batch.delete(ref);
+            }
+
+            // Delete Chatroom
             const dRef = FirebaseHelper.getRef(DBCollectionType.CHATROOMS, docId);
             batch.delete(dRef);
+
             return true;
         }
         catch(e) {

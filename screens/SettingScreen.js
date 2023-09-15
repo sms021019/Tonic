@@ -8,13 +8,10 @@ import packageJson from '../package.json';
 import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import DeleteAccountModal from "../components/DeleteAccountModal";
-import {useRecoilValue} from "recoil";
-import {userAuthAtom} from "../recoil/userState";
 import GlobalContext from "../context/Context";
 
 export default function SettingScreen({navigation}) {
     const {userStateManager} = useContext(GlobalContext);
-    const userAuth = useRecoilValue(userAuthAtom);
     const [deleteAccountModalOn, setDeleteAccountModalOn] = useState(false);
 
     useLayoutEffect(() => {

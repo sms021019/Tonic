@@ -97,6 +97,9 @@ export default class AuthController {
             return true;
         }
         catch (e) {
+            if (e.code === "auth/wrong-password") {
+                alert("Password is not correct.");
+            }
             console.log(e, "Err: AuthController.asyncDeleteAccount");
             return false;
         }

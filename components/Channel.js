@@ -2,12 +2,14 @@
 // React
 import React, { useState } from 'react';
 // Util
-import { NavigatorType } from '../utils/utils';
+import {NavigatorType, windowWidth} from '../utils/utils';
 // recoil
 import { useRecoilValue } from 'recoil';
 import { chatroomHeaderIdsAtomByEmail } from '../recoil/chatroomHeaderState';
 import {thisUser} from "../recoil/userState";
 import ChatroomHeaderFlatList from './ChatroomHeaderFlatList';
+import {View, Text, Image} from "react-native";
+import {Center, Flex} from "native-base";
 
 export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
@@ -30,11 +32,21 @@ export default function Channel({ navigation }) {
     Render
 -------------------*/
     return (
-        <ChatroomHeaderFlatList
-            chatroomHeaderIds={chatroomHeaderIds}
-            handleClick={handleContentClick}
-            handleRefresh={handleRefresh}
-            refreshing={refreshing}
-        />
+        <>
+            {
+                (chatroomHeaderIds.length === 0)?
+                <Center style={{width:'100%', height:'90%'}}>
+                    <Image source={require("../assets/ChatIcon.png")} style={{width:windowWidth*0.3, height:windowWidth*0.3}} />
+                    <Text style={{color:'gray'}}>No messages.</Text>
+                </Center>
+                :
+                <ChatroomHeaderFlatList
+                    chatroomHeaderIds={chatroomHeaderIds}
+                    handleClick={handleContentClick}
+                    handleRefresh={handleRefresh}
+                    refreshing={refreshing}
+                />
+            }
+        </>
     );
 };
