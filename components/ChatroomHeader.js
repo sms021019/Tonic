@@ -7,16 +7,12 @@ import { useRecoilValue } from "recoil";
 import { chatroomHeaderAtom, getOpponentUserData } from "../recoil/chatroomHeaderState";
 import { thisUser } from "../recoil/userState";
 import { recentTextState } from "../recoil/recentTextState";
+import UserController from "../typeControllers/UserController";
 
 
 export default function ChatroomHeader({id, onClickHandler}) {
-
     const user = useRecoilValue(thisUser);
-    let propsForChatroomHeaderAtom = {
-        id: id,
-        email: user.email,
-    }
-    const chatroomHeader = useRecoilValue(chatroomHeaderAtom(propsForChatroomHeaderAtom));
+    const chatroomHeader = useRecoilValue(chatroomHeaderAtom({ id: id, email: user.email}));
     const opponentUserData = useRecoilValue(getOpponentUserData(chatroomHeader.opponentEmail));
     const recentText = useRecoilValue(recentTextState(chatroomHeader.chatroomId));
 

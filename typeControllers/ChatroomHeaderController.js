@@ -90,14 +90,19 @@ export default class ChatroomHeaderController {
         }
     }
 
+    static async asyncGetChatroomHeadersByEmail(email) {
+        const cRef = this.getChatroomHeaderRef(email);
+        return await FirebaseHelper.getAllDocDataByCollectionRef(cRef);
+    }
+
     static async asyncGetChatroomHeaderIdsByEmail(email) {
         const cRef = this.getChatroomHeaderRef(email);
         return await FirebaseHelper.getDocIdsByCollectionRef(cRef);
     }
 
-    static async asyncGetChatroomHeaderByEmailAndId(props) {
-        const cRef = this.getChatroomHeaderRef(props.email);
-        return await FirebaseHelper.getDocDataByCollectionRefAndId(cRef, props.id);
+    static async asyncGetChatroomHeaderByEmailAndId(email, id) {
+        const cRef = this.getChatroomHeaderRef(email);
+        return await FirebaseHelper.getDocDataByCollectionRefAndId(cRef, id);
     }
 
     /**

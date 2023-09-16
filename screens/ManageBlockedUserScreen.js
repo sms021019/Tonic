@@ -65,7 +65,7 @@ function ReportedUser({reporterEmail, reportedUserEmail}) {
 
     return (
         <View>
-            <UnblockUserModal state={unblockModalOn} setState={setUnblockModalOn} username={reportedUser.username} onUnblockUser={asyncUnblockUser}/>
+            <UnblockUserModal state={unblockModalOn} setState={setUnblockModalOn} onUnblockUser={asyncUnblockUser}/>
             <Box style={styles.menu}>
                 <Flex direction={'row'}>
                     <Text style={styles.menuText}>{reportedUser.username}</Text>

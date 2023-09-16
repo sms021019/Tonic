@@ -34,8 +34,9 @@ export default function Post({id, onClickHandler, filterBlockedPost}) {
         onClickHandler();
     }
 
-    if (filterBlockedPost === true && UserController.isPostBlockedByUser(user, post)) {
-        return <></>
+    if (filterBlockedPost === true) {
+        if (UserController.isBlockedPost(user, post?.docId) || UserController.isBlockedUser(user, post.ownerEmail))
+            return <></>
     }
 
     return (

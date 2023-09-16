@@ -1,11 +1,10 @@
-
 // React
 import React, { useState } from 'react';
 // Util
 import {NavigatorType, windowWidth} from '../utils/utils';
 // recoil
 import { useRecoilValue } from 'recoil';
-import { chatroomHeaderIdsAtomByEmail } from '../recoil/chatroomHeaderState';
+import {safeChatroomHeaderIdsSelector} from '../recoil/chatroomHeaderState';
 import {thisUser} from "../recoil/userState";
 import ChatroomHeaderFlatList from './ChatroomHeaderFlatList';
 import {Text, Image} from "react-native";
@@ -14,7 +13,7 @@ import {Center} from "native-base";
 export default function Channel({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
     const /**@type {UserDoc}*/ user = useRecoilValue(thisUser);
-    const chatroomHeaderIds = useRecoilValue(chatroomHeaderIdsAtomByEmail(user.email));
+    const chatroomHeaderIds = useRecoilValue(safeChatroomHeaderIdsSelector(user.email));
 
     function handleRefresh() {
         setRefreshing(true)

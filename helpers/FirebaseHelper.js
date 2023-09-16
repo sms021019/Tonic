@@ -63,6 +63,11 @@ export default class FirebaseHelper {
         }
     }
 
+    static async getAllDocDataByCollectionRef(collectionRef) {
+        const docs = await this.getDocsByCollectionRef(collectionRef);
+        return docs.map((doc) => doc.data());
+    }
+
     static async getDocIdsByCollectionRef(collectionRef) {
         const docs = await this.getDocsByCollectionRef(collectionRef);
         return docs.map((doc) => doc.id);

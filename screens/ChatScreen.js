@@ -1,4 +1,4 @@
-import React, {Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState} from 'react'
+import React, {Suspense, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState} from 'react'
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import theme from '../utils/theme';
 import {useRecoilValue} from "recoil";
@@ -17,6 +17,9 @@ import {Box, Center} from "native-base";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingScreen from "./LoadingScreen";
 import {postAtom} from "../recoil/postState";
+import UserController from "../typeControllers/UserController";
+import GlobalContext from "../context/Context";
+import ReportUserModal from "../components/ReportUserModal";
 
 
 export default function ChatScreenWrapper(props) {
@@ -48,6 +51,7 @@ function ChatScreenErrorHandler({navigation}) {
 }
 
 export function ChatScreen({navigation, chatroomId}) {
+    const {userStateManager} = useContext(GlobalContext);
     const [messages, setMessages] = useState([]);
     const user = useRecoilValue(thisUser);
     const chatroom = useRecoilValue(chatroomAtom(chatroomId));
@@ -55,6 +59,7 @@ export function ChatScreen({navigation, chatroomId}) {
     const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomId)
     const opponentUserEmail = chatroom.customerEmail === user.email ? chatroom.ownerEmail : chatroom.customerEmail;
     const opponentUser = useRecoilValue(userAtomByEmail(opponentUserEmail));
+    const [reportUserModalOn, setReportUserModalOn] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -67,7 +72,7 @@ export function ChatScreen({navigation, chatroomId}) {
                         [
                             {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
                             {name: "See post", color: theme.colors.primary, callback: handleSeePost},
-                            {name: "Report user", color: theme.colors.alert, callback: (() => {})},
+                            {name: "Report user", color: theme.colors.alert, callback: openReportUserModal},
                         ]
             }/>)
         });
@@ -111,7 +116,7 @@ export function ChatScreen({navigation, chatroomId}) {
     }, [chatroomMessageRef]);
 
     const myProfileImageUrl = useMemo(() => {
-        return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
+        return ProfileImageHelper.getProfileImageUrl(user?.profileImageType);
     }, [user])
 
     async function asyncExitChatroom() {
@@ -129,12 +134,24 @@ export function ChatScreen({navigation, chatroomId}) {
             alert("This post is deleted.");
         }
         else {
-            navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId});
+            navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom?.postId});
         }
     }
 
-    async function handleReportUser() {
+    async function openReportUserModal() {
+        setReportUserModalOn(true);
+    }
 
+    async function asyncHandleReportUser() {
+        if (await UserController.asyncReportUser(user?.email, opponentUserEmail) === false) {
+            showQuickMessage("Fail to report this user. Please try again.");
+        }
+        else {
+            showQuickMessage("Successfully reported this user.");
+            userStateManager.refreshUser();
+        }
+        setReportUserModalOn(false);
+        navigation.navigate(ScreenType.CHANNEL);
     }
 
     const onRenderSysyemMessage = (props) => (
@@ -146,22 +163,25 @@ export function ChatScreen({navigation, chatroomId}) {
     );
 
     return (
-        <GiftedChat
-            messages={messages}
-            onSend={messages => onSend(messages)}
-            user={{
-                _id: user.email,
-                name: user.username,
-                avatar: myProfileImageUrl,
-            }}
-            messagesContainerStyle={{
-                backgroundColor: '#fff'
-            }}
-            renderTicks={this.renderTicks}
-            renderSystemMessage={onRenderSysyemMessage}
+        <>
+            <ReportUserModal state={reportUserModalOn} setState={setReportUserModalOn} handleReportUser={asyncHandleReportUser}/>
+            <GiftedChat
+                messages={messages}
+                onSend={messages => onSend(messages)}
+                user={{
+                    _id: user.email,
+                    name: user.username,
+                    avatar: myProfileImageUrl,
+                }}
+                messagesContainerStyle={{
+                    backgroundColor: '#fff'
+                }}
+                renderTicks={this.renderTicks}
+                renderSystemMessage={onRenderSysyemMessage}
 
-            bottomOffset={getInset('bottom')}
-        />
+                bottomOffset={getInset('bottom')}
+            />
+        </>
     )
 }
 

@@ -82,12 +82,23 @@ export default class UserController {
     /**
      *
      * @param {UserDoc} user
-     * @param {PostDoc} post
-     * @returns {boolean || null}
+     * @param {string} docId
+     * @return {boolean|null}
      */
-    static isPostBlockedByUser(user, post) {
-        if (!user || !post) return null;
-        return (user.reportedPostIds.includes(post.docId) || user.reportedUserEmails.includes(post.ownerEmail))
+    static isBlockedPost(user, docId) {
+        if (!user || !docId) return null;
+        return user.reportedPostIds.includes(docId);
+    }
+
+    /**
+     *
+     * @param {UserDoc} user
+     * @param {string} targetEmail
+     * @return {boolean|null}
+     */
+    static isBlockedUser(user, targetEmail) {
+        if (!user || !targetEmail) return null;
+        return user.reportedUserEmails.includes(targetEmail);
     }
 
     /**
