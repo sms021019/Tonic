@@ -140,11 +140,12 @@ export default class PostController {
      */
     static async asyncSetDeletePostActionToBatch(batch, post) {
         try {
-            const postRef = FirebaseHelper.getRef(DBCollectionType.POSTS, post.docId);
-            batch.delete(postRef);
+            const postDRef = FirebaseHelper.getRef(DBCollectionType.POSTS, post.docId);
+            const userDRef = FirebaseHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
 
-            const userRef = DBHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
-            batch.update(userRef, {posts: arrayRemove(postRef)});
+            batch.update(userDRef, {myPostIds: arrayRemove(post.docId)});
+            batch.delete(postDRef);
+
             return true;
         }
         catch(e) {

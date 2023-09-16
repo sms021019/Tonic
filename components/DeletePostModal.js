@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {Flex} from "native-base";
+import {Divider, Flex} from "native-base";
 import Modal from "../utils/modal";
 import React from "react";
 import theme from "../utils/theme";
@@ -18,8 +18,9 @@ export default function DeletePostModal(props) {
         >
             <View style={styles.modalView}>
                 <Text style={styles.deleteModalText}>
-                    Do you want to delete the post?
+                    Are you sure you want to delete this post?
                 </Text>
+                <Divider style={{marginTop: 15}}/>
                 <Flex direction="row" style={{marginTop: 20}}>
                     <TouchableOpacity onPress={() => setState(false)} style={{marginRight: 40}} >
                         <Text style={styles.tonicTextGray}>Cancel</Text>
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     modalView: {
         backgroundColor: 'white',
         borderRadius: 20,
-        padding: 35,
+        padding: 20,
 
         alignItems: 'center',
         shadowColor: '#000',

@@ -6,9 +6,16 @@ export const userAuthAtom = atom({
     default: /**@type {User}*/ null,
 })
 
+export const thisUserUpdater = atom({
+    key: "thisUserUpdater",
+    default: 0,
+})
+
 export const thisUser = selector({
     key: 'thisUser',
     get: async ({get}) => {
+        get(thisUserUpdater);
+
         const userAuth = get(userAuthAtom);
         if (!userAuth) return null;
 

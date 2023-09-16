@@ -142,6 +142,7 @@ export function ContentDetailScreen({navigation, postId}) {
         }
 
         postStateManager.removeId(post.docId);
+        userStateManager.refreshUser();
         showQuickMessage("The post is deleted successfully.");
         setDeleteModalOn(false);
         navigation.navigate(ScreenType.CONTENT);
