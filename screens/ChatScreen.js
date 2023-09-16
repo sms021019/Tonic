@@ -1,4 +1,4 @@
-import React, {Suspense, useCallback, useLayoutEffect, useMemo, useState} from 'react'
+import React, {Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState} from 'react'
 import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import theme from '../utils/theme';
 import {useRecoilValue} from "recoil";
@@ -16,6 +16,7 @@ import ErrorBoundary from "react-native-error-boundary";
 import {Box, Center} from "native-base";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingScreen from "./LoadingScreen";
+import {postAtom} from "../recoil/postState";
 
 
 export default function ChatScreenWrapper(props) {
@@ -50,6 +51,7 @@ export function ChatScreen({navigation, chatroomId}) {
     const [messages, setMessages] = useState([]);
     const user = useRecoilValue(thisUser);
     const chatroom = useRecoilValue(chatroomAtom(chatroomId));
+    const post = useRecoilValue(postAtom(chatroom?.postId));
     const chatroomMessageRef = ChatroomController.getChatroomMessageRefById(chatroomId)
     const opponentUserEmail = chatroom.customerEmail === user.email ? chatroom.ownerEmail : chatroom.customerEmail;
     const opponentUser = useRecoilValue(userAtomByEmail(opponentUserEmail));
@@ -61,15 +63,17 @@ export function ChatScreen({navigation, chatroomId}) {
             headerLeft: () => <GoBackButton color={theme.colors.darkGray} ml={15} callback={() => navigation.navigate(ScreenType.CHANNEL)}/>,
             headerRight: () => (
                 <MenuButton mr={5} size={6} color={'black'}
-                            items={
-                                [
-                                    {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
-                                    {name: "See post", color: theme.colors.primary, callback: (() => navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId}))},
-                                    {name: "Report user", color: theme.colors.alert, callback: (() => {})},
-                                ]
-                            }/>)
+                    items={
+                        [
+                            {name: "Exit chatroom", color: theme.colors.primary, callback: asyncExitChatroom},
+                            {name: "See post", color: theme.colors.primary, callback: handleSeePost},
+                            {name: "Report user", color: theme.colors.alert, callback: (() => {})},
+                        ]
+            }/>)
         });
+    }, [navigation]);
 
+    useEffect(() => {
         const q = query(chatroomMessageRef, orderBy("createdAt", "desc"));
 
         const opponentUserProfileImageUrl = ProfileImageHelper.getProfileImageUrl(opponentUser.profileImageType);
@@ -91,7 +95,7 @@ export function ChatScreen({navigation, chatroomId}) {
         });
 
         return () => unsubscribe();
-    }, [navigation]);
+    }, [])
 
     const onSend = useCallback((messages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
@@ -110,7 +114,7 @@ export function ChatScreen({navigation, chatroomId}) {
         return ProfileImageHelper.getProfileImageUrl(user.profileImageType);
     }, [user])
 
-    async function asyncExitChatroom () {
+    async function asyncExitChatroom() {
         if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
             console.log('Failed to exit chatroom with unknown error');
             return;
@@ -118,6 +122,19 @@ export function ChatScreen({navigation, chatroomId}) {
 
         showQuickMessage('Exited from chat');
         navigation.navigate(ScreenType.CHANNEL);
+    }
+
+    async function handleSeePost() {
+        if (!post) {
+            alert("This post is deleted.");
+        }
+        else {
+            navigation.navigate(NavigatorType.CONTENT_DETAIL, {postId: chatroom.postId});
+        }
+    }
+
+    async function handleReportUser() {
+
     }
 
     const onRenderSysyemMessage = (props) => (
