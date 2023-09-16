@@ -80,14 +80,20 @@ export function ContentDetailScreen({navigation, postId}) {
     }, [navigation]);
 
     useEffect(() => {
+        handleAccessingDeletedPost();
+    }, [])
+
+
+    function handleAccessingDeletedPost() {
         PostController.isPostExist(postId).then(result => {
             if (result === false) {
                 alert("This post is deleted.");
-                navigation.navigate(ScreenType.CONTENT);
+                postStateManager.refreshPostIds().then(() => {
+                    navigation.navigate(ScreenType.CONTENT);
+                });
             }
         })
-    }, [])
-
+    }
 
     async function asyncHandleChatClick() {
         if (user.email === post.ownerEmail) return;
