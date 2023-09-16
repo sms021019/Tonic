@@ -76,7 +76,7 @@ export default class ChatroomController {
         try{
             let batch = writeBatch(db);
 
-            if (await this.asyncBatchDeleteChatroom(batch, chatroom) === false) return false;
+            if (await this.asyncBatchDeleteChatroom(batch, chatroom.docId) === false) return false;
             if (await ChatroomHeaderController.asyncSetDeleteChatroomHeaders(batch, chatroom) === false) return false;
 
             await batch.commit();

@@ -115,7 +115,7 @@ export function ChatScreen({navigation, chatroomId}) {
     }, [user])
 
     async function asyncExitChatroom() {
-        if(await ChatroomController.asyncExitChatroom(chatroom) === false) {
+        if (await ChatroomController.asyncExitChatroom(chatroom) === false) {
             console.log('Failed to exit chatroom with unknown error');
             return;
         }
