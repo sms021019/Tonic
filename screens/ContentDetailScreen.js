@@ -45,7 +45,7 @@ export function ContentDetailScreen({navigation, postId}) {
     const {postStateManager, userStateManager} = useContext(GlobalContext);
     const /**@type UserDoc*/ user = useRecoilValue(thisUser);
     const /**@type PostDoc*/ post = useRecoilValue(postAtom(postId))
-    const /**@type UserDoc*/ postOwner = useRecoilValue(userAtomByEmail(post?.ownerEmail));
+    const /**@type UserDoc*/ postOwner = (user.email === post.ownerEmail)? user : useRecoilValue(userAtomByEmail(post?.ownerEmail));
 
     const [deleteModalOn, setDeleteModalOn] = useState(false);
     const [reportPostModalOn, setReportPostModalOn] = useState(false);

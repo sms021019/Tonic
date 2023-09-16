@@ -5,7 +5,6 @@ import theme from "../utils/theme";
 import {ProfileImageType, ScreenType, windowWidth} from "../utils/utils";
 import ProfileImageHelper from "../helpers/ProfileImageHelper";
 import LoadingAnimation from '../components/LoadingAnimation'
-import {updateProfile} from "firebase/auth";
 import {useRecoilValue} from "recoil";
 import {thisUser} from "../recoil/userState";
 import UserController from "../typeControllers/UserController";
