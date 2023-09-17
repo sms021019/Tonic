@@ -7,6 +7,9 @@ import {
     reauthenticateWithCredential, EmailAuthProvider,
 } from "firebase/auth";
 import {auth} from "../firebase";
+import FirebaseHelper from "../helpers/FirebaseHelper";
+import ChatroomController from "./ChatroomController";
+import UserController from "./UserController";
 export default class AuthController {
 
     static ErrorCode = {
@@ -83,7 +86,23 @@ export default class AuthController {
     }
 
     static async asyncDeleteAccount(userAuth, password) {
-        console.log(userAuth);
+        try {
+            if (await this.asyncDeleteUserAuth(userAuth, password) === false) return false;
+
+            const batch = FirebaseHelper.createBatch();
+
+            const /**@type ChatroomDoc[] */ chatrooms = await ChatroomController.asyncGetChatroomsByEmail(userAuth.email);
+            if (await ChatroomController.asyncBatchExitChatrooms(batch, chatrooms) === false) return false;
+            if (await UserController.asyncBatchDeleteUser(batch, userAuth.email) === false) return false;
+
+            await batch.commit();
+            return true;
+        }
+        catch (e) {
+        }
+    }
+
+    static async asyncDeleteUserAuth(userAuth, password) {
         try {
             const credential = EmailAuthProvider.credential(userAuth.email, password)
             await reauthenticateWithCredential(auth.currentUser, credential);
@@ -98,4 +117,6 @@ export default class AuthController {
             return false;
         }
     }
+
+
 }

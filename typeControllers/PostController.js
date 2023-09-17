@@ -25,7 +25,7 @@ export default class PostController {
         try {
             let batch = writeBatch(db);
 
-            if (await this.asyncSetAddPostActionToBatch(batch, post) === false) return false;
+            if (await this.asyncBatchAddPost(batch, post) === false) return false;
 
             await batch.commit();
             return true;
@@ -48,7 +48,7 @@ export default class PostController {
         try {
             let batch = writeBatch(db);
 
-            if (await this.asyncSetUpdatePostActionToBatch(batch, oldPost, newPost) === false) return false;
+            if (await this.asyncBatchUpdatePost(batch, oldPost, newPost) === false) return false;
 
             await batch.commit();
             return true;
@@ -67,7 +67,7 @@ export default class PostController {
     static async asyncDelete(post) {
         try {
             let batch = writeBatch(db);
-            if (await this.asyncSetDeletePostActionToBatch(batch, post) === false) return false;
+            if (await this.asyncBatchDeletePost(batch, post) === false) return false;
             await batch.commit();
 
             if (await this.asyncDeletePostImagesFromStorage(post.postImages) === false) return false;
@@ -80,7 +80,6 @@ export default class PostController {
         }
     }
 
-// -------------- BATCH POST --------------------
     /**
      * @param batch
      * @param {PostDoc} post
@@ -88,7 +87,7 @@ export default class PostController {
      *
      * This function will create and set new 'docId' to the post.
      */
-    static async asyncSetAddPostActionToBatch(batch, post) {
+    static async asyncBatchAddPost(batch, post) {
         try {
             if (await this.asyncUploadPostImagesToStorage(post.postImages, post.ownerEmail) === false) return false;
 
@@ -102,7 +101,7 @@ export default class PostController {
             return true;
         }
         catch(e) {
-            console.log(e, "Err: PostController.asyncSetAddPostActionToBatch")
+            console.log(e, "Err: PostController.asyncBatchAddPost")
             return false;
         }
     }
@@ -113,7 +112,7 @@ export default class PostController {
      * @param {PostDoc} newPost
      * @returns {Promise<boolean>}
      */
-    static async asyncSetUpdatePostActionToBatch(batch, oldPost, newPost) {
+    static async asyncBatchUpdatePost(batch, oldPost, newPost) {
         try {
             let result = this.getNewAndRemovedPostImages(oldPost.postImages, newPost.postImages);
             let newPostImages = result.newPostImages;
@@ -128,7 +127,7 @@ export default class PostController {
             return true;
         }
         catch (e) {
-            console.log(e, "Err: PostController.asyncSetUpdatePostActionToBatch")
+            console.log(e, "Err: PostController.asyncBatchUpdatePost")
             return false;
         }
     }
@@ -138,7 +137,7 @@ export default class PostController {
      * @param {PostDoc} post
      * @returns {Promise<boolean>}
      */
-    static async asyncSetDeletePostActionToBatch(batch, post) {
+    static async asyncBatchDeletePost(batch, post) {
         try {
             const postDRef = FirebaseHelper.getRef(DBCollectionType.POSTS, post.docId);
             const userDRef = FirebaseHelper.getRef(DBCollectionType.USERS, post.ownerEmail)
@@ -149,7 +148,7 @@ export default class PostController {
             return true;
         }
         catch(e) {
-            console.log(e, "Err: PostController.asyncSetDeletePostActionToBatch")
+            console.log(e, "Err: PostController.asyncBatchDeletePost")
             return false;
         }
     }

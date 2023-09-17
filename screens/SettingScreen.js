@@ -9,9 +9,12 @@ import AuthController from "../typeControllers/AuthController";
 import {showQuickMessage} from "../helpers/MessageHelper";
 import DeleteAccountModal from "../components/DeleteAccountModal";
 import GlobalContext from "../context/Context";
+import {useRecoilValue} from "recoil";
+import {userAuthAtom} from "../recoil/userState";
 
 export default function SettingScreen({navigation}) {
     const {userStateManager} = useContext(GlobalContext);
+    const userAuth = useRecoilValue(userAuthAtom);
     const [deleteAccountModalOn, setDeleteAccountModalOn] = useState(false);
 
     useLayoutEffect(() => {
@@ -32,7 +35,7 @@ export default function SettingScreen({navigation}) {
     }
 
     async function onDeleteAccount(password) {
-        if (await userStateManager.deleteUserAccount(password) === false) {
+        if (await AuthController.asyncDeleteAccount(userAuth, password) === false) {
             showQuickMessage("Fail to delete account. Please try again.");
         }
         else {

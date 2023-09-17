@@ -32,16 +32,16 @@ export default function UserStateManager({userStateManager}) {
         setUserAuth(null);
     }
 
-    userStateManager.deleteUserAccount = async (password) => {
-        if (await AuthController.asyncDeleteAccount(userAuth, password) === false) return false;
-
-        const batch = FirebaseHelper.createBatch();
-
-        const /**@type ChatroomDoc[] */ chatrooms = await ChatroomController.asyncGetChatroomsByEmail(userAuth.email);
-        if (await ChatroomController.asyncBatchExitChatrooms(batch, chatrooms) === false) return false;
-        if (await UserController.asyncBatchDeleteUser(batch, userAuth.email) === false) return false;
-
-        await batch.commit();
-        return true;
-    }
+    // userStateManager.deleteUserAccount = async (password) => {
+    //     if (await AuthController.asyncDeleteAccount(userAuth, password) === false) return false;
+    //
+    //     const batch = FirebaseHelper.createBatch();
+    //
+    //     const /**@type ChatroomDoc[] */ chatrooms = await ChatroomController.asyncGetChatroomsByEmail(userAuth.email);
+    //     if (await ChatroomController.asyncBatchExitChatrooms(batch, chatrooms) === false) return false;
+    //     if (await UserController.asyncBatchDeleteUser(batch, userAuth.email) === false) return false;
+    //
+    //     await batch.commit();
+    //     return true;
+    // }
 }
